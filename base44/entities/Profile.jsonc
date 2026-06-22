@@ -1,0 +1,62 @@
+{
+  "name": "Profile",
+  "type": "object",
+  "properties": {
+    "account_type": {
+      "type": "string",
+      "enum": [
+        "job_seeker",
+        "recruiter"
+      ]
+    },
+    "full_name": {
+      "type": "string"
+    },
+    "profile_picture": {
+      "type": "string"
+    },
+    "current_role": {
+      "type": "string"
+    },
+    "current_company": {
+      "type": "string"
+    },
+    "is_currently_employed": {
+      "type": "boolean",
+      "default": true
+    },
+    "years_experience": {
+      "type": "string"
+    },
+    "skills": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "location": {
+      "type": "string"
+    },
+    "bio": {
+      "type": "string"
+    },
+    "linkedin_url": {
+      "type": "string"
+    },
+    "target_salary": {
+      "type": "string"
+    },
+    "open_to_work": {
+      "type": "boolean",
+      "default": true
+    },
+    "onboarding_complete": {
+      "type": "boolean",
+      "default": false
+    }
+  },
+  "required": [
+    "account_type",
+    "full_name"
+  ]
+}

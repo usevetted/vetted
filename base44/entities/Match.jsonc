@@ -1,0 +1,57 @@
+{
+  "name": "Match",
+  "type": "object",
+  "properties": {
+    "profile1_id": {
+      "type": "string"
+    },
+    "profile2_id": {
+      "type": "string"
+    },
+    "job_id": {
+      "type": "string"
+    },
+    "job_title": {
+      "type": "string"
+    },
+    "company_name": {
+      "type": "string"
+    },
+    "profile1_name": {
+      "type": "string"
+    },
+    "profile2_name": {
+      "type": "string"
+    },
+    "profile1_picture": {
+      "type": "string"
+    },
+    "profile2_picture": {
+      "type": "string"
+    },
+    "profile1_role": {
+      "type": "string"
+    },
+    "profile2_role": {
+      "type": "string"
+    },
+    "profile1_linkedin": {
+      "type": "string"
+    },
+    "profile2_linkedin": {
+      "type": "string"
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "active",
+        "archived"
+      ],
+      "default": "active"
+    }
+  },
+  "required": [
+    "profile1_id",
+    "profile2_id"
+  ]
+}

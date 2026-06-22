@@ -1,0 +1,35 @@
+{
+  "name": "Swipe",
+  "type": "object",
+  "properties": {
+    "swiper_profile_id": {
+      "type": "string"
+    },
+    "target_profile_id": {
+      "type": "string"
+    },
+    "target_type": {
+      "type": "string",
+      "enum": [
+        "job",
+        "candidate"
+      ]
+    },
+    "action": {
+      "type": "string",
+      "enum": [
+        "pass",
+        "like",
+        "super"
+      ]
+    },
+    "context_job_id": {
+      "type": "string"
+    }
+  },
+  "required": [
+    "swiper_profile_id",
+    "target_profile_id",
+    "action"
+  ]
+}

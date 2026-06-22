@@ -1,0 +1,56 @@
+{
+  "name": "Job",
+  "type": "object",
+  "properties": {
+    "title": {
+      "type": "string"
+    },
+    "company": {
+      "type": "string"
+    },
+    "company_initial": {
+      "type": "string"
+    },
+    "company_initial_bg": {
+      "type": "string"
+    },
+    "company_initial_color": {
+      "type": "string"
+    },
+    "location": {
+      "type": "string"
+    },
+    "remote": {
+      "type": "boolean",
+      "default": false
+    },
+    "salary_range": {
+      "type": "string"
+    },
+    "description": {
+      "type": "string"
+    },
+    "tags": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "company_size": {
+      "type": "string"
+    },
+    "recruiter_profile_id": {
+      "type": "string"
+    },
+    "recruiter_name": {
+      "type": "string"
+    },
+    "recruiter_linkedin": {
+      "type": "string"
+    }
+  },
+  "required": [
+    "title",
+    "company"
+  ]
+}

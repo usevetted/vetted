@@ -1,12 +1,27 @@
 import { Toaster } from "@/components/ui/toaster"
 import { QueryClientProvider } from '@tanstack/react-query'
 import { queryClientInstance } from '@/lib/query-client'
-import { BrowserRouter as Router, Route, Routes } from 'react-router-dom';
+import { BrowserRouter as Router, Route, Routes, Navigate } from 'react-router-dom';
 import PageNotFound from './lib/PageNotFound';
 import { AuthProvider, useAuth } from '@/lib/AuthContext';
 import UserNotRegisteredError from '@/components/UserNotRegisteredError';
 import ScrollToTop from './components/ScrollToTop';
-// Add page imports here
+import ProtectedRoute from '@/components/ProtectedRoute';
+// Page imports
+import Splash from './pages/Splash';
+import Landing from './pages/Landing';
+import Login from '@/pages/Login';
+import Register from '@/pages/Register';
+import ForgotPassword from '@/pages/ForgotPassword';
+import ResetPassword from '@/pages/ResetPassword';
+import AccountType from './pages/AccountType';
+import ProfileSetup from './pages/ProfileSetup';
+import AppLayout from './components/AppLayout';
+import Discover from './pages/Discover';
+import Matches from './pages/Matches';
+import Messages from './pages/Messages';
+import Chat from './pages/Chat';
+import ProfilePage from './pages/ProfilePage';
 
 const AuthenticatedApp = () => {
   const { isLoadingAuth, isLoadingPublicSettings, authError, navigateToLogin } = useAuth();
@@ -34,7 +49,29 @@ const AuthenticatedApp = () => {
   // Render the main app
   return (
     <Routes>
-      {/* Add your page Route elements here */}
+      {/* Public routes */}
+      <Route path="/" element={<Splash />} />
+      <Route path="/landing" element={<Landing />} />
+      <Route path="/login" element={<Login />} />
+      <Route path="/register" element={<Register />} />
+      <Route path="/forgot-password" element={<ForgotPassword />} />
+      <Route path="/reset-password" element={<ResetPassword />} />
+
+      {/* Protected routes - onboarding (no layout) */}
+      <Route element={<ProtectedRoute unauthenticatedElement={<Navigate to="/login" replace />} />}>
+        <Route path="/onboarding/account-type" element={<AccountType />} />
+        <Route path="/onboarding/profile-setup" element={<ProfileSetup />} />
+
+        {/* Protected routes - main app (with layout) */}
+        <Route element={<AppLayout />}>
+          <Route path="/discover" element={<Discover />} />
+          <Route path="/matches" element={<Matches />} />
+          <Route path="/messages" element={<Messages />} />
+          <Route path="/messages/:matchId" element={<Chat />} />
+          <Route path="/profile" element={<ProfilePage />} />
+        </Route>
+      </Route>
+
       <Route path="*" element={<PageNotFound />} />
     </Routes>
   );
