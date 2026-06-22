@@ -149,20 +149,31 @@ export default function ProfileSetup() {
         </div>
 
         <div className="flex-1 overflow-y-auto no-scrollbar px-6 pb-6">
-          {/* LinkedIn import */}
-          <button
-            onClick={handleLinkedInImport}
-            className="w-full bg-brand-green-bg border border-brand-green-light rounded-2xl p-3.5 flex items-center gap-3 mb-6 hover:bg-brand-green-light/40 transition-colors"
+          {/* LinkedIn connect — prominent */}
+          <motion.div
+            initial={{ opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.4, ease: [0.16, 1, 0.3, 1] }}
+            className="rounded-3xl p-[1.5px] bg-gradient-to-br from-linkedin via-primary to-linkedin mb-5"
           >
-            <div className="w-9 h-9 rounded-lg bg-linkedin flex items-center justify-center flex-shrink-0">
-              <Linkedin size={18} className="text-white" />
-            </div>
-            <div className="flex-1 text-left">
-              <div className="text-[13px] font-medium text-primary">Import from LinkedIn</div>
-              <div className="text-[11px] text-muted-foreground">Auto-fill your experience & skills</div>
-            </div>
-            <ArrowRight size={16} className="text-primary" />
-          </button>
+            <button
+              onClick={handleLinkedInImport}
+              className="w-full bg-white rounded-3xl p-5 flex items-center gap-4 hover:bg-brand-green-bg/30 transition-colors text-left"
+            >
+              <div className="w-12 h-12 rounded-2xl bg-linkedin flex items-center justify-center flex-shrink-0 shadow-sm">
+                <Linkedin size={24} className="text-white" />
+              </div>
+              <div className="flex-1">
+                <div className="text-[15px] font-semibold text-foreground">Connect LinkedIn</div>
+                <div className="text-[12px] text-muted-foreground mt-0.5">
+                  Auto-fill your profile in seconds — experience, skills, and more
+                </div>
+              </div>
+              <div className="w-7 h-7 rounded-full bg-linkedin/10 flex items-center justify-center flex-shrink-0">
+                <ArrowRight size={14} className="text-linkedin" />
+              </div>
+            </button>
+          </motion.div>
 
           {/* Profile picture */}
           <div className="flex flex-col items-center mb-6">

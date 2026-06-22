@@ -68,7 +68,7 @@ export default function Messages() {
 
   return (
     <div className="flex-1 flex flex-col">
-      <div className="flex items-center justify-between px-5 pt-12 pb-3">
+      <div className="flex items-center justify-between px-5 pt-2 pb-3">
         <Logo size="sm" />
       </div>
       <div className="px-5 pb-3">

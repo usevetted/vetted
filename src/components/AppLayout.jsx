@@ -51,9 +51,9 @@ export default function AppLayout() {
     .toUpperCase() || 'U';
 
   return (
-    <div className="min-h-screen bg-secondary/40 flex justify-center">
-      <div className="w-full max-w-[440px] bg-white min-h-screen relative flex flex-col shadow-[0_0_60px_rgba(0,0,0,0.06)]">
-        <main className="flex-1 overflow-hidden flex flex-col">
+    <div className="h-[100dvh] bg-secondary/40 flex justify-center overflow-hidden">
+      <div className="w-full max-w-[440px] bg-white h-[100dvh] relative flex flex-col shadow-[0_0_60px_rgba(0,0,0,0.06)] overflow-hidden">
+        <main className="flex-1 overflow-hidden flex flex-col pt-[env(safe-area-inset-top)]">
           <Outlet context={{ profile, setProfile }} />
         </main>
         <nav className="sticky bottom-0 z-50 bg-white/90 glass border-t border-border/50 px-2 pb-[env(safe-area-inset-bottom)]">

@@ -1,7 +1,7 @@
 import { useState, useEffect, useCallback } from 'react';
 import { useNavigate, useOutletContext } from 'react-router-dom';
 import { AnimatePresence, motion } from 'framer-motion';
-import { X, Heart, Star, SlidersHorizontal, Linkedin } from 'lucide-react';
+import { X, Heart, Star, SlidersHorizontal } from 'lucide-react';
 import Logo from '@/components/Logo';
 import SwipeCard from '@/components/SwipeCard';
 import MatchOverlay from '@/components/MatchOverlay';
@@ -139,7 +139,7 @@ export default function Discover() {
   return (
     <div className="flex-1 flex flex-col bg-secondary/30">
       {/* Header */}
-      <div className="flex items-center justify-between px-5 pt-12 pb-3">
+      <div className="flex items-center justify-between px-5 pt-2 pb-3">
         <Logo size="sm" />
         <div className="flex items-center gap-3">
           <button className="p-1.5 rounded-full hover:bg-muted transition-colors">
@@ -165,7 +165,7 @@ export default function Discover() {
         ) : cards.length === 0 ? (
           <EmptyState onRefresh={loadCards} />
         ) : (
-          <div className="relative w-full h-full max-h-[460px] flex items-center justify-center">
+          <div className="relative w-full flex-1 min-h-0 flex items-center justify-center">
             <AnimatePresence>
               {cards.slice(0, 3).map((card, index) => (
                 <SwipeCard
@@ -184,25 +184,31 @@ export default function Discover() {
 
       {/* Action buttons */}
       {!loading && cards.length > 0 && (
-        <div className="flex items-center justify-center gap-5 pb-5">
-          <button
+        <div className="flex items-center justify-center gap-5 pb-4">
+          <motion.button
+            whileTap={{ scale: 0.82 }}
+            whileHover={{ scale: 1.08 }}
             onClick={() => handleSwipe('pass')}
-            className="w-[54px] h-[54px] rounded-full border-2 border-pass bg-red-50/50 flex items-center justify-center hover:bg-red-50 transition-colors active:scale-95"
+            className="w-[56px] h-[56px] rounded-full border-2 border-pass bg-red-50/50 flex items-center justify-center shadow-sm"
           >
-            <X size={22} className="text-pass" strokeWidth={2.5} />
-          </button>
-          <button
+            <X size={24} className="text-pass" strokeWidth={2.5} />
+          </motion.button>
+          <motion.button
+            whileTap={{ scale: 0.82, y: -4 }}
+            whileHover={{ scale: 1.12, y: -2 }}
             onClick={() => handleSwipe('super')}
-            className="w-[46px] h-[46px] rounded-full border-2 border-gold bg-yellow-50/50 flex items-center justify-center hover:bg-yellow-50 transition-colors active:scale-95"
+            className="w-[48px] h-[48px] rounded-full border-2 border-gold bg-yellow-50/50 flex items-center justify-center shadow-sm"
           >
             <Star size={20} className="text-gold fill-gold" />
-          </button>
-          <button
+          </motion.button>
+          <motion.button
+            whileTap={{ scale: 0.82 }}
+            whileHover={{ scale: 1.08 }}
             onClick={() => handleSwipe('like')}
-            className="w-[54px] h-[54px] rounded-full border-2 border-primary bg-brand-green-bg flex items-center justify-center hover:bg-brand-green-light transition-colors active:scale-95"
+            className="w-[56px] h-[56px] rounded-full border-2 border-primary bg-brand-green-bg flex items-center justify-center shadow-sm"
           >
-            <Heart size={22} className="text-primary fill-primary" />
-          </button>
+            <Heart size={24} className="text-primary fill-primary" />
+          </motion.button>
         </div>
       )}
 

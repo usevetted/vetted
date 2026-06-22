@@ -37,7 +37,10 @@ export default function Chat() {
     const unsubscribe = base44.entities.Message.subscribe((event) => {
       if (event.data?.match_id === matchId) {
         if (event.type === 'create') {
-          setMessages(prev => [...prev, event.data]);
+          setMessages(prev => {
+            if (prev.some(m => m.id === event.data.id)) return prev;
+            return [...prev, event.data];
+          });
         }
       }
     });
@@ -54,12 +57,11 @@ export default function Chat() {
     const content = input.trim();
     setInput('');
     try {
-      const msg = await base44.entities.Message.create({
+      await base44.entities.Message.create({
         match_id: matchId,
         sender_profile_id: profile.id,
         content,
       });
-      setMessages(prev => [...prev, msg]);
     } catch {
       setInput(content);
     } finally {
@@ -96,7 +98,7 @@ export default function Chat() {
   return (
     <div className="flex-1 flex flex-col bg-white">
       {/* Chat header */}
-      <div className="flex items-center gap-3 px-4 pt-12 pb-3 border-b border-border/50 bg-white">
+      <div className="flex items-center gap-3 px-4 pt-2 pb-3 border-b border-border/50 bg-white">
         <button onClick={() => navigate('/messages')} className="p-1 -ml-1">
           <ArrowLeft size={20} className="text-primary" />
         </button>

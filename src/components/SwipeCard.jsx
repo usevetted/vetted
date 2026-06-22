@@ -1,56 +1,79 @@
 import { useState } from 'react';
 import { motion, useMotionValue, useTransform } from 'framer-motion';
-import { MapPin, Briefcase, DollarSign, Linkedin, Star, X, Heart, Building2 } from 'lucide-react';
+import { MapPin, Linkedin, Building2 } from 'lucide-react';
 
 export default function SwipeCard({ card, type, onSwipe, isTop, index }) {
   const [exitX, setExitX] = useState(0);
+  const [exitY, setExitY] = useState(0);
   const x = useMotionValue(0);
-  const rotate = useTransform(x, [-200, 0, 200], [-12, 0, 12]);
-  const likeOpacity = useTransform(x, [30, 120], [0, 1]);
-  const passOpacity = useTransform(x, [-120, -30], [1, 0]);
-  const superOpacity = useTransform(x, [0, 50], [0.3, 0]);
+  const y = useMotionValue(0);
+  const rotate = useTransform(x, [-200, 0, 200], [-18, 0, 18]);
+  const likeOpacity = useTransform(x, [20, 100], [0, 1]);
+  const passOpacity = useTransform(x, [-100, -20], [1, 0]);
+  const superOpacity = useTransform(y, [-100, -20], [1, 0]);
+  const likeScale = useTransform(x, [20, 100], [0.6, 1]);
+  const passScale = useTransform(x, [-100, -20], [1, 0.6]);
+  const superScale = useTransform(y, [-100, -20], [1, 0.6]);
 
   if (!card) return null;
 
   const handleDragEnd = (e, info) => {
-    const threshold = 110;
+    const threshold = 100;
     if (info.offset.x > threshold) {
-      setExitX(300);
+      setExitX(500);
       onSwipe('like');
     } else if (info.offset.x < -threshold) {
-      setExitX(-300);
+      setExitX(-500);
       onSwipe('pass');
+    } else if (info.offset.y < -threshold) {
+      setExitY(-500);
+      onSwipe('super');
     }
   };
 
-  const stampClass = "absolute top-8 px-4 py-1.5 rounded-xl border-[2.5px] text-sm font-bold tracking-wider uppercase rotate-[-12]";
+  const stampClass = "absolute top-10 px-5 py-2 rounded-2xl border-[3px] text-base font-extrabold tracking-wider uppercase";
 
   return (
     <motion.div
       className="absolute inset-0 flex items-center justify-center"
       style={{ zIndex: isTop ? 30 : 30 - index }}
-      initial={{ scale: isTop ? 1 : 0.94, y: isTop ? 0 : 12, opacity: isTop ? 1 : 0.5 }}
-      animate={{ scale: isTop ? 1 : 0.94, y: isTop ? 0 : 12, opacity: isTop ? 1 : 0.5 }}
-      transition={{ duration: 0.3, ease: [0.16, 1, 0.3, 1] }}
+      initial={{ scale: isTop ? 1 : 0.92, y: isTop ? 0 : 18, opacity: isTop ? 1 : 0.4 }}
+      animate={{ scale: isTop ? 1 : 0.92, y: isTop ? 0 : 18, opacity: isTop ? 1 : 0.4 }}
+      transition={{ type: 'spring', stiffness: 300, damping: 30 }}
     >
       <motion.div
         drag={isTop}
         dragConstraints={{ left: 0, right: 0, top: 0, bottom: 0 }}
-        dragElastic={0.65}
+        dragElastic={0.75}
         onDragEnd={handleDragEnd}
-        style={{ x, rotate }}
-        animate={exitX !== 0 ? { x: exitX, opacity: 0, rotate: exitX > 0 ? 20 : -20 } : {}}
-        transition={{ duration: 0.35 }}
-        className="w-full bg-white rounded-[20px] border border-border/60 shadow-[0_8px_40px_rgba(0,0,0,0.08)] overflow-hidden cursor-grab active:cursor-grabbing"
+        style={{ x, y, rotate }}
+        animate={exitX !== 0
+          ? { x: exitX, opacity: 0, rotate: exitX > 0 ? 30 : -30 }
+          : exitY !== 0
+            ? { y: exitY, opacity: 0, scale: 0.5, rotate: 0 }
+            : {}}
+        transition={{ type: 'spring', stiffness: 200, damping: 22 }}
+        className="w-full bg-white rounded-[24px] border border-border/40 shadow-[0_12px_50px_rgba(0,0,0,0.12)] overflow-hidden cursor-grab active:cursor-grabbing"
       >
-        {/* LIKE / PASS stamps */}
         {isTop && (
           <>
-            <motion.div style={{ opacity: likeOpacity }} className={`${stampClass} right-6 border-primary text-primary bg-brand-green-bg/80`}>
+            <motion.div
+              style={{ opacity: likeOpacity, scale: likeScale }}
+              className={`${stampClass} right-8 border-primary text-primary bg-brand-green-bg/90 rotate-[-15]`}
+            >
               Interested
             </motion.div>
-            <motion.div style={{ opacity: passOpacity }} className={`${stampClass} left-6 border-pass text-pass bg-red-50/80`}>
+            <motion.div
+              style={{ opacity: passOpacity, scale: passScale }}
+              className={`${stampClass} left-8 border-pass text-pass bg-red-50/90 rotate-[15]`}
+            >
               Pass
+            </motion.div>
+            <motion.div
+              style={{ opacity: superOpacity, scale: superScale }}
+              className={`${stampClass} left-1/2 -translate-x-1/2 border-gold text-gold bg-yellow-50/90 rotate-[-5]`}
+            >
+              Super
             </motion.div>
           </>
         )}
