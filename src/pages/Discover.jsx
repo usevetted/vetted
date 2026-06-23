@@ -148,66 +148,78 @@ export default function Discover() {
       {/* Header */}
       <div className="flex items-center justify-between px-5 pt-2 pb-3 relative z-10">
         <Logo size="sm" />
-
-        {/* Profile dropdown */}
-        <div className="relative">
+        <div className="flex items-center gap-2">
           <button
-            ref={profileButtonRef}
-            onClick={() => setProfileDropdownOpen(!profileDropdownOpen)}
-            className="w-11 h-11 rounded-full bg-brand-green-light flex items-center justify-center text-[12px] font-semibold text-primary overflow-hidden border border-border/50 shadow-sm cursor-pointer hover:shadow-md transition-shadow"
+            onClick={() => setFilterOpen(true)}
+            className="w-11 h-11 rounded-full bg-white border border-border/50 flex items-center justify-center shadow-sm hover:bg-muted transition-colors cursor-pointer"
           >
-            {profile?.profile_picture ? (
-              <img src={profile.profile_picture} alt="" className="w-full h-full object-cover" />
-            ) : (
-              initials
-            )}
+            <SlidersHorizontal size={18} className="text-muted-foreground" />
           </button>
+          
+          {/* Profile dropdown */}
+          <div className="relative">
+            <button
+              ref={profileButtonRef}
+              onClick={() => setProfileDropdownOpen(!profileDropdownOpen)}
+              className="w-11 h-11 rounded-full bg-brand-green-light flex items-center justify-center text-[12px] font-semibold text-primary overflow-hidden border border-border/50 shadow-sm cursor-pointer hover:shadow-md transition-shadow"
+            >
+              {profile?.profile_picture ? (
+                <img src={profile.profile_picture} alt="" className="w-full h-full object-cover" />
+              ) : (
+                initials
+              )}
+            </button>
 
-          <AnimatePresence>
-            {profileDropdownOpen && (
-              <motion.div
-                ref={profileDropdownRef}
-                initial={{ opacity: 0, y: -8 }}
-                animate={{ opacity: 1, y: 0 }}
-                exit={{ opacity: 0, y: -8 }}
-                transition={{ duration: 0.15 }}
-                className="absolute top-full right-0 mt-1 bg-white dark:bg-card border border-border rounded-xl shadow-md z-50 overflow-hidden"
-              >
-                <div className="flex flex-col gap-1 p-2">
+            <AnimatePresence>
+              {profileDropdownOpen && (
+                <motion.div
+                  ref={profileDropdownRef}
+                  initial={{ opacity: 0, scale: 0.9, y: -8 }}
+                  animate={{ opacity: 1, scale: 1, y: 0 }}
+                  exit={{ opacity: 0, scale: 0.9, y: -8 }}
+                  transition={{ duration: 0.15 }}
+                  className="absolute top-full right-0 mt-2 bg-white dark:bg-card border border-border/50 rounded-2xl shadow-lg p-2 w-40 z-50"
+                >
                   {isRecruiter && (
                     <button
                       onClick={() => {
                         navigate('/post-job');
                         setProfileDropdownOpen(false);
                       }}
-                      className="w-44 flex items-center gap-3 px-3 py-3 rounded-lg hover:bg-muted/50 transition-colors text-left"
+                      className="w-full flex items-center gap-3 px-3 py-3 rounded-xl hover:bg-muted/50 transition-colors text-left"
                     >
-                      <Plus size={18} className="text-primary flex-shrink-0" />
+                      <div className="w-8 h-8 rounded-lg bg-primary/10 flex items-center justify-center flex-shrink-0">
+                        <Plus size={16} className="text-primary" />
+                      </div>
                       <span className="text-[13px] font-medium text-foreground">Post Job</span>
                     </button>
                   )}
                   <button
                     onClick={() => {
-                      navigate('/profile-settings');
+                      setFilterOpen(true);
                       setProfileDropdownOpen(false);
                     }}
-                    className="w-44 flex items-center gap-3 px-3 py-3 rounded-lg hover:bg-muted/50 transition-colors text-left"
+                    className="w-full flex items-center gap-3 px-3 py-3 rounded-xl hover:bg-muted/50 transition-colors text-left"
                   >
-                    <SlidersHorizontal size={18} className="text-muted-foreground flex-shrink-0" />
-                    <span className="text-[13px] font-medium text-foreground">Settings</span>
+                    <div className="w-8 h-8 rounded-lg bg-muted/50 flex items-center justify-center flex-shrink-0">
+                      <SlidersHorizontal size={16} className="text-muted-foreground" />
+                    </div>
+                    <span className="text-[13px] font-medium text-foreground">Filters</span>
                   </button>
-                </div>
-              </motion.div>
-            )}
-          </AnimatePresence>
+                </motion.div>
+              )}
+            </AnimatePresence>
+          </div>
         </div>
       </div>
 
       {/* Card area */}
       <div className="flex-1 flex flex-col items-center justify-center px-5 py-3 relative min-h-0">
-        {cards.length === 0 && !loading ? (
+        {loading ? (
+          <LoadingScreen fullscreen={false} />
+        ) : cards.length === 0 ? (
           <EmptyState onRefresh={loadCards} />
-        ) : loading ? null : (
+        ) : (
           <div className="relative w-full flex-1 min-h-0 flex items-center justify-center">
             <AnimatePresence>
               {cards.slice(0, 3).map((card, index) => (

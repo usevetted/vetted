@@ -20,12 +20,6 @@ export default function AppLayout() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(false);
   const [retryCount, setRetryCount] = useState(0);
-  const [tabHistory, setTabHistory] = useState({
-    '/discover': '/discover',
-    '/matches': '/matches',
-    '/messages': '/messages',
-    '/profile': '/profile',
-  });
 
   useEffect(() => {
     const loadProfile = async (attempt = 0) => {
@@ -59,20 +53,13 @@ export default function AppLayout() {
     loadProfile();
   }, [user, navigate, retryCount]);
 
-  useEffect(() => {
-    const rootPath = navItems.find(item => location.pathname.startsWith(item.path))?.path;
-    if (rootPath) {
-      setTabHistory(prev => ({ ...prev, [rootPath]: location.pathname }));
-    }
-  }, [location.pathname]);
-
   if (loading || (!profile && !error)) {
     return <LoadingScreen />;
   }
 
   if (error) {
     return (
-      <div className="fixed inset-0 flex flex-col items-center justify-center bg-background gap-4 px-8">
+      <div className="fixed inset-0 flex flex-col items-center justify-center bg-white gap-4 px-8">
         <p className="text-[14px] text-muted-foreground text-center">Couldn't load your profile. Please check your connection.</p>
         <button
           onClick={() => setRetryCount(c => c + 1)}
@@ -85,22 +72,22 @@ export default function AppLayout() {
   }
 
   return (
-    <div className="h-[100dvh] bg-background overflow-hidden">
+    <div className="h-[100dvh] bg-white overflow-hidden">
       <div className="w-full h-[100dvh] relative flex flex-col overflow-hidden">
         <main className="flex-1 overflow-hidden flex flex-col pt-[env(safe-area-inset-top)] min-h-0">
           <Outlet context={{ profile, setProfile }} />
         </main>
-        <nav className="sticky bottom-0 z-50 bg-background/90 glass border-t border-border/50 px-2 pb-[env(safe-area-inset-bottom)] flex-shrink-0">
+        <nav className="sticky bottom-0 z-50 bg-white/90 glass border-t border-border/50 px-2 pb-[env(safe-area-inset-bottom)] flex-shrink-0">
           <div className="flex items-center justify-around max-w-[600px] mx-auto py-2">
             {navItems.map((item) => {
-               const active = location.pathname.startsWith(item.path);
-               const Icon = item.icon;
-               return (
-                 <button
-                   key={item.path}
-                   onClick={() => navigate(tabHistory[item.path])}
-                   className="flex flex-col items-center justify-center gap-1 min-w-[44px] min-h-[44px] px-3 py-2 transition-colors group"
-                 >
+              const active = location.pathname.startsWith(item.path);
+              const Icon = item.icon;
+              return (
+                <button
+                  key={item.path}
+                  onClick={() => navigate(item.path)}
+                  className="flex flex-col items-center justify-center gap-1 min-w-[44px] min-h-[44px] px-3 py-2 transition-colors group"
+                >
                   <Icon
                     size={22}
                     strokeWidth={active ? 2.5 : 1.8}

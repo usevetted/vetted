@@ -35,7 +35,7 @@ export default function FilterSheet({ open, onClose, filters, setFilters, isRecr
             animate={{ y: 0 }}
             exit={{ y: '100%' }}
             transition={{ type: 'spring', stiffness: 400, damping: 35 }}
-            className="absolute bottom-0 left-0 right-0 bg-card rounded-t-3xl p-6 pb-8 z-50 shadow-2xl"
+            className="absolute bottom-0 left-0 right-0 bg-white rounded-t-3xl p-6 pb-8 z-50 shadow-2xl"
           >
             <div className="w-10 h-1 bg-muted rounded-full mx-auto mb-5" />
             <div className="flex items-center justify-between mb-5">

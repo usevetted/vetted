@@ -109,8 +109,24 @@ export default function ProfilePage() {
     } catch {
       // ignore
     }
+    sessionStorage.setItem('just_logged_out', 'true');
     window.location.href = '/landing';
   }, []);
+
+  const handleDeleteAccount = useCallback(async () => {
+    try {
+      await base44.entities.Profile.delete(profile.id);
+    } catch {
+      // ignore
+    }
+    try {
+      await base44.auth.logout();
+    } catch {
+      // ignore
+    }
+    sessionStorage.setItem('just_logged_out', 'true');
+    window.location.href = '/landing';
+  }, [profile.id]);
 
   const initials = profile?.full_name?.split(' ').map(n => n[0]).join('').slice(0, 2).toUpperCase() || 'U';
 
@@ -118,7 +134,7 @@ export default function ProfilePage() {
   const labelClass = "text-[12px] font-medium text-foreground/70 mb-1.5 block";
 
   return (
-    <div className="flex-1 flex flex-col overflow-y-auto no-scrollbar min-h-0 bg-background">
+    <div className="flex-1 flex flex-col overflow-y-auto no-scrollbar min-h-0">
       {/* Header */}
       <div className="flex items-center justify-between px-5 pt-2 pb-3 relative z-10">
         <Logo size="sm" />
@@ -141,7 +157,7 @@ export default function ProfilePage() {
               {saving ? 'Saving...' : 'Save'}
             </button>
           )}
-          <SettingsSheet onLogout={handleLogout} />
+          <SettingsSheet onLogout={handleLogout} onDeleteClick={handleDeleteAccount} />
         </div>
       </div>
 

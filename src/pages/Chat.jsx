@@ -62,19 +62,7 @@ export default function Chat() {
     setSending(true);
     setModerationWarning(null);
     const content = input.trim();
-    const tempId = `temp-${Date.now()}`;
     setInput('');
-    
-    // Optimistic update: show message immediately with sending state
-    const optimisticMessage = {
-      id: tempId,
-      sender_profile_id: profile.id,
-      content,
-      created_date: new Date().toISOString(),
-      _sending: true,
-    };
-    setMessages(prev => [...prev, optimisticMessage]);
-    
     try {
       const response = await base44.functions.invoke('sendMessage', {
         match_id: matchId,
@@ -83,21 +71,15 @@ export default function Chat() {
       const data = response.data || response;
       if (data.error === 'blocked') {
         setModerationWarning(data.reason);
-        // Remove optimistic message on block
-        setMessages(prev => prev.filter(m => m.id !== tempId));
         return;
       }
       if (data.message) {
-        // Replace optimistic message with real message
         setMessages(prev => {
-          const filtered = prev.filter(m => m.id !== tempId);
-          if (filtered.some(m => m.id === data.message.id)) return filtered;
-          return [...filtered, data.message];
+          if (prev.some(m => m.id === data.message.id)) return prev;
+          return [...prev, data.message];
         });
       }
     } catch {
-      // Remove optimistic message on error
-      setMessages(prev => prev.filter(m => m.id !== tempId));
       setInput(content);
     } finally {
       setSending(false);
@@ -146,9 +128,9 @@ export default function Chat() {
   const initials = otherName?.split(' ').map(n => n[0]).join('').slice(0, 2).toUpperCase() || 'U';
 
   return (
-    <div className="flex-1 flex flex-col bg-background min-h-0">
+    <div className="flex-1 flex flex-col bg-white min-h-0">
       {/* Chat header */}
-      <div className="flex items-center gap-3 px-4 pt-2 pb-3 border-b border-border/50 bg-background relative z-10 pt-[env(safe-area-inset-top)]">
+      <div className="flex items-center gap-3 px-4 pt-2 pb-3 border-b border-border/50 bg-white relative z-10">
         <button onClick={() => navigate('/messages')} className="p-1 -ml-1">
           <ArrowLeft size={20} className="text-primary" />
         </button>
@@ -257,16 +239,13 @@ export default function Chat() {
                 )}
                 <div className={`flex ${isMe ? 'justify-end' : 'justify-start'}`}>
                   <div
-                    className={`max-w-[75%] px-3.5 py-2.5 text-[13px] leading-relaxed flex items-center gap-1.5 ${
+                    className={`max-w-[75%] px-3.5 py-2.5 text-[13px] leading-relaxed ${
                       isMe
                         ? 'bg-primary text-white rounded-2xl rounded-br-md'
                         : 'bg-muted text-foreground rounded-2xl rounded-bl-md'
-                    } ${msg._sending ? 'opacity-70' : ''}`}
+                    }`}
                   >
                     {msg.content}
-                    {msg._sending && (
-                      <div className="w-3 h-3 border-1.5 border-current border-t-transparent rounded-full animate-spin flex-shrink-0" />
-                    )}
                   </div>
                 </div>
               </div>
@@ -303,7 +282,7 @@ export default function Chat() {
       </AnimatePresence>
 
       {/* Input */}
-      <div className="px-4 pt-2 pb-6 border-t border-border/50 bg-background">
+      <div className="px-4 pt-2 pb-6 border-t border-border/50 bg-white">
         <div className="flex items-center gap-2.5">
           <input
             value={input}

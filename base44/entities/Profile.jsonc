@@ -56,14 +56,6 @@
     "onboarding_complete": {
       "type": "boolean",
       "default": false
-    },
-    "is_active": {
-      "type": "boolean",
-      "default": true
-    },
-    "scheduled_deletion_date": {
-      "type": "string",
-      "format": "date-time"
     }
   },
   "required": [

@@ -14,8 +14,10 @@ import ProtectedRoute from '@/components/ProtectedRoute';
 // Page imports
 import Splash from './pages/Splash';
 import Landing from './pages/Landing';
+import Login from '@/pages/Login';
 import Register from '@/pages/Register';
 import ForgotPassword from '@/pages/ForgotPassword';
+import ResetPassword from '@/pages/ResetPassword';
 import AccountType from './pages/AccountType';
 import ProfileSetup from './pages/ProfileSetup';
 import AppLayout from './components/AppLayout';
@@ -24,8 +26,7 @@ import Matches from './pages/Matches';
 import Messages from './pages/Messages';
 import Chat from './pages/Chat';
 import ProfilePage from './pages/ProfilePage';
-import ProfileSettings from './pages/ProfileSettings';
-import AccountSecurity from './pages/AccountSecurity';
+import PostLogin from './pages/PostLogin';
 import PrivacyPolicy from './pages/PrivacyPolicy';
 import PostJob from './pages/PostJob';
 
@@ -70,8 +71,11 @@ const AuthenticatedApp = () => {
       {/* Public routes */}
       <Route path="/" element={<Splash />} />
       <Route path="/landing" element={<Landing />} />
+      <Route path="/login" element={<Login />} />
       <Route path="/register" element={<Register />} />
       <Route path="/forgot-password" element={<ForgotPassword />} />
+      <Route path="/reset-password" element={<ResetPassword />} />
+      <Route path="/post-login" element={<PostLogin />} />
       <Route path="/privacy-policy" element={<PrivacyPolicy />} />
 
       {/* Protected routes - onboarding (no layout) */}
@@ -86,8 +90,6 @@ const AuthenticatedApp = () => {
           <Route path="/messages" element={<Messages />} />
           <Route path="/messages/:matchId" element={<Chat />} />
           <Route path="/profile" element={<ProfilePage />} />
-          <Route path="/profile-settings" element={<ProfileSettings />} />
-          <Route path="/account-security" element={<AccountSecurity />} />
           <Route path="/post-job" element={<PostJob />} />
         </Route>
       </Route>
