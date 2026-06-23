@@ -1,22 +1,26 @@
 import { useState, useEffect, useRef } from 'react';
 import { useNavigate, useOutletContext } from 'react-router-dom';
-import { Camera, Linkedin, Briefcase, MapPin, DollarSign, X, Plus, LogOut, Pencil, Check, Building2, ChevronDown } from 'lucide-react';
+import { Camera, Linkedin, Briefcase, MapPin, DollarSign, X, Plus, LogOut, Pencil, Check, Building2, ChevronDown, Menu } from 'lucide-react';
 import ResumeLink from '@/components/ResumeLink';
 import Logo from '@/components/Logo';
 import PickerSheet from '@/components/PickerSheet';
 import LocationAutocomplete from '@/components/LocationAutocomplete';
 import ResumeUpload from '@/components/ResumeUpload';
+import MenuDrawer from '@/components/MenuDrawer';
 import { base44 } from '@/api/base44Client';
+import { useAuth } from '@/lib/AuthContext';
 import { yearsOptions } from '@/lib/profileConstants';
 
 export default function ProfilePage() {
   const navigate = useNavigate();
   const { profile, setProfile } = useOutletContext();
+  const { user } = useAuth();
   const fileInputRef = useRef(null);
   const [editing, setEditing] = useState(false);
   const [saving, setSaving] = useState(false);
   const [uploadingPic, setUploadingPic] = useState(false);
   const [yearsPickerOpen, setYearsPickerOpen] = useState(false);
+  const [menuOpen, setMenuOpen] = useState(false);
 
 
   const [fullName, setFullName] = useState('');
@@ -120,24 +124,32 @@ export default function ProfilePage() {
       {/* Header */}
       <div className="flex items-center justify-between px-5 pt-2 pb-3 relative z-10">
         <Logo size="sm" />
-        {!editing ? (
+        <div className="flex items-center gap-2">
+          {!editing ? (
+            <button
+              onClick={() => setEditing(true)}
+              className="flex items-center gap-1.5 text-[13px] font-medium text-primary px-4 py-2.5 rounded-xl hover:bg-brand-green-bg transition-colors cursor-pointer relative z-30 min-h-[44px]"
+            >
+              <Pencil size={15} />
+              Edit
+            </button>
+          ) : (
+            <button
+              onClick={handleSave}
+              disabled={saving}
+              className="flex items-center gap-1.5 text-[13px] font-medium text-primary px-4 py-2.5 rounded-xl hover:bg-brand-green-bg transition-colors disabled:opacity-40 cursor-pointer relative z-30 min-h-[44px]"
+            >
+              <Check size={14} />
+              {saving ? 'Saving...' : 'Save'}
+            </button>
+          )}
           <button
-            onClick={() => setEditing(true)}
-            className="flex items-center gap-1.5 text-[13px] font-medium text-primary px-4 py-2.5 rounded-xl hover:bg-brand-green-bg transition-colors cursor-pointer relative z-30 min-h-[44px]"
+            onClick={() => setMenuOpen(true)}
+            className="flex items-center justify-center text-[13px] font-medium text-primary px-3 py-2.5 rounded-xl hover:bg-brand-green-bg transition-colors cursor-pointer relative z-30 min-h-[44px]"
           >
-            <Pencil size={15} />
-            Edit
+            <Menu size={18} />
           </button>
-        ) : (
-          <button
-            onClick={handleSave}
-            disabled={saving}
-            className="flex items-center gap-1.5 text-[13px] font-medium text-primary px-4 py-2.5 rounded-xl hover:bg-brand-green-bg transition-colors disabled:opacity-40 cursor-pointer relative z-30 min-h-[44px]"
-          >
-            <Check size={14} />
-            {saving ? 'Saving...' : 'Save'}
-          </button>
-        )}
+        </div>
       </div>
 
       {/* Profile header */}
@@ -384,6 +396,13 @@ export default function ProfilePage() {
         items={yearsOptions}
         value={yearsExperience}
         onChange={setYearsExperience}
+      />
+
+      <MenuDrawer
+        open={menuOpen}
+        onClose={() => setMenuOpen(false)}
+        user={user}
+        profile={profile}
       />
     </div>
   );
