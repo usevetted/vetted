@@ -108,28 +108,32 @@ export default function ProfilePage() {
   const handleLogout = async () => {
     setLoggingOut(true);
     
-    // Create a timeout promise that resolves after 5 seconds
-    const timeoutPromise = new Promise((resolve) => {
-      setTimeout(() => resolve('timeout'), 5000);
-    });
-    
-    // Race between logout and timeout
-    const result = await Promise.race([
-      base44.auth.logout().then(() => 'success').catch(() => 'error'),
-      timeoutPromise
-    ]);
-    
-    // Always clear session and redirect, regardless of the result
     try {
-      // Clear any stored tokens/session data
-      sessionStorage.clear();
-      localStorage.removeItem('auth_token');
-    } catch {
-      // ignore
+      // Create timeout promise (5 seconds)
+      const timeoutPromise = new Promise((_, reject) => {
+        setTimeout(() => reject(new Error('Logout timeout')), 5000);
+      });
+      
+      // Wrap logout in Promise since it may not return one
+      const logoutPromise = Promise.resolve(base44.auth.logout());
+      
+      // Race between logout and timeout
+      await Promise.race([logoutPromise, timeoutPromise]);
+    } catch (error) {
+      // Log timeout or other errors, but proceed with local cleanup
+      console.error('Logout error:', error);
+    } finally {
+      // Always clear local session data
+      try {
+        sessionStorage.clear();
+        localStorage.removeItem('auth_token');
+      } catch {
+        // ignore
+      }
+      
+      // Force redirect to landing page
+      window.location.href = '/landing';
     }
-    
-    // Force redirect to landing page
-    window.location.href = '/landing';
   };
 
   const initials = profile?.full_name?.split(' ').map(n => n[0]).join('').slice(0, 2).toUpperCase() || 'U';
