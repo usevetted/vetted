@@ -126,7 +126,7 @@ export default function PostJob() {
 
   const inputClass = "w-full h-[44px] border border-input rounded-xl px-3.5 text-[14px] text-foreground bg-muted/30 focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all";
   const labelClass = "text-[12px] font-medium text-foreground/70 mb-1.5 block";
-  const errorClass = "text-[11px] text-destructive mt-1";
+  const errorClass = "text-[12px] text-destructive mt-1";
 
   return (
     <div className="flex-1 flex flex-col overflow-y-auto no-scrollbar min-h-0">
@@ -183,7 +183,7 @@ export default function PostJob() {
         <div className="flex items-center justify-between p-3.5 bg-muted/30 rounded-xl">
           <div>
             <div className="text-[13px] font-medium text-foreground">Remote eligible</div>
-            <div className="text-[11px] text-muted-foreground">Candidates can work from anywhere</div>
+            <div className="text-[12px] text-muted-foreground">Candidates can work from anywhere</div>
           </div>
           <button
             onClick={() => setRemote(!remote)}
@@ -266,7 +266,7 @@ export default function PostJob() {
 
       {existingJobs.length > 0 && (
         <div className="px-5 pb-8">
-          <h3 className="text-[11px] font-semibold text-muted-foreground uppercase tracking-wider mb-3">Your Active Listings</h3>
+          <h3 className="text-[12px] font-semibold text-muted-foreground uppercase tracking-wider mb-3">Your Active Listings</h3>
           <div className="space-y-2">
             {existingJobs.map(job => (
               <div key={job.id} className="flex items-center gap-3 p-3 rounded-2xl border border-border/60">

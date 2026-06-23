@@ -23,7 +23,7 @@ export default function Logo({ size = 'md', tagline, taglineText, showBar = fals
           initial={animate ? { opacity: 0, y: 8 } : false}
           animate={animate ? { opacity: 1, y: 0 } : {}}
           transition={animate ? { duration: 0.6, delay: 0.3, ease: [0.16, 1, 0.3, 1] } : {}}
-          className="text-[11px] text-muted-foreground tracking-[0.08em] mt-1.5"
+          className="text-[12px] text-muted-foreground tracking-[0.08em] mt-1.5"
         >
           {taglineText || 'Smarter hiring. Mutual fit.'}
         </motion.p>

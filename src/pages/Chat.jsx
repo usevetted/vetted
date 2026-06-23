@@ -148,7 +148,7 @@ export default function Chat() {
         </button>
         <div className="flex-1 min-w-0">
           <div className="text-[14px] font-semibold text-foreground truncate">{otherName}</div>
-          <div className="text-[11px] text-primary flex items-center gap-1">
+          <div className="text-[12px] text-primary flex items-center gap-1">
             <span className="w-1.5 h-1.5 rounded-full bg-primary inline-block" />
             Online
           </div>
@@ -217,7 +217,7 @@ export default function Chat() {
 
       {/* Messages */}
       <div className="flex-1 overflow-y-auto no-scrollbar px-4 py-4 flex flex-col gap-2.5 min-h-0">
-        <div className="text-[10px] text-muted-foreground/40 text-center mb-2">
+        <div className="text-[12px] text-muted-foreground/40 text-center mb-2">
           {new Date(match.created_date).toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' })}
         </div>
         {messages.length === 0 ? (
@@ -233,7 +233,7 @@ export default function Chat() {
             return (
               <div key={msg.id || i}>
                 {showTime && (
-                  <div className="text-[10px] text-muted-foreground/40 text-center my-3">
+                  <div className="text-[12px] text-muted-foreground/40 text-center my-3">
                     {new Date(msg.created_date).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}
                   </div>
                 )}
@@ -268,8 +268,8 @@ export default function Chat() {
               <ShieldAlert size={16} className="text-destructive flex-shrink-0 mt-0.5" />
               <div className="flex-1">
                 <p className="text-[12px] font-medium text-destructive">Message Blocked</p>
-                <p className="text-[11px] text-destructive/80 mt-0.5">{moderationWarning}</p>
-                <p className="text-[10px] text-muted-foreground mt-1">
+                <p className="text-[12px] text-destructive/80 mt-0.5">{moderationWarning}</p>
+                <p className="text-[12px] text-muted-foreground mt-1">
                   Repeated violations may result in account suspension. You can also report this conversation.
                 </p>
               </div>

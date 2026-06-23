@@ -1,11 +1,12 @@
 import { useState, useEffect, useRef } from 'react';
 import { useNavigate, useOutletContext } from 'react-router-dom';
-import { Camera, Linkedin, Briefcase, MapPin, DollarSign, X, Plus, LogOut, Pencil, Check, Building2, ChevronDown } from 'lucide-react';
+import { Camera, Linkedin, Briefcase, MapPin, DollarSign, X, Plus, LogOut, Pencil, Check, Building2, ChevronDown, Trash2 } from 'lucide-react';
 import ResumeLink from '@/components/ResumeLink';
 import Logo from '@/components/Logo';
 import PickerSheet from '@/components/PickerSheet';
 import LocationAutocomplete from '@/components/LocationAutocomplete';
 import ResumeUpload from '@/components/ResumeUpload';
+import DeleteAccountSheet from '@/components/DeleteAccountSheet';
 import { base44 } from '@/api/base44Client';
 import { yearsOptions } from '@/lib/profileConstants';
 
@@ -17,6 +18,7 @@ export default function ProfilePage() {
   const [saving, setSaving] = useState(false);
   const [uploadingPic, setUploadingPic] = useState(false);
   const [yearsPickerOpen, setYearsPickerOpen] = useState(false);
+  const [deleteOpen, setDeleteOpen] = useState(false);
 
 
   const [fullName, setFullName] = useState('');
@@ -110,6 +112,21 @@ export default function ProfilePage() {
     window.location.href = '/landing';
   };
 
+  const handleDeleteAccount = async () => {
+    try {
+      await base44.entities.Profile.delete(profile.id);
+    } catch {
+      // ignore
+    }
+    try {
+      await base44.auth.logout();
+    } catch {
+      // ignore
+    }
+    sessionStorage.setItem('just_logged_out', 'true');
+    window.location.href = '/landing';
+  };
+
   const initials = profile?.full_name?.split(' ').map(n => n[0]).join('').slice(0, 2).toUpperCase() || 'U';
 
   const inputClass = "w-full h-[44px] border border-input rounded-xl px-3.5 text-[14px] text-foreground bg-muted/30 focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all";
@@ -193,7 +210,7 @@ export default function ProfilePage() {
               <div className="text-[13px] font-medium text-foreground">
                 {isRecruiter ? 'Currently recruiting' : 'Currently employed'}
               </div>
-              <div className="text-[11px] text-muted-foreground">
+              <div className="text-[12px] text-muted-foreground">
                 {isRecruiter ? 'Active recruiter at a company' : 'I have a current role'}
               </div>
             </div>
@@ -295,20 +312,20 @@ export default function ProfilePage() {
               <div className="text-[12px] font-medium text-primary capitalize">
                 {isRecruiter ? 'Recruiter Account' : 'Job Seeker Account'}
               </div>
-              <div className="text-[11px] text-muted-foreground">{profile?.years_experience || 'Experience not specified'}</div>
+              <div className="text-[12px] text-muted-foreground">{profile?.years_experience || 'Experience not specified'}</div>
             </div>
           </div>
 
           {bio && (
             <div>
-              <h3 className="text-[11px] font-semibold text-muted-foreground uppercase tracking-wider mb-2">About</h3>
+              <h3 className="text-[12px] font-semibold text-muted-foreground uppercase tracking-wider mb-2">About</h3>
               <p className="text-[13px] text-foreground/80 leading-relaxed">{bio}</p>
             </div>
           )}
 
           {skills && skills.length > 0 && (
             <div>
-              <h3 className="text-[11px] font-semibold text-muted-foreground uppercase tracking-wider mb-2">Skills</h3>
+              <h3 className="text-[12px] font-semibold text-muted-foreground uppercase tracking-wider mb-2">Skills</h3>
               <div className="flex flex-wrap gap-2">
                 {skills.map((skill, i) => (
                   <span key={i} className="text-[12px] font-medium px-3 py-1.5 rounded-full bg-brand-green-light text-primary">
@@ -320,7 +337,7 @@ export default function ProfilePage() {
           )}
 
           <div>
-            <h3 className="text-[11px] font-semibold text-muted-foreground uppercase tracking-wider mb-2">Details</h3>
+            <h3 className="text-[12px] font-semibold text-muted-foreground uppercase tracking-wider mb-2">Details</h3>
             <div className="space-y-2">
               {isEmployed && currentCompany && (
                 <div className="flex items-center gap-3">
@@ -345,7 +362,7 @@ export default function ProfilePage() {
 
           {linkedinUrl && (
             <div>
-              <h3 className="text-[11px] font-semibold text-muted-foreground uppercase tracking-wider mb-2">LinkedIn</h3>
+              <h3 className="text-[12px] font-semibold text-muted-foreground uppercase tracking-wider mb-2">LinkedIn</h3>
               <a
                 href={linkedinUrl}
                 target="_blank"
@@ -357,7 +374,7 @@ export default function ProfilePage() {
                 </div>
                 <div className="flex-1 min-w-0">
                   <div className="text-[12px] font-medium text-foreground">View LinkedIn Profile</div>
-                  <div className="text-[11px] text-muted-foreground truncate">{linkedinUrl}</div>
+                  <div className="text-[12px] text-muted-foreground truncate">{linkedinUrl}</div>
                 </div>
               </a>
             </div>
@@ -374,6 +391,14 @@ export default function ProfilePage() {
             <LogOut size={16} />
             Sign Out
           </button>
+
+          <button
+            onClick={() => setDeleteOpen(true)}
+            className="w-full h-[48px] border border-destructive/20 rounded-2xl text-[14px] font-medium text-destructive/70 hover:bg-destructive/5 transition-colors flex items-center justify-center gap-2 mt-2"
+          >
+            <Trash2 size={16} />
+            Delete Account
+          </button>
         </div>
       )}
 
@@ -384,6 +409,11 @@ export default function ProfilePage() {
         items={yearsOptions}
         value={yearsExperience}
         onChange={setYearsExperience}
+      />
+      <DeleteAccountSheet
+        open={deleteOpen}
+        onClose={() => setDeleteOpen(false)}
+        onConfirm={handleDeleteAccount}
       />
     </div>
   );

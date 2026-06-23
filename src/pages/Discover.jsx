@@ -8,6 +8,7 @@ import MatchOverlay from '@/components/MatchOverlay';
 import FilterSheet from '@/components/FilterSheet';
 import { base44 } from '@/api/base44Client';
 import LoadingScreen from '@/components/LoadingScreen';
+import PullToRefresh from '@/components/PullToRefresh';
 
 export default function Discover() {
   const navigate = useNavigate();
@@ -129,7 +130,7 @@ export default function Discover() {
   const initials = profile?.full_name?.split(' ').map(n => n[0]).join('').slice(0, 2).toUpperCase() || 'U';
 
   return (
-    <div className="flex-1 flex flex-col bg-secondary/30 min-h-0 relative">
+    <PullToRefresh onRefresh={loadCards} className="flex-1 flex flex-col bg-secondary/30 min-h-0 relative">
       {/* Header */}
       <div className="flex items-center justify-between px-5 pt-2 pb-3 relative z-10">
         <Logo size="sm" />
@@ -150,7 +151,7 @@ export default function Discover() {
           </button>
           <button
             onClick={() => navigate('/profile')}
-            className="w-11 h-11 rounded-full bg-brand-green-light flex items-center justify-center text-[11px] font-semibold text-primary overflow-hidden border border-border/50 shadow-sm cursor-pointer"
+            className="w-11 h-11 rounded-full bg-brand-green-light flex items-center justify-center text-[12px] font-semibold text-primary overflow-hidden border border-border/50 shadow-sm cursor-pointer"
           >
             {profile?.profile_picture ? (
               <img src={profile.profile_picture} alt="" className="w-full h-full object-cover" />
@@ -238,7 +239,7 @@ export default function Discover() {
         setFilters={setFilters}
         isRecruiter={isRecruiter}
       />
-    </div>
+    </PullToRefresh>
   );
 }
 

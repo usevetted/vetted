@@ -13,7 +13,7 @@ export default function ExpandableText({ text, lines = 3, className = '' }) {
         <button
           onClick={(e) => { e.stopPropagation(); setExpanded(!expanded); }}
           onPointerDown={(e) => e.stopPropagation()}
-          className="text-[11px] font-medium text-primary mt-1 active:opacity-60"
+          className="text-[12px] font-medium text-primary mt-1 active:opacity-60"
         >
           {expanded ? 'Read less' : 'Read more'}
         </button>

@@ -98,6 +98,12 @@
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
     text-rendering: optimizeLegibility;
+    overscroll-behavior-y: none;
+  }
+
+  button, nav, [role="button"], a, .nav-item {
+    user-select: none;
+    -webkit-user-select: none;
   }
 }
 

@@ -1,9 +1,10 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { useNavigate, useOutletContext } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { MessageCircle, Linkedin } from 'lucide-react';
 import { base44 } from '@/api/base44Client';
 import LoadingScreen from '@/components/LoadingScreen';
+import PullToRefresh from '@/components/PullToRefresh';
 
 export default function Matches() {
   const navigate = useNavigate();
@@ -11,22 +12,24 @@ export default function Matches() {
   const [matches, setMatches] = useState([]);
   const [loading, setLoading] = useState(true);
 
-  useEffect(() => {
-    const load = async () => {
-      if (!profile) return;
-      try {
-        const m1 = await base44.entities.Match.filter({ profile1_id: profile.id, status: 'active' });
-        const m2 = await base44.entities.Match.filter({ profile2_id: profile.id, status: 'active' });
-        const all = [...m1, ...m2].sort((a, b) => new Date(b.created_date) - new Date(a.created_date));
-        setMatches(all);
-      } catch {
-        // ignore
-      } finally {
-        setLoading(false);
-      }
-    };
-    load();
+  const load = useCallback(async () => {
+    if (!profile) return;
+    setLoading(true);
+    try {
+      const m1 = await base44.entities.Match.filter({ profile1_id: profile.id, status: 'active' });
+      const m2 = await base44.entities.Match.filter({ profile2_id: profile.id, status: 'active' });
+      const all = [...m1, ...m2].sort((a, b) => new Date(b.created_date) - new Date(a.created_date));
+      setMatches(all);
+    } catch {
+      // ignore
+    } finally {
+      setLoading(false);
+    }
   }, [profile]);
+
+  useEffect(() => {
+    load();
+  }, [load]);
 
   const getMatchDisplay = (match) => {
     const isProfile1 = match.profile1_id === profile.id;
@@ -47,7 +50,7 @@ export default function Matches() {
         </p>
       </div>
 
-      <div className="flex-1 overflow-y-auto no-scrollbar px-4 pb-6 min-h-0">
+      <PullToRefresh onRefresh={load} className="flex-1 overflow-y-auto no-scrollbar px-4 pb-6 min-h-0">
         {loading ? (
           <LoadingScreen fullscreen={false} />
         ) : matches.length === 0 ? (
@@ -104,10 +107,10 @@ export default function Matches() {
                   {/* Info */}
                   <div className="p-3">
                     <div className="text-[14px] font-semibold text-foreground truncate">{firstName}</div>
-                    <div className="text-[11px] text-muted-foreground truncate mt-0.5">
+                    <div className="text-[12px] text-muted-foreground truncate mt-0.5">
                       {match.job_title}{match.company_name ? ` · ${match.company_name}` : ''}
                     </div>
-                    <div className="flex items-center gap-1 mt-2 text-[11px] text-primary font-medium">
+                    <div className="flex items-center gap-1 mt-2 text-[12px] text-primary font-medium">
                       <MessageCircle size={12} />
                       <span>Message</span>
                     </div>
@@ -117,7 +120,7 @@ export default function Matches() {
             })}
           </div>
         )}
-      </div>
+      </PullToRefresh>
     </div>
   );
 }

@@ -35,7 +35,7 @@ export default function Landing() {
           >
             Sign Up
           </button>
-          <p className="text-[11px] text-muted-foreground/50 mt-6">
+          <p className="text-[12px] text-muted-foreground/50 mt-6">
             By continuing you agree to our <Link to="/privacy-policy" className="underline hover:text-muted-foreground transition-colors">Privacy Policy</Link>
           </p>
         </motion.div>
