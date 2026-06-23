@@ -2,7 +2,6 @@ import { useState, useEffect } from 'react';
 import { useNavigate, useOutletContext } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { MessageCircle, Linkedin } from 'lucide-react';
-import Logo from '@/components/Logo';
 import { base44 } from '@/api/base44Client';
 import LoadingScreen from '@/components/LoadingScreen';
 
@@ -41,17 +40,14 @@ export default function Matches() {
 
   return (
     <div className="flex-1 flex flex-col min-h-0">
-      <div className="flex items-center justify-between px-5 pt-2 pb-3 flex-shrink-0">
-        <Logo size="sm" />
-      </div>
-      <div className="px-5 pb-3 flex-shrink-0">
+      <div className="px-5 pt-3 pb-2 flex-shrink-0">
         <h1 className="text-[22px] font-semibold text-foreground">Matches</h1>
         <p className="text-[13px] text-muted-foreground mt-0.5">
           {matches.length > 0 ? `${matches.length} mutual ${matches.length === 1 ? 'match' : 'matches'}` : 'Your matches will appear here'}
         </p>
       </div>
 
-      <div className="flex-1 overflow-y-auto no-scrollbar px-5 pb-6 min-h-0">
+      <div className="flex-1 overflow-y-auto no-scrollbar px-4 pb-6 min-h-0">
         {loading ? (
           <LoadingScreen fullscreen={false} />
         ) : matches.length === 0 ? (
@@ -69,9 +65,10 @@ export default function Matches() {
             </button>
           </div>
         ) : (
-          <div className="space-y-2.5">
+          <div className="grid grid-cols-2 gap-3">
             {matches.map((match, i) => {
               const { otherName, otherPicture, otherLinkedin, otherRole, initials } = getMatchDisplay(match);
+              const firstName = otherName?.split(' ')[0] || '';
               return (
                 <motion.button
                   key={match.id}
@@ -79,34 +76,42 @@ export default function Matches() {
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ duration: 0.3, delay: i * 0.04 }}
                   onClick={() => navigate(`/messages/${match.id}`)}
-                  className="w-full flex items-center gap-3 p-3.5 rounded-2xl bg-white border border-border/60 hover:border-primary/20 hover:shadow-sm transition-all text-left"
+                  className="flex flex-col rounded-2xl bg-white border border-border/60 overflow-hidden hover:border-primary/20 hover:shadow-md transition-all text-left group"
                 >
-                  {otherPicture ? (
-                    <img src={otherPicture} alt={otherName} className="w-12 h-12 rounded-full object-cover flex-shrink-0" />
-                  ) : (
-                    <div className="w-12 h-12 rounded-full bg-brand-green-light flex items-center justify-center text-[14px] font-semibold text-primary flex-shrink-0">
-                      {initials}
+                  {/* Square photo / initials */}
+                  <div className="relative aspect-square w-full bg-gradient-to-br from-brand-green-bg to-secondary/40 flex items-center justify-center overflow-hidden">
+                    {otherPicture ? (
+                      <img src={otherPicture} alt={otherName} className="w-full h-full object-cover" />
+                    ) : (
+                      <div className="text-[28px] font-semibold text-primary/70">
+                        {initials}
+                      </div>
+                    )}
+                    {/* LinkedIn badge */}
+                    {otherLinkedin && (
+                      <a
+                        href={otherLinkedin}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        onClick={(e) => e.stopPropagation()}
+                        className="absolute top-2 right-2 w-8 h-8 rounded-lg bg-white/90 glass flex items-center justify-center hover:bg-white transition-colors shadow-sm"
+                      >
+                        <Linkedin size={15} className="text-linkedin" />
+                      </a>
+                    )}
+                  </div>
+
+                  {/* Info */}
+                  <div className="p-3">
+                    <div className="text-[14px] font-semibold text-foreground truncate">{firstName}</div>
+                    <div className="text-[11px] text-muted-foreground truncate mt-0.5">
+                      {match.job_title}{match.company_name ? ` · ${match.company_name}` : ''}
                     </div>
-                  )}
-                  <div className="flex-1 min-w-0">
-                    <div className="text-[14px] font-medium text-foreground">{otherName}</div>
-                    <div className="text-[12px] text-muted-foreground truncate">
-                      {match.job_title}
-                      {match.company_name ? ` · ${match.company_name}` : ''}
+                    <div className="flex items-center gap-1 mt-2 text-[11px] text-primary font-medium">
+                      <MessageCircle size={12} />
+                      <span>Message</span>
                     </div>
                   </div>
-                  {otherLinkedin && (
-                    <a
-                      href={otherLinkedin}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      onClick={(e) => e.stopPropagation()}
-                      className="w-8 h-8 rounded-lg bg-linkedin/10 flex items-center justify-center hover:bg-linkedin/20 transition-colors flex-shrink-0"
-                    >
-                      <Linkedin size={15} className="text-linkedin" />
-                    </a>
-                  )}
-                  <MessageCircle size={18} className="text-muted-foreground/40 flex-shrink-0" />
                 </motion.button>
               );
             })}

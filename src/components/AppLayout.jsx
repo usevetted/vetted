@@ -22,10 +22,12 @@ export default function AppLayout() {
   const [retryCount, setRetryCount] = useState(0);
 
   useEffect(() => {
-    const loadProfile = async () => {
+    const loadProfile = async (attempt = 0) => {
       if (!user) return;
-      setLoading(true);
-      setError(false);
+      if (attempt === 0) {
+        setLoading(true);
+        setError(false);
+      }
       try {
         const profiles = await base44.entities.Profile.filter({ created_by_id: user.id });
         if (profiles.length === 0 || !profiles[0].onboarding_complete) {
@@ -38,11 +40,15 @@ export default function AppLayout() {
         } catch {
           // ignore
         }
-      } catch {
-        setError(true);
-      } finally {
-        setLoading(false);
+      } catch (err) {
+        if (attempt < 2) {
+          setTimeout(() => loadProfile(attempt + 1), 800);
+        } else {
+          setError(true);
+        }
+        return;
       }
+      setLoading(false);
     };
     loadProfile();
   }, [user, navigate, retryCount]);
