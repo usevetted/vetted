@@ -55,7 +55,7 @@ export default function Messages() {
     load();
   }, [load]);
 
-  const formatTime = (dateStr) => {
+  const formatTime = useCallback((dateStr) => {
     if (!dateStr) return '';
     const date = new Date(dateStr);
     const now = new Date();
@@ -66,7 +66,7 @@ export default function Messages() {
       return date.toLocaleDateString('en-US', { weekday: 'short' });
     }
     return date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
-  };
+  }, []);
 
   return (
     <div className="flex-1 flex flex-col min-h-0">

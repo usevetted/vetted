@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { motion, useMotionValue, useTransform } from 'framer-motion';
 import { MapPin, Linkedin, Building2 } from 'lucide-react';
 import ResumeLink from '@/components/ResumeLink';

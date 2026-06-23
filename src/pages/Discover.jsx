@@ -1,11 +1,12 @@
 import { useState, useEffect, useCallback, useMemo } from 'react';
 import { useNavigate, useOutletContext } from 'react-router-dom';
 import { AnimatePresence, motion } from 'framer-motion';
-import { X, Heart, Star, SlidersHorizontal, Plus } from 'lucide-react';
+import { X, Heart, Star, SlidersHorizontal } from 'lucide-react';
 import Logo from '@/components/Logo';
 import SwipeCard from '@/components/SwipeCard';
 import MatchOverlay from '@/components/MatchOverlay';
 import FilterSheet from '@/components/FilterSheet';
+import PostJobDropdown from '@/components/PostJobDropdown';
 import { base44 } from '@/api/base44Client';
 import LoadingScreen from '@/components/LoadingScreen';
 import PullToRefresh from '@/components/PullToRefresh';
@@ -20,7 +21,7 @@ export default function Discover() {
   const [filterOpen, setFilterOpen] = useState(false);
   const [filters, setFilters] = useState({ remoteOnly: false, inPersonOnly: false, openToWork: false, sortBy: 'newest', distance: 50, location: '' });
 
-  const isRecruiter = profile?.account_type === 'recruiter';
+  const isRecruiter = useMemo(() => profile?.account_type === 'recruiter', [profile?.account_type]);
 
   const cards = useMemo(() => {
     let filtered = [...allCards];
@@ -127,7 +128,7 @@ export default function Discover() {
     setTriggerAction(action);
   };
 
-  const initials = profile?.full_name?.split(' ').map(n => n[0]).join('').slice(0, 2).toUpperCase() || 'U';
+  const initials = useMemo(() => profile?.full_name?.split(' ').map(n => n[0]).join('').slice(0, 2).toUpperCase() || 'U', [profile?.full_name]);
 
   return (
     <PullToRefresh onRefresh={loadCards} className="flex-1 flex flex-col bg-secondary/30 min-h-0 relative">
@@ -135,14 +136,7 @@ export default function Discover() {
       <div className="flex items-center justify-between px-5 pt-2 pb-3 relative z-10">
         <Logo size="sm" />
         <div className="flex items-center gap-2">
-          {isRecruiter && (
-            <button
-              onClick={() => navigate('/post-job')}
-              className="w-11 h-11 rounded-full bg-primary flex items-center justify-center shadow-sm hover:bg-primary/90 transition-colors cursor-pointer"
-            >
-              <Plus size={18} className="text-white" />
-            </button>
-          )}
+          {isRecruiter && <PostJobDropdown />}
           <button
             onClick={() => setFilterOpen(true)}
             className="w-11 h-11 rounded-full bg-white border border-border/50 flex items-center justify-center shadow-sm hover:bg-muted transition-colors cursor-pointer"
@@ -151,7 +145,7 @@ export default function Discover() {
           </button>
           <button
             onClick={() => navigate('/profile')}
-            className="w-11 h-11 rounded-full bg-brand-green-light flex items-center justify-center text-[12px] font-semibold text-primary overflow-hidden border border-border/50 shadow-sm cursor-pointer"
+            className="w-11 h-11 rounded-full bg-brand-green-light flex items-center justify-center text-[12px] font-semibold text-primary overflow-hidden border border-border/50 shadow-sm cursor-pointer hover:shadow-md transition-shadow"
           >
             {profile?.profile_picture ? (
               <img src={profile.profile_picture} alt="" className="w-full h-full object-cover" />

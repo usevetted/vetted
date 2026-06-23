@@ -1,12 +1,12 @@
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useRef, useCallback } from 'react';
 import { useNavigate, useOutletContext } from 'react-router-dom';
-import { Camera, Linkedin, Briefcase, MapPin, DollarSign, X, Plus, LogOut, Pencil, Check, Building2, ChevronDown, Trash2 } from 'lucide-react';
+import { Camera, Linkedin, Briefcase, MapPin, DollarSign, X, Pencil, Check, Building2, ChevronDown } from 'lucide-react';
 import ResumeLink from '@/components/ResumeLink';
 import Logo from '@/components/Logo';
 import PickerSheet from '@/components/PickerSheet';
 import LocationAutocomplete from '@/components/LocationAutocomplete';
 import ResumeUpload from '@/components/ResumeUpload';
-import DeleteAccountSheet from '@/components/DeleteAccountSheet';
+import SettingsSheet from '@/components/SettingsSheet';
 import { base44 } from '@/api/base44Client';
 import { yearsOptions } from '@/lib/profileConstants';
 
@@ -18,8 +18,7 @@ export default function ProfilePage() {
   const [saving, setSaving] = useState(false);
   const [uploadingPic, setUploadingPic] = useState(false);
   const [yearsPickerOpen, setYearsPickerOpen] = useState(false);
-  const [deleteOpen, setDeleteOpen] = useState(false);
-
+  const [photoPreview, setPhotoPreview] = useState('');
 
   const [fullName, setFullName] = useState('');
   const [currentRole, setCurrentRole] = useState('');
@@ -61,6 +60,7 @@ export default function ProfilePage() {
     try {
       const { file_url } = await base44.integrations.Core.UploadFile({ file });
       setProfilePicture(file_url);
+      setPhotoPreview(file_url);
     } catch {
       // ignore
     } finally {
@@ -95,6 +95,7 @@ export default function ProfilePage() {
       });
       setProfile(updated);
       setEditing(false);
+      setPhotoPreview('');
     } catch {
       // ignore
     } finally {
@@ -102,7 +103,7 @@ export default function ProfilePage() {
     }
   };
 
-  const handleLogout = async () => {
+  const handleLogout = useCallback(async () => {
     try {
       await base44.auth.logout();
     } catch {
@@ -110,9 +111,9 @@ export default function ProfilePage() {
     }
     sessionStorage.setItem('just_logged_out', 'true');
     window.location.href = '/landing';
-  };
+  }, []);
 
-  const handleDeleteAccount = async () => {
+  const handleDeleteAccount = useCallback(async () => {
     try {
       await base44.entities.Profile.delete(profile.id);
     } catch {
@@ -125,7 +126,7 @@ export default function ProfilePage() {
     }
     sessionStorage.setItem('just_logged_out', 'true');
     window.location.href = '/landing';
-  };
+  }, [profile.id]);
 
   const initials = profile?.full_name?.split(' ').map(n => n[0]).join('').slice(0, 2).toUpperCase() || 'U';
 
@@ -137,24 +138,27 @@ export default function ProfilePage() {
       {/* Header */}
       <div className="flex items-center justify-between px-5 pt-2 pb-3 relative z-10">
         <Logo size="sm" />
-        {!editing ? (
-          <button
-            onClick={() => setEditing(true)}
-            className="flex items-center gap-1.5 text-[13px] font-medium text-primary px-4 py-2.5 rounded-xl hover:bg-brand-green-bg transition-colors cursor-pointer relative z-30 min-h-[44px]"
-          >
-            <Pencil size={15} />
-            Edit
-          </button>
-        ) : (
-          <button
-            onClick={handleSave}
-            disabled={saving}
-            className="flex items-center gap-1.5 text-[13px] font-medium text-primary px-4 py-2.5 rounded-xl hover:bg-brand-green-bg transition-colors disabled:opacity-40 cursor-pointer relative z-30 min-h-[44px]"
-          >
-            <Check size={14} />
-            {saving ? 'Saving...' : 'Save'}
-          </button>
-        )}
+        <div className="flex items-center gap-2">
+          {!editing ? (
+            <button
+              onClick={() => setEditing(true)}
+              className="flex items-center gap-1.5 text-[13px] font-medium text-primary px-4 py-2.5 rounded-xl hover:bg-brand-green-bg transition-colors cursor-pointer relative z-30 min-h-[44px]"
+            >
+              <Pencil size={15} />
+              Edit
+            </button>
+          ) : (
+            <button
+              onClick={handleSave}
+              disabled={saving}
+              className="flex items-center gap-1.5 text-[13px] font-medium text-primary px-4 py-2.5 rounded-xl hover:bg-brand-green-bg transition-colors disabled:opacity-40 cursor-pointer relative z-30 min-h-[44px]"
+            >
+              <Check size={14} />
+              {saving ? 'Saving...' : 'Save'}
+            </button>
+          )}
+          <SettingsSheet onLogout={handleLogout} onDeleteClick={handleDeleteAccount} profilePicture={editing ? photoPreview || profilePicture : profilePicture} initials={initials} />
+        </div>
       </div>
 
       {/* Profile header */}
@@ -280,9 +284,6 @@ export default function ProfilePage() {
                   </button>
                 </span>
               ))}
-              <span className="inline-flex items-center gap-1 text-[12px] font-medium px-3 py-1.5 rounded-full bg-muted text-muted-foreground">
-                <Plus size={12} /> Add
-              </span>
             </div>
             <input
               value={skillInput}
@@ -383,22 +384,6 @@ export default function ProfilePage() {
           {!isRecruiter && resumeUrl && (
             <ResumeLink url={resumeUrl} />
           )}
-
-          <button
-            onClick={handleLogout}
-            className="w-full h-[48px] border border-border rounded-2xl text-[14px] font-medium text-muted-foreground hover:bg-muted/30 transition-colors flex items-center justify-center gap-2 mt-4"
-          >
-            <LogOut size={16} />
-            Sign Out
-          </button>
-
-          <button
-            onClick={() => setDeleteOpen(true)}
-            className="w-full h-[48px] border border-destructive/20 rounded-2xl text-[14px] font-medium text-destructive/70 hover:bg-destructive/5 transition-colors flex items-center justify-center gap-2 mt-2"
-          >
-            <Trash2 size={16} />
-            Delete Account
-          </button>
         </div>
       )}
 
@@ -409,11 +394,6 @@ export default function ProfilePage() {
         items={yearsOptions}
         value={yearsExperience}
         onChange={setYearsExperience}
-      />
-      <DeleteAccountSheet
-        open={deleteOpen}
-        onClose={() => setDeleteOpen(false)}
-        onConfirm={handleDeleteAccount}
       />
     </div>
   );
