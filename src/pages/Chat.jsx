@@ -67,10 +67,14 @@ export default function Chat() {
         setSending(false);
         return;
       }
+      const isP1 = match.profile1_id === profile.id;
+      const recipientUserId = isP1 ? (match.profile2_user_id || '') : (match.profile1_user_id || '');
       setInput('');
       const created = await base44.entities.Message.create({
         match_id: matchId,
         sender_profile_id: profile.id,
+        sender_user_id: profile.created_by_id,
+        recipient_user_id: recipientUserId,
         content,
       });
       setMessages(prev => {
