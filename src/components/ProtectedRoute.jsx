@@ -18,20 +18,26 @@ export default function ProtectedRoute({ fallback = <DefaultFallback />, unauthe
     }
   }, [authChecked, isLoadingAuth, checkUserAuth]);
 
-  if (isLoadingAuth || !authChecked) {
+  // If auth check is complete, show content immediately (don't wait for isLoadingAuth)
+  if (authChecked) {
+    if (authError) {
+      if (authError.type === 'user_not_registered') {
+        return <UserNotRegisteredError />;
+      }
+      return unauthenticatedElement;
+    }
+
+    if (!isAuthenticated) {
+      return unauthenticatedElement;
+    }
+
+    return <Outlet />;
+  }
+
+  // Only show loading if auth check is still pending
+  if (isLoadingAuth) {
     return fallback;
   }
 
-  if (authError) {
-    if (authError.type === 'user_not_registered') {
-      return <UserNotRegisteredError />;
-    }
-    return unauthenticatedElement;
-  }
-
-  if (!isAuthenticated) {
-    return unauthenticatedElement;
-  }
-
-  return <Outlet />;
+  return fallback;
 }

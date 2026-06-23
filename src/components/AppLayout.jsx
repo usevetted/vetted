@@ -23,7 +23,11 @@ export default function AppLayout() {
 
   useEffect(() => {
     const loadProfile = async (attempt = 0) => {
-      if (!user) return;
+      // If user is null (signed out), exit immediately and let ProtectedRoute handle redirect
+      if (!user) {
+        setLoading(false);
+        return;
+      }
       if (attempt === 0) {
         setLoading(true);
         setError(false);
