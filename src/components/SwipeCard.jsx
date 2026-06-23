@@ -53,7 +53,7 @@ export default function SwipeCard({ card, type, onSwipe, isTop, index, triggerAc
         animate={exitDir ? exitVariants[exitDir] : {}}
         transition={exitDir ? { duration: 0.4, ease: [0.32, 0, 0.67, 0] } : { type: 'spring', stiffness: 300, damping: 30 }}
         onAnimationComplete={() => { if (exitDir) onSwipe(exitDir); }}
-        className="relative w-full h-full bg-white rounded-[24px] border border-border/40 shadow-[0_12px_50px_rgba(0,0,0,0.12)] overflow-hidden cursor-grab active:cursor-grabbing flex flex-col"
+        className="relative w-full h-full bg-card rounded-[24px] border border-border/40 shadow-[0_12px_50px_rgba(0,0,0,0.12)] overflow-hidden cursor-grab active:cursor-grabbing flex flex-col"
       >
         {isTop && (
           <>
@@ -65,13 +65,13 @@ export default function SwipeCard({ card, type, onSwipe, isTop, index, triggerAc
             </motion.div>
             <motion.div
               style={{ opacity: passOpacity }}
-              className={`${stampClass} left-8 border-pass text-pass bg-red-50/90 rotate-[15]`}
+              className={`${stampClass} left-8 border-pass text-pass bg-destructive/10 rotate-[15]`}
             >
               Pass
             </motion.div>
             <motion.div
               style={{ opacity: superOpacity }}
-              className={`${stampClass} left-1/2 -translate-x-1/2 border-gold text-gold bg-yellow-50/90 rotate-[-5]`}
+              className={`${stampClass} left-1/2 -translate-x-1/2 border-gold text-gold bg-gold/10 rotate-[-5]`}
             >
               Super
             </motion.div>
@@ -180,7 +180,7 @@ function CandidateCardContent({ card }) {
         {card.profile_picture ? (
           <img src={card.profile_picture} alt={card.full_name} className="w-14 h-14 rounded-full object-cover flex-shrink-0" />
         ) : (
-          <div className="w-14 h-14 rounded-full bg-brand-green-light flex items-center justify-center text-sm font-bold text-primary flex-shrink-0">
+          <div className="w-14 h-14 rounded-full bg-secondary flex items-center justify-center text-sm font-bold text-primary flex-shrink-0">
             {initials}
           </div>
         )}

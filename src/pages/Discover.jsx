@@ -159,14 +159,14 @@ export default function Discover() {
   const initials = profile?.full_name?.split(' ').map(n => n[0]).join('').slice(0, 2).toUpperCase() || 'U';
 
   return (
-    <div className="flex-1 flex flex-col bg-secondary/30 min-h-0 relative">
+    <div className="flex-1 flex flex-col bg-background min-h-0 relative">
       {/* Header */}
       <div className="flex items-center justify-between px-5 pt-2 pb-3 relative z-10">
         <Logo size="sm" />
         <div className="flex items-center gap-2">
           <button
             onClick={() => setFilterOpen(true)}
-            className="w-11 h-11 rounded-full bg-white border border-border/50 flex items-center justify-center shadow-sm hover:bg-muted transition-colors cursor-pointer"
+            className="w-11 h-11 rounded-full bg-card border border-border/50 flex items-center justify-center shadow-sm hover:bg-muted transition-colors cursor-pointer"
           >
             <SlidersHorizontal size={18} className="text-muted-foreground" />
           </button>
@@ -215,7 +215,7 @@ export default function Discover() {
             whileTap={{ scale: 0.82 }}
             whileHover={{ scale: 1.08 }}
             onClick={() => handleButtonClick('pass')}
-            className="w-[58px] h-[58px] rounded-full bg-white border border-red-100 flex items-center justify-center shadow-[0_8px_24px_rgba(239,68,68,0.12)]"
+            className="w-[58px] h-[58px] rounded-full bg-card border border-destructive/20 flex items-center justify-center shadow-[0_8px_24px_rgba(239,68,68,0.12)]"
           >
             <X size={26} className="text-red-500" strokeWidth={2.5} />
           </motion.button>
@@ -223,7 +223,7 @@ export default function Discover() {
             whileTap={{ scale: 0.82, y: -4 }}
             whileHover={{ scale: 1.12, y: -2 }}
             onClick={() => handleButtonClick('super')}
-            className="w-[50px] h-[50px] rounded-full bg-gradient-to-br from-amber-400 to-yellow-500 flex items-center justify-center shadow-[0_8px_24px_rgba(245,158,11,0.3)]"
+            className="w-[50px] h-[50px] rounded-full bg-gold flex items-center justify-center shadow-[0_8px_24px_rgba(245,158,11,0.3)]"
           >
             <Star size={22} className="text-white" fill="white" />
           </motion.button>

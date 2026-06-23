@@ -1,0 +1,44 @@
+import React, { createContext, useContext, useState, useEffect } from 'react';
+
+const ThemeContext = createContext();
+
+export const ThemeProvider = ({ children }) => {
+  const [darkMode, setDarkMode] = useState(false);
+  const [mounted, setMounted] = useState(false);
+
+  useEffect(() => {
+    const savedTheme = localStorage.getItem('theme') || 'light';
+    const isDark = savedTheme === 'dark';
+    setDarkMode(isDark);
+    applyTheme(isDark);
+    setMounted(true);
+  }, []);
+
+  const applyTheme = (isDark) => {
+    if (isDark) {
+      document.documentElement.classList.add('dark');
+    } else {
+      document.documentElement.classList.remove('dark');
+    }
+  };
+
+  const toggleDarkMode = (enabled) => {
+    setDarkMode(enabled);
+    localStorage.setItem('theme', enabled ? 'dark' : 'light');
+    applyTheme(enabled);
+  };
+
+  return (
+    <ThemeContext.Provider value={{ darkMode, toggleDarkMode, mounted }}>
+      {children}
+    </ThemeContext.Provider>
+  );
+};
+
+export const useTheme = () => {
+  const context = useContext(ThemeContext);
+  if (!context) {
+    throw new Error('useTheme must be used within a ThemeProvider');
+  }
+  return context;
+};

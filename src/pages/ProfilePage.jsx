@@ -159,7 +159,7 @@ export default function ProfilePage() {
             {profilePicture ? (
               <img src={profilePicture} alt={fullName} className="w-full h-full object-cover" />
             ) : (
-              <div className="w-full h-full bg-brand-green-light flex items-center justify-center text-[28px] font-semibold text-primary">
+              <div className="w-full h-full bg-secondary flex items-center justify-center text-[28px] font-semibold text-primary">
                 {initials}
               </div>
             )}

@@ -3,11 +3,12 @@ import { useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import { X, ChevronDown, Sun, Moon } from 'lucide-react';
 import { base44 } from '@/api/base44Client';
+import { useTheme } from '@/lib/ThemeContext';
 
 export default function MenuDrawer({ open, onClose, user, profile }) {
   const navigate = useNavigate();
+  const { darkMode, toggleDarkMode } = useTheme();
   const [expanded, setExpanded] = useState(null);
-  const [darkMode, setDarkMode] = useState(document.documentElement.classList.contains('dark'));
   const [showChangePassword, setShowChangePassword] = useState(false);
   const [passwordForm, setPasswordForm] = useState({ current: '', new: '', confirm: '' });
   const [passwordError, setPasswordError] = useState('');
@@ -24,24 +25,10 @@ export default function MenuDrawer({ open, onClose, user, profile }) {
   const [twoFaSetup, setTwoFaSetup] = useState(false);
   const [twoFaCode, setTwoFaCode] = useState('');
 
-  useEffect(() => {
-    const observer = new MutationObserver(() => {
-      setDarkMode(document.documentElement.classList.contains('dark'));
-    });
-    observer.observe(document.documentElement, { attributes: true });
-    return () => observer.disconnect();
-  }, []);
+
 
   const handleToggleDarkMode = () => {
-    const newMode = !darkMode;
-    setDarkMode(newMode);
-    if (newMode) {
-      document.documentElement.classList.add('dark');
-      localStorage.setItem('theme', 'dark');
-    } else {
-      document.documentElement.classList.remove('dark');
-      localStorage.setItem('theme', 'light');
-    }
+    toggleDarkMode(!darkMode);
   };
 
   const handleChangeEmail = async () => {
@@ -150,16 +137,7 @@ export default function MenuDrawer({ open, onClose, user, profile }) {
     setExpanded(expanded === section ? null : section);
   };
 
-  useEffect(() => {
-    const theme = localStorage.getItem('theme') || 'light';
-    const isDark = theme === 'dark';
-    setDarkMode(isDark);
-    if (isDark) {
-      document.documentElement.classList.add('dark');
-    } else {
-      document.documentElement.classList.remove('dark');
-    }
-  }, []);
+
 
   const menuItems = [
     {
@@ -373,27 +351,27 @@ export default function MenuDrawer({ open, onClose, user, profile }) {
                                         </button>
                                       </div>
                                       {showChangePassword && (
-                                        <div className="mt-2 p-3 bg-white/50 rounded-lg space-y-2 border border-border/30">
+                                        <div className="mt-2 p-3 bg-primary/5 rounded-lg space-y-2 border border-primary/20">
                                           <input
                                             type="password"
                                             placeholder="Current password"
                                             value={passwordForm.current}
                                             onChange={(e) => setPasswordForm({ ...passwordForm, current: e.target.value })}
-                                            className="w-full h-[36px] border border-input rounded-lg px-2.5 text-[12px] bg-white focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary"
+                                            className="w-full h-[36px] border border-input rounded-lg px-2.5 text-[12px] bg-card focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary"
                                           />
                                           <input
                                             type="password"
                                             placeholder="New password"
                                             value={passwordForm.new}
                                             onChange={(e) => setPasswordForm({ ...passwordForm, new: e.target.value })}
-                                            className="w-full h-[36px] border border-input rounded-lg px-2.5 text-[12px] bg-white focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary"
+                                            className="w-full h-[36px] border border-input rounded-lg px-2.5 text-[12px] bg-card focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary"
                                           />
                                           <input
                                             type="password"
                                             placeholder="Confirm new password"
                                             value={passwordForm.confirm}
                                             onChange={(e) => setPasswordForm({ ...passwordForm, confirm: e.target.value })}
-                                            className="w-full h-[36px] border border-input rounded-lg px-2.5 text-[12px] bg-white focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary"
+                                            className="w-full h-[36px] border border-input rounded-lg px-2.5 text-[12px] bg-card focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary"
                                           />
                                           {passwordError && <p className="text-[11px] text-destructive">{passwordError}</p>}
                                           <button
@@ -459,7 +437,7 @@ export default function MenuDrawer({ open, onClose, user, profile }) {
                                             placeholder='Type "DELETE" to confirm'
                                             value={deleteConfirmText}
                                             onChange={(e) => setDeleteConfirmText(e.target.value)}
-                                            className="w-full h-[32px] border border-input rounded-lg px-2.5 text-[12px] bg-white focus:outline-none focus:ring-2 focus:ring-destructive/20 focus:border-destructive"
+                                            className="w-full h-[32px] border border-input rounded-lg px-2.5 text-[12px] bg-card focus:outline-none focus:ring-2 focus:ring-destructive/20 focus:border-destructive"
                                           />
                                           <div className="flex gap-2">
                                             <button
