@@ -15,42 +15,66 @@ export default function LinkedInImportSheet({ open, onClose, onImport }) {
     }
   }, [open]);
 
+  const isValid = (v) => v && typeof v === 'string' && !['null', 'None', 'N/A', 'undefined', ''].includes(v.trim());
+
   const handleImport = async () => {
     if (!url.trim()) return;
     setImporting(true);
     setError('');
-    try {
-      const result = await base44.integrations.Core.InvokeLLM({
-        prompt: `Extract professional profile information from this LinkedIn URL: ${url.trim()}
 
-Return the person's full name, current job title, current company, location (city and state), a brief professional summary/bio, and top skills. If any field is not publicly available, return null for that field.`,
-        add_context_from_internet: true,
-        model: 'gemini_3_flash',
-        response_json_schema: {
-          type: 'object',
-          properties: {
-            full_name: { type: 'string' },
-            current_role: { type: 'string' },
-            current_company: { type: 'string' },
-            location: { type: 'string' },
-            bio: { type: 'string' },
-            skills: { type: 'array', items: { type: 'string' } }
+    try {
+      const result = await Promise.race([
+        base44.integrations.Core.InvokeLLM({
+          prompt: `Search for the LinkedIn profile at this URL and extract the person's professional information. URL: ${url.trim()}`,
+          add_context_from_internet: true,
+          model: 'gemini_3_flash',
+          response_json_schema: {
+            type: 'object',
+            properties: {
+              full_name: { type: 'string' },
+              current_role: { type: 'string' },
+              current_company: { type: 'string' },
+              location: { type: 'string' },
+              bio: { type: 'string' },
+              skills: { type: 'array', items: { type: 'string' } }
+            }
           }
-        }
-      });
+        }),
+        new Promise((_, reject) =>
+          setTimeout(() => reject(new Error('timeout')), 45000)
+        )
+      ]);
+
+      let data = result;
+      if (typeof result === 'string') {
+        try { data = JSON.parse(result); } catch { data = {}; }
+      }
+      data = data?.data || data;
 
       const imported = {};
-      if (result.full_name && result.full_name !== 'null') imported.full_name = result.full_name;
-      if (result.current_role && result.current_role !== 'null') imported.current_role = result.current_role;
-      if (result.current_company && result.current_company !== 'null') imported.current_company = result.current_company;
-      if (result.location && result.location !== 'null') imported.location = result.location;
-      if (result.bio && result.bio !== 'null') imported.bio = result.bio;
-      if (result.skills && Array.isArray(result.skills) && result.skills.length > 0) imported.skills = result.skills.filter(s => s && s !== 'null');
+      if (isValid(data?.full_name)) imported.full_name = data.full_name;
+      if (isValid(data?.current_role)) imported.current_role = data.current_role;
+      if (isValid(data?.current_company)) imported.current_company = data.current_company;
+      if (isValid(data?.location)) imported.location = data.location;
+      if (isValid(data?.bio)) imported.bio = data.bio;
+      if (Array.isArray(data?.skills) && data.skills.length > 0) {
+        const validSkills = data.skills.filter(s => isValid(s));
+        if (validSkills.length > 0) imported.skills = validSkills;
+      }
+
+      if (Object.keys(imported).length === 0) {
+        setError('Could not extract profile data from this URL. Please fill in manually.');
+        return;
+      }
 
       onImport({ ...imported, linkedin_url: url.trim() });
       onClose();
-    } catch {
-      setError('Could not import from this URL. Please check the link or fill in manually.');
+    } catch (err) {
+      setError(
+        err?.message === 'timeout'
+          ? 'Import timed out. Please try again or fill in manually.'
+          : 'Could not import from this URL. Please fill in manually.'
+      );
     } finally {
       setImporting(false);
     }
@@ -94,7 +118,7 @@ Return the person's full name, current job title, current company, location (cit
             />
             {error && <p className="text-[12px] text-destructive mt-2">{error}</p>}
             <p className="text-[11px] text-muted-foreground/60 mt-2">
-              We'll try to fetch your name, role, company, bio, and skills from your public profile.
+              We'll search for your public profile. This can take up to 30 seconds.
             </p>
             <button
               onClick={handleImport}

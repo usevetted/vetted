@@ -32,6 +32,11 @@ export default function AppLayout() {
           return;
         }
         setProfile(profiles[0]);
+        try {
+          await base44.auth.updateMe({ profile_id: profiles[0].id });
+        } catch {
+          // ignore
+        }
       } catch {
         setError(true);
       } finally {

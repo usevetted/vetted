@@ -111,13 +111,7 @@ export default function Discover() {
     try {
       if (targetProfileId === profile.id) return;
 
-      const reciprocalSwipes = await base44.entities.Swipe.filter({
-        swiper_profile_id: targetProfileId,
-        target_profile_id: profile.id,
-      });
-      const reciprocalLike = reciprocalSwipes.find(s => s.action === 'like' || s.action === 'super');
-      const shouldMatch = reciprocalLike || Math.random() < (action === 'super' ? 0.55 : 0.3);
-
+      const shouldMatch = Math.random() < (action === 'super' ? 0.55 : 0.3);
       if (!shouldMatch) return;
 
       const existingAs1 = await base44.entities.Match.filter({

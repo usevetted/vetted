@@ -3,17 +3,9 @@ import { useNavigate, useOutletContext } from 'react-router-dom';
 import { Camera, Linkedin, Briefcase, MapPin, DollarSign, X, Plus, LogOut, Pencil, Check, Building2, ChevronDown } from 'lucide-react';
 import Logo from '@/components/Logo';
 import PickerSheet from '@/components/PickerSheet';
-import LocationPickerSheet from '@/components/LocationPickerSheet';
+import LocationAutocomplete from '@/components/LocationAutocomplete';
 import { base44 } from '@/api/base44Client';
-
-const yearsOptions = [
-  { value: 'Less than 1 year', label: 'Less than 1 year' },
-  ...Array.from({ length: 29 }, (_, i) => {
-    const n = i + 1;
-    return { value: `${n} year${n > 1 ? 's' : ''}`, label: `${n} year${n > 1 ? 's' : ''}` };
-  }),
-  { value: '30+ years', label: '30+ years' },
-];
+import { yearsOptions } from '@/lib/profileConstants';
 
 export default function ProfilePage() {
   const navigate = useNavigate();
@@ -23,7 +15,7 @@ export default function ProfilePage() {
   const [saving, setSaving] = useState(false);
   const [uploadingPic, setUploadingPic] = useState(false);
   const [yearsPickerOpen, setYearsPickerOpen] = useState(false);
-  const [locationPickerOpen, setLocationPickerOpen] = useState(false);
+
 
   const [fullName, setFullName] = useState('');
   const [currentRole, setCurrentRole] = useState('');
@@ -235,15 +227,10 @@ export default function ProfilePage() {
           </div>
           <div>
             <label className={labelClass}>Location</label>
-            <button
-              onClick={() => setLocationPickerOpen(true)}
-              className={`${inputClass} flex items-center justify-between`}
-            >
-              <span className={location ? 'text-foreground' : 'text-muted-foreground/50'}>
-                {location || 'Select your city and state'}
-              </span>
-              <ChevronDown size={16} className="text-muted-foreground/50" />
-            </button>
+            <LocationAutocomplete
+              value={location}
+              onChange={setLocation}
+            />
           </div>
           {!isRecruiter && (
             <div>
@@ -385,12 +372,6 @@ export default function ProfilePage() {
         items={yearsOptions}
         value={yearsExperience}
         onChange={setYearsExperience}
-      />
-      <LocationPickerSheet
-        open={locationPickerOpen}
-        onClose={() => setLocationPickerOpen(false)}
-        value={location}
-        onChange={setLocation}
       />
     </div>
   );
