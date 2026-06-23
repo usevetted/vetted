@@ -40,6 +40,9 @@
                     "created_by_id": "{{user.id}}"
                   },
                   {
+                    "data.profile1_id": "{{user.data.profile_id}}"
+                  },
+                  {
                     "data.profile2_id": "{{user.data.profile_id}}"
                   }
                 ]
