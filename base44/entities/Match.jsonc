@@ -53,5 +53,40 @@
   "required": [
     "profile1_id",
     "profile2_id"
-  ]
+  ],
+  "rls": {
+    "create": {
+      "created_by_id": "{{user.id}}"
+    },
+    "read": {
+      "$or": [
+        {
+          "data.profile1_id": "{{user.data.profile_id}}"
+        },
+        {
+          "data.profile2_id": "{{user.data.profile_id}}"
+        }
+      ]
+    },
+    "update": {
+      "$or": [
+        {
+          "data.profile1_id": "{{user.data.profile_id}}"
+        },
+        {
+          "data.profile2_id": "{{user.data.profile_id}}"
+        }
+      ]
+    },
+    "delete": {
+      "$or": [
+        {
+          "data.profile1_id": "{{user.data.profile_id}}"
+        },
+        {
+          "data.profile2_id": "{{user.data.profile_id}}"
+        }
+      ]
+    }
+  }
 }
