@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useMemo } from 'react';
 import { useNavigate, useOutletContext } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { MessageCircle } from 'lucide-react';
@@ -55,7 +55,7 @@ export default function Messages() {
     load();
   }, [load]);
 
-  const formatTime = useCallback((dateStr) => {
+  const formatTime = useMemo(() => (dateStr) => {
     if (!dateStr) return '';
     const date = new Date(dateStr);
     const now = new Date();
@@ -78,23 +78,21 @@ export default function Messages() {
       </div>
 
       <PullToRefresh onRefresh={load} className="flex-1 overflow-y-auto no-scrollbar px-3 pb-6 min-h-0">
-        {loading ? (
-          <LoadingScreen fullscreen={false} />
-        ) : conversations.length === 0 ? (
-          <div className="flex flex-col items-center text-center pt-16 px-6">
-            <div className="w-16 h-16 rounded-full bg-brand-green-bg flex items-center justify-center mb-4">
-              <MessageCircle size={28} className="text-primary/40" />
-            </div>
-            <h3 className="text-[15px] font-semibold text-foreground mb-1">No messages yet</h3>
-            <p className="text-[13px] text-muted-foreground">Match with someone to start chatting</p>
-            <button
-              onClick={() => navigate('/discover')}
-              className="mt-5 px-5 py-2.5 rounded-xl bg-primary text-white text-[13px] font-medium"
-            >
-              Find Matches
-            </button>
-          </div>
-        ) : (
+        {conversations.length === 0 && !loading ? (
+           <div className="flex flex-col items-center text-center pt-16 px-6">
+             <div className="w-16 h-16 rounded-full bg-brand-green-bg flex items-center justify-center mb-4">
+               <MessageCircle size={28} className="text-primary/40" />
+             </div>
+             <h3 className="text-[15px] font-semibold text-foreground mb-1">No messages yet</h3>
+             <p className="text-[13px] text-muted-foreground">Match with someone to start chatting</p>
+             <button
+               onClick={() => navigate('/discover')}
+               className="mt-5 px-5 py-2.5 rounded-xl bg-primary text-white text-[13px] font-medium"
+             >
+               Find Matches
+             </button>
+           </div>
+         ) : loading ? null : (
           <div className="space-y-1">
             {conversations.map((convo, i) => (
               <motion.button

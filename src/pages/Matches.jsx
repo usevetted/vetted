@@ -51,23 +51,21 @@ export default function Matches() {
       </div>
 
       <PullToRefresh onRefresh={load} className="flex-1 overflow-y-auto no-scrollbar px-4 pb-6 min-h-0">
-        {loading ? (
-          <LoadingScreen fullscreen={false} />
-        ) : matches.length === 0 ? (
-          <div className="flex flex-col items-center text-center pt-16 px-6">
-            <div className="w-16 h-16 rounded-full bg-brand-green-bg flex items-center justify-center mb-4">
-              <MessageCircle size={28} className="text-primary/40" />
-            </div>
-            <h3 className="text-[15px] font-semibold text-foreground mb-1">No matches yet</h3>
-            <p className="text-[13px] text-muted-foreground">Start swiping to find your next match</p>
-            <button
-              onClick={() => navigate('/discover')}
-              className="mt-5 px-5 py-2.5 rounded-xl bg-primary text-white text-[13px] font-medium"
-            >
-              Start Swiping
-            </button>
-          </div>
-        ) : (
+        {matches.length === 0 && !loading ? (
+           <div className="flex flex-col items-center text-center pt-16 px-6">
+             <div className="w-16 h-16 rounded-full bg-brand-green-bg flex items-center justify-center mb-4">
+               <MessageCircle size={28} className="text-primary/40" />
+             </div>
+             <h3 className="text-[15px] font-semibold text-foreground mb-1">No matches yet</h3>
+             <p className="text-[13px] text-muted-foreground">Start swiping to find your next match</p>
+             <button
+               onClick={() => navigate('/discover')}
+               className="mt-5 px-5 py-2.5 rounded-xl bg-primary text-white text-[13px] font-medium"
+             >
+               Start Swiping
+             </button>
+           </div>
+         ) : loading ? null : (
           <div className="grid grid-cols-2 gap-3">
             {matches.map((match, i) => {
               const { otherName, otherPicture, otherLinkedin, otherRole, initials } = getMatchDisplay(match);

@@ -205,6 +205,9 @@ export default function AccountSecurity() {
 
           {showChangePassword && (
             <div className="space-y-3 p-4 bg-muted/30 rounded-xl">
+              <p className="text-[11px] text-muted-foreground/60">
+                <a href="/forgot-password" className="hover:text-muted-foreground transition-colors">Forgot password?</a>
+              </p>
               <div>
                 <label className={labelClass}>Current Password</label>
                 <input

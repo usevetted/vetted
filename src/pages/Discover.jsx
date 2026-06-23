@@ -215,11 +215,9 @@ export default function Discover() {
 
       {/* Card area */}
       <div className="flex-1 flex flex-col items-center justify-center px-5 py-3 relative min-h-0">
-        {loading ? (
-          <LoadingScreen fullscreen={false} />
-        ) : cards.length === 0 ? (
+        {cards.length === 0 && !loading ? (
           <EmptyState onRefresh={loadCards} />
-        ) : (
+        ) : loading ? null : (
           <div className="relative w-full flex-1 min-h-0 flex items-center justify-center">
             <AnimatePresence>
               {cards.slice(0, 3).map((card, index) => (
