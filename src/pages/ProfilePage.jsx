@@ -1,9 +1,10 @@
 import { useState, useEffect, useRef } from 'react';
 import { useNavigate, useOutletContext } from 'react-router-dom';
-import { Camera, Linkedin, Briefcase, MapPin, DollarSign, X, Plus, LogOut, Pencil, Check, Building2, ChevronDown } from 'lucide-react';
+import { Camera, Linkedin, Briefcase, MapPin, DollarSign, X, Plus, LogOut, Pencil, Check, Building2, ChevronDown, FileText } from 'lucide-react';
 import Logo from '@/components/Logo';
 import PickerSheet from '@/components/PickerSheet';
 import LocationAutocomplete from '@/components/LocationAutocomplete';
+import ResumeUpload from '@/components/ResumeUpload';
 import { base44 } from '@/api/base44Client';
 import { yearsOptions } from '@/lib/profileConstants';
 
@@ -29,6 +30,7 @@ export default function ProfilePage() {
   const [skills, setSkills] = useState([]);
   const [skillInput, setSkillInput] = useState('');
   const [profilePicture, setProfilePicture] = useState('');
+  const [resumeUrl, setResumeUrl] = useState('');
 
   const isRecruiter = profile?.account_type === 'recruiter';
 
@@ -45,6 +47,7 @@ export default function ProfilePage() {
       setLinkedinUrl(profile.linkedin_url || '');
       setSkills(profile.skills || []);
       setProfilePicture(profile.profile_picture || '');
+      setResumeUrl(profile.resume_url || '');
     }
   }, [profile]);
 
@@ -84,6 +87,7 @@ export default function ProfilePage() {
         target_salary: isRecruiter ? '' : targetSalary,
         bio,
         linkedin_url: linkedinUrl,
+        resume_url: isRecruiter ? '' : resumeUrl,
         skills,
       });
       setProfile(updated);
@@ -274,6 +278,9 @@ export default function ProfilePage() {
             <label className={labelClass}>LinkedIn Profile URL</label>
             <input value={linkedinUrl} onChange={(e) => setLinkedinUrl(e.target.value)} className={inputClass} placeholder="linkedin.com/in/username" />
           </div>
+          {!isRecruiter && (
+            <ResumeUpload value={resumeUrl} onChange={setResumeUrl} />
+          )}
         </div>
       ) : (
         /* View mode */
@@ -350,6 +357,26 @@ export default function ProfilePage() {
                 <div className="flex-1 min-w-0">
                   <div className="text-[12px] font-medium text-foreground">View LinkedIn Profile</div>
                   <div className="text-[11px] text-muted-foreground truncate">{linkedinUrl}</div>
+                </div>
+              </a>
+            </div>
+          )}
+
+          {!isRecruiter && resumeUrl && (
+            <div>
+              <h3 className="text-[11px] font-semibold text-muted-foreground uppercase tracking-wider mb-2">Resume</h3>
+              <a
+                href={resumeUrl}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="flex items-center gap-2.5 p-3.5 rounded-xl bg-muted/40 hover:bg-muted transition-colors"
+              >
+                <div className="w-8 h-8 rounded-lg bg-primary/10 flex items-center justify-center flex-shrink-0">
+                  <FileText size={16} className="text-primary" />
+                </div>
+                <div className="flex-1 min-w-0">
+                  <div className="text-[12px] font-medium text-foreground">View Resume</div>
+                  <div className="text-[11px] text-muted-foreground">PDF</div>
                 </div>
               </a>
             </div>

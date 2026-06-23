@@ -43,6 +43,9 @@
     "linkedin_url": {
       "type": "string"
     },
+    "resume_url": {
+      "type": "string"
+    },
     "target_salary": {
       "type": "string"
     },

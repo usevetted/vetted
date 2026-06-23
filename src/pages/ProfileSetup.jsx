@@ -6,6 +6,7 @@ import Logo from '@/components/Logo';
 import LinkedInImportSheet from '@/components/LinkedInImportSheet';
 import PickerSheet from '@/components/PickerSheet';
 import LocationAutocomplete from '@/components/LocationAutocomplete';
+import ResumeUpload from '@/components/ResumeUpload';
 import { base44 } from '@/api/base44Client';
 import { yearsOptions } from '@/lib/profileConstants';
 
@@ -34,6 +35,7 @@ export default function ProfileSetup() {
   const [skills, setSkills] = useState([]);
   const [skillInput, setSkillInput] = useState('');
   const [generatingBio, setGeneratingBio] = useState(false);
+  const [resumeUrl, setResumeUrl] = useState('');
 
   const isRecruiter = profile?.account_type === 'recruiter';
 
@@ -55,6 +57,7 @@ export default function ProfileSetup() {
           setTargetSalary(p.target_salary || '');
           setBio(p.bio || '');
           setLinkedinUrl(p.linkedin_url || '');
+          setResumeUrl(p.resume_url || '');
           setSkills(p.skills || []);
         } else {
           navigate('/onboarding/account-type', { replace: true });
@@ -158,6 +161,7 @@ Write only the bio text, no quotes, no preamble.`;
         target_salary: isRecruiter ? '' : targetSalary,
         bio,
         linkedin_url: linkedinUrl,
+        resume_url: isRecruiter ? '' : resumeUrl,
         skills,
         open_to_work: isRecruiter ? false : true,
         onboarding_complete: true,
@@ -435,6 +439,10 @@ Write only the bio text, no quotes, no preamble.`;
                   : 'Recruiters can view your LinkedIn for more context'}
               </p>
             </div>
+
+            {!isRecruiter && (
+              <ResumeUpload value={resumeUrl} onChange={setResumeUrl} />
+            )}
           </div>
         </div>
 
