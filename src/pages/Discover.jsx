@@ -1,22 +1,26 @@
 import { useState, useEffect, useCallback, useMemo } from 'react';
 import { useNavigate, useOutletContext } from 'react-router-dom';
 import { AnimatePresence, motion } from 'framer-motion';
-import { X, Heart, Star, SlidersHorizontal } from 'lucide-react';
+import { X, Heart, Star, SlidersHorizontal, Plus } from 'lucide-react';
 import Logo from '@/components/Logo';
 import SwipeCard from '@/components/SwipeCard';
 import MatchOverlay from '@/components/MatchOverlay';
 import FilterSheet from '@/components/FilterSheet';
+import PostJobModal from '@/components/PostJobModal';
 import { base44 } from '@/api/base44Client';
 import LoadingScreen from '@/components/LoadingScreen';
+import { useToast } from '@/components/ui/use-toast';
 
 export default function Discover() {
   const navigate = useNavigate();
+  const { toast } = useToast();
   const { profile } = useOutletContext();
   const [allCards, setAllCards] = useState([]);
   const [loading, setLoading] = useState(true);
   const [matchData, setMatchData] = useState(null);
   const [triggerAction, setTriggerAction] = useState(null);
   const [filterOpen, setFilterOpen] = useState(false);
+  const [postJobOpen, setPostJobOpen] = useState(false);
   const [filters, setFilters] = useState({ remoteOnly: false, inPersonOnly: false, openToWork: false, sortBy: 'newest', distance: 50, location: '' });
 
   const isRecruiter = profile?.account_type === 'recruiter';
@@ -156,6 +160,16 @@ export default function Discover() {
     setTriggerAction(action);
   };
 
+  const handlePostJobSuccess = async () => {
+    setPostJobOpen(false);
+    toast({
+      title: 'Success!',
+      description: 'Your job posting has been published.',
+      duration: 3000,
+    });
+    await loadCards();
+  };
+
   const initials = profile?.full_name?.split(' ').map(n => n[0]).join('').slice(0, 2).toUpperCase() || 'U';
 
   return (
@@ -164,6 +178,16 @@ export default function Discover() {
       <div className="flex items-center justify-between px-5 pt-2 pb-3 relative z-10">
         <Logo size="sm" />
         <div className="flex items-center gap-2">
+          {isRecruiter && (
+            <motion.button
+              whileTap={{ scale: 0.92 }}
+              whileHover={{ scale: 1.05 }}
+              onClick={() => setPostJobOpen(true)}
+              className="w-11 h-11 rounded-full bg-primary text-white flex items-center justify-center shadow-sm hover:bg-primary/90 transition-colors cursor-pointer"
+            >
+              <Plus size={20} />
+            </motion.button>
+          )}
           <button
             onClick={() => setFilterOpen(true)}
             className="w-11 h-11 rounded-full bg-card border border-border/50 flex items-center justify-center shadow-sm hover:bg-muted transition-colors cursor-pointer"
@@ -259,6 +283,14 @@ export default function Discover() {
         filters={filters}
         setFilters={setFilters}
         isRecruiter={isRecruiter}
+      />
+
+      {/* Post Job Modal */}
+      <PostJobModal
+        open={postJobOpen}
+        onClose={() => setPostJobOpen(false)}
+        onSuccess={handlePostJobSuccess}
+        recruiterProfile={profile}
       />
     </div>
   );
