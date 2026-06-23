@@ -21,7 +21,6 @@ export default function ProfilePage() {
   const [uploadingPic, setUploadingPic] = useState(false);
   const [yearsPickerOpen, setYearsPickerOpen] = useState(false);
   const [menuOpen, setMenuOpen] = useState(false);
-  const [loggingOut, setLoggingOut] = useState(false);
 
 
   const [fullName, setFullName] = useState('');
@@ -106,32 +105,34 @@ export default function ProfilePage() {
   };
 
   const handleLogout = async () => {
-    setLoggingOut(true);
-    
     try {
-      // Create timeout promise (5 seconds)
-      const timeoutPromise = new Promise((_, reject) => {
-        setTimeout(() => reject(new Error('Logout timeout')), 5000);
-      });
+      // Call logout with hard 5-second timeout
+      const controller = new AbortController();
+      const timeout = setTimeout(() => controller.abort(), 5000);
       
-      // Wrap logout in Promise since it may not return one
-      const logoutPromise = Promise.resolve(base44.auth.logout());
-      
-      // Race between logout and timeout
-      await Promise.race([logoutPromise, timeoutPromise]);
+      try {
+        await Promise.race([
+          Promise.resolve(base44.auth.logout()),
+          new Promise((_, reject) => 
+            controller.signal.addEventListener('abort', () => reject(new Error('timeout')))
+          )
+        ]);
+      } finally {
+        clearTimeout(timeout);
+      }
     } catch (error) {
-      // Log timeout or other errors, but proceed with local cleanup
-      console.error('Logout error:', error);
+      // Timeout or error occurred, proceed with cleanup
+      console.error('Sign out error:', error);
     } finally {
-      // Always clear local session data
+      // Always clear session, tokens, and cached data
       try {
         sessionStorage.clear();
-        localStorage.removeItem('auth_token');
+        localStorage.clear();
       } catch {
-        // ignore
+        // ignore storage errors
       }
       
-      // Force redirect to landing page
+      // Force redirect to landing
       window.location.href = '/landing';
     }
   };
@@ -403,20 +404,10 @@ export default function ProfilePage() {
 
           <button
             onClick={handleLogout}
-            disabled={loggingOut}
-            className="w-full h-[48px] border border-border rounded-2xl text-[14px] font-medium text-muted-foreground hover:bg-muted/30 disabled:opacity-50 disabled:cursor-not-allowed transition-colors flex items-center justify-center gap-2 mt-4"
+            className="w-full h-[48px] border border-border rounded-2xl text-[14px] font-medium text-muted-foreground hover:bg-muted/30 transition-colors flex items-center justify-center gap-2 mt-4"
           >
-            {loggingOut ? (
-              <>
-                <div className="w-4 h-4 border-2 border-muted-foreground border-t-foreground rounded-full animate-spin" />
-                Signing out...
-              </>
-            ) : (
-              <>
-                <LogOut size={16} />
-                Sign Out
-              </>
-            )}
+            <LogOut size={16} />
+            Sign Out
           </button>
         </div>
       )}
