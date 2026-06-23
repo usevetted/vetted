@@ -20,6 +20,12 @@ export default function AppLayout() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(false);
   const [retryCount, setRetryCount] = useState(0);
+  const [tabHistory, setTabHistory] = useState({
+    '/discover': '/discover',
+    '/matches': '/matches',
+    '/messages': '/messages',
+    '/profile': '/profile',
+  });
 
   useEffect(() => {
     const loadProfile = async (attempt = 0) => {
@@ -53,6 +59,13 @@ export default function AppLayout() {
     loadProfile();
   }, [user, navigate, retryCount]);
 
+  useEffect(() => {
+    const rootPath = navItems.find(item => location.pathname.startsWith(item.path))?.path;
+    if (rootPath) {
+      setTabHistory(prev => ({ ...prev, [rootPath]: location.pathname }));
+    }
+  }, [location.pathname]);
+
   if (loading || (!profile && !error)) {
     return <LoadingScreen />;
   }
@@ -80,14 +93,14 @@ export default function AppLayout() {
         <nav className="sticky bottom-0 z-50 bg-background/90 glass border-t border-border/50 px-2 pb-[env(safe-area-inset-bottom)] flex-shrink-0">
           <div className="flex items-center justify-around max-w-[600px] mx-auto py-2">
             {navItems.map((item) => {
-              const active = location.pathname.startsWith(item.path);
-              const Icon = item.icon;
-              return (
-                <button
-                  key={item.path}
-                  onClick={() => navigate(item.path)}
-                  className="flex flex-col items-center justify-center gap-1 min-w-[44px] min-h-[44px] px-3 py-2 transition-colors group"
-                >
+               const active = location.pathname.startsWith(item.path);
+               const Icon = item.icon;
+               return (
+                 <button
+                   key={item.path}
+                   onClick={() => navigate(tabHistory[item.path])}
+                   className="flex flex-col items-center justify-center gap-1 min-w-[44px] min-h-[44px] px-3 py-2 transition-colors group"
+                 >
                   <Icon
                     size={22}
                     strokeWidth={active ? 2.5 : 1.8}
