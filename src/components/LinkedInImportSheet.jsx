@@ -3,7 +3,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { Linkedin, Loader2, AlertCircle, CheckCircle2, RefreshCw } from 'lucide-react';
 import { base44 } from '@/api/base44Client';
 
-const LINKEDIN_CONNECTOR_ID = '6a3a8d0e8bb5cd3a913bcb30';
+const LINKEDIN_CONNECTOR_ID = '6a3a94d24fa3875df2b2acf3';
 
 export default function LinkedInImportSheet({ open, onClose, onImport }) {
   const [status, setStatus] = useState('checking'); // checking | connected | disconnected | connecting | fetching | error
