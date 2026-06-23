@@ -24,6 +24,9 @@ export default function MenuDrawer({ open, onClose, user, profile }) {
   const [emailLoading, setEmailLoading] = useState(false);
   const [twoFaSetup, setTwoFaSetup] = useState(false);
   const [twoFaCode, setTwoFaCode] = useState('');
+  const [twoFaDisableConfirm, setTwoFaDisableConfirm] = useState(false);
+  const [twoFaLoading, setTwoFaLoading] = useState(false);
+  const [passwordResetSent, setPasswordResetSent] = useState(false);
 
 
 
@@ -60,14 +63,9 @@ export default function MenuDrawer({ open, onClose, user, profile }) {
 
   const handleToggle2FA = async () => {
     if (!twoFaEnabled) {
-      setTwoFaSetup(true);
+      await handleEnable2FA();
     } else {
-      setTwoFaEnabled(false);
-      try {
-        await base44.auth.disable2FA();
-      } catch {
-        // ignore
-      }
+      setTwoFaDisableConfirm(true);
     }
   };
 
@@ -76,6 +74,7 @@ export default function MenuDrawer({ open, onClose, user, profile }) {
       setEmailError('Verification code is required');
       return;
     }
+    setTwoFaLoading(true);
     try {
       await base44.auth.verify2FA(twoFaCode);
       setTwoFaEnabled(true);
@@ -83,6 +82,8 @@ export default function MenuDrawer({ open, onClose, user, profile }) {
       setTwoFaCode('');
     } catch (err) {
       setEmailError(err?.message || 'Invalid code');
+    } finally {
+      setTwoFaLoading(false);
     }
   };
 
@@ -109,6 +110,47 @@ export default function MenuDrawer({ open, onClose, user, profile }) {
       setPasswordError(err?.message || 'Failed to change password');
     } finally {
       setPasswordLoading(false);
+    }
+  };
+
+  const handleForgotPassword = async () => {
+    setPasswordError('');
+    setPasswordLoading(true);
+    try {
+      await base44.auth.resetPasswordRequest(user?.email);
+      setPasswordResetSent(true);
+      setTimeout(() => setPasswordResetSent(false), 5000);
+    } catch (err) {
+      setPasswordError(err?.message || 'Failed to send reset email');
+    } finally {
+      setPasswordLoading(false);
+    }
+  };
+
+  const handleDisable2FA = async () => {
+    setEmailError('');
+    setTwoFaLoading(true);
+    try {
+      await base44.auth.disable2FA();
+      setTwoFaEnabled(false);
+      setTwoFaDisableConfirm(false);
+    } catch (err) {
+      setEmailError(err?.message || 'Failed to disable 2FA');
+    } finally {
+      setTwoFaLoading(false);
+    }
+  };
+
+  const handleEnable2FA = async () => {
+    setEmailError('');
+    setTwoFaLoading(true);
+    try {
+      await base44.auth.setup2FA();
+      setTwoFaSetup(true);
+    } catch (err) {
+      setEmailError(err?.message || 'Failed to start 2FA setup');
+    } finally {
+      setTwoFaLoading(false);
     }
   };
 
@@ -314,7 +356,7 @@ export default function MenuDrawer({ open, onClose, user, profile }) {
                                       </button>
                                       {twoFaSetup && !twoFaEnabled && (
                                         <div className="mt-2 p-3 bg-primary/5 rounded-lg space-y-2 border border-primary/20">
-                                          <p className="text-[12px] text-foreground">Enter the 6-digit code from your email:</p>
+                                          <p className="text-[12px] text-foreground">A verification code has been sent to your email. Enter the 6-digit code:</p>
                                           <input
                                             type="text"
                                             placeholder="000000"
@@ -326,10 +368,31 @@ export default function MenuDrawer({ open, onClose, user, profile }) {
                                           {emailError && <p className="text-[11px] text-destructive">{emailError}</p>}
                                           <button
                                             onClick={handleSetup2FA}
-                                            className="w-full h-[34px] bg-primary text-white text-[12px] font-medium rounded-lg hover:bg-primary/90 transition-colors"
+                                            disabled={twoFaLoading || twoFaCode.length !== 6}
+                                            className="w-full h-[34px] bg-primary text-white text-[12px] font-medium rounded-lg hover:bg-primary/90 disabled:opacity-50 transition-colors"
                                           >
-                                            Verify Code
+                                            {twoFaLoading ? 'Verifying...' : 'Verify Code'}
                                           </button>
+                                        </div>
+                                      )}
+                                      {twoFaDisableConfirm && (
+                                        <div className="mt-2 p-3 bg-pass/5 rounded-lg border border-pass/20 space-y-2">
+                                          <p className="text-[12px] text-foreground/80">Are you sure you want to disable two-factor authentication?</p>
+                                          <div className="flex gap-2">
+                                            <button
+                                              onClick={() => setTwoFaDisableConfirm(false)}
+                                              className="flex-1 h-[32px] text-[12px] font-medium border border-border rounded-lg hover:bg-muted/30 transition-colors"
+                                            >
+                                              Cancel
+                                            </button>
+                                            <button
+                                              onClick={handleDisable2FA}
+                                              disabled={twoFaLoading}
+                                              className="flex-1 h-[32px] text-[12px] font-medium bg-pass text-white rounded-lg hover:bg-pass/90 disabled:opacity-50 transition-colors"
+                                            >
+                                              {twoFaLoading ? 'Disabling...' : 'Disable'}
+                                            </button>
+                                          </div>
                                         </div>
                                       )}
                                     </>
@@ -343,12 +406,18 @@ export default function MenuDrawer({ open, onClose, user, profile }) {
                                         {opt.label}
                                       </button>
                                       <div className="mt-1 mb-3">
-                                        <button
-                                          onClick={() => navigate('/forgot-password')}
-                                          className="text-[11px] text-primary hover:underline transition-colors"
-                                        >
-                                          Forgot password?
-                                        </button>
+                                        {!passwordResetSent && (
+                                          <button
+                                            onClick={handleForgotPassword}
+                                            disabled={passwordLoading}
+                                            className="text-[11px] text-primary hover:underline transition-colors disabled:opacity-50"
+                                          >
+                                            {passwordLoading ? 'Sending...' : 'Forgot password?'}
+                                          </button>
+                                        )}
+                                        {passwordResetSent && (
+                                          <p className="text-[11px] text-green-600">Reset link sent to your email</p>
+                                        )}
                                       </div>
                                       {showChangePassword && (
                                         <div className="mt-2 p-3 bg-primary/5 rounded-lg space-y-2 border border-primary/20">
