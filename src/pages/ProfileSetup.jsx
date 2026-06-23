@@ -1,7 +1,7 @@
 import { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
-import { Camera, Linkedin, ArrowRight, X, Plus, ArrowLeft, ChevronDown } from 'lucide-react';
+import { Camera, Linkedin, ArrowRight, X, Plus, ArrowLeft, ChevronDown, Sparkles, Loader2 } from 'lucide-react';
 import Logo from '@/components/Logo';
 import LinkedInImportSheet from '@/components/LinkedInImportSheet';
 import PickerSheet from '@/components/PickerSheet';
@@ -33,6 +33,7 @@ export default function ProfileSetup() {
   const [linkedinUrl, setLinkedinUrl] = useState('');
   const [skills, setSkills] = useState([]);
   const [skillInput, setSkillInput] = useState('');
+  const [generatingBio, setGeneratingBio] = useState(false);
 
   const isRecruiter = profile?.account_type === 'recruiter';
 
@@ -86,6 +87,33 @@ export default function ProfileSetup() {
     if (trimmed && !skills.includes(trimmed)) {
       setSkills([...skills, trimmed]);
       setSkillInput('');
+    }
+  };
+
+  const handleGenerateBio = async () => {
+    if (generatingBio) return;
+    setGeneratingBio(true);
+    try {
+      const prompt = `Write a concise, professional bio (2-3 sentences, max 300 characters) for a ${isRecruiter ? 'recruiter' : 'job seeker'} profile on a hiring platform. Here are the details:
+- Name: ${fullName || 'N/A'}
+- Role: ${currentRole || 'N/A'}
+- Company: ${currentCompany || 'N/A'}
+- Years of experience: ${yearsExperience || 'N/A'}
+- Skills: ${skills.length > 0 ? skills.join(', ') : 'N/A'}
+- Location: ${location || 'N/A'}
+- Currently employed: ${isEmployed ? 'Yes' : 'No'}
+
+${isRecruiter
+  ? 'The bio should sound approachable and professional, mentioning what they do and the kind of talent they look for.'
+  : 'The bio should highlight their expertise, key strengths, and what they are looking for in their next role.'}
+
+Write only the bio text, no quotes, no preamble.`;
+      const result = await base44.integrations.Core.InvokeLLM({ prompt });
+      setBio(typeof result === 'string' ? result.trim() : '');
+    } catch {
+      // ignore
+    } finally {
+      setGeneratingBio(false);
     }
   };
 
@@ -191,7 +219,7 @@ export default function ProfileSetup() {
               <div className="flex-1">
                 <div className="text-[15px] font-semibold text-foreground">Connect LinkedIn</div>
                 <div className="text-[12px] text-muted-foreground mt-0.5">
-                  Auto-fill your profile in seconds — experience, skills, and more
+                  Auto-fill your name and photo — then use AI to write your bio
                 </div>
               </div>
               <div className="w-7 h-7 rounded-full bg-linkedin/10 flex items-center justify-center flex-shrink-0">
@@ -333,7 +361,17 @@ export default function ProfileSetup() {
             )}
 
             <div>
-              <label className={labelClass}>Bio *</label>
+              <div className="flex items-center justify-between mb-1.5">
+                <label className={labelClass + " mb-0"}>Bio *</label>
+                <button
+                  onClick={() => handleGenerateBio()}
+                  disabled={generatingBio}
+                  className="inline-flex items-center gap-1.5 text-[12px] font-medium text-primary hover:text-primary/80 disabled:opacity-50 transition-colors"
+                >
+                  {generatingBio ? <Loader2 size={13} className="animate-spin" /> : <Sparkles size={13} />}
+                  {generatingBio ? 'Generating...' : 'Generate with AI'}
+                </button>
+              </div>
               <textarea
                 value={bio}
                 onChange={(e) => { setBio(e.target.value); if (errors.bio) setErrors({ ...errors, bio: '' }); }}
