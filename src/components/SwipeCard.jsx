@@ -100,6 +100,7 @@ function JobCardContent({ card }) {
           {card.company_initial || card.company?.[0] || 'C'}
         </div>
         <div className="flex-1 min-w-0">
+          <div className="text-[9px] text-muted-foreground/60 uppercase tracking-wider font-semibold mb-0.5">Open Role</div>
           <h3 className="text-[15px] font-semibold text-foreground leading-tight">{card.title}</h3>
           <p className="text-[13px] text-muted-foreground mt-0.5">{card.company}</p>
           <div className="flex items-center gap-1 mt-1">
@@ -140,23 +141,32 @@ function JobCardContent({ card }) {
         </div>
       </div>
 
-      {card.recruiter_linkedin && (
-        <a
-          href={card.recruiter_linkedin}
-          target="_blank"
-          rel="noopener noreferrer"
-          onClick={(e) => e.stopPropagation()}
-          onPointerDown={(e) => e.stopPropagation()}
-          className="flex items-center gap-2 w-full p-2.5 rounded-xl bg-muted/60 hover:bg-muted transition-colors"
-        >
-          <div className="w-8 h-8 rounded-lg bg-linkedin flex items-center justify-center flex-shrink-0">
-            <Linkedin size={16} className="text-white" />
+      {(card.recruiter_name || card.recruiter_linkedin) && (
+        <div className="rounded-2xl bg-muted/40 border border-border/30 p-3 flex items-center gap-3">
+          <div className="w-10 h-10 rounded-full bg-brand-green-light flex items-center justify-center text-[12px] font-bold text-primary flex-shrink-0">
+            {(card.recruiter_name || 'R').split(' ').map(n => n[0]).join('').slice(0, 2).toUpperCase()}
           </div>
           <div className="flex-1 min-w-0">
-            <div className="text-[11px] font-medium text-foreground">{card.recruiter_name || 'Recruiter'}</div>
-            <div className="text-[10px] text-muted-foreground">View on LinkedIn</div>
+            <div className="text-[9px] text-muted-foreground/60 uppercase tracking-wider font-semibold">Posted by</div>
+            <div className="text-[13px] font-semibold text-foreground truncate">{card.recruiter_name || 'Recruiter'}</div>
+            {card.company && (
+              <div className="text-[11px] text-muted-foreground truncate">Recruiter at {card.company}</div>
+            )}
           </div>
-        </a>
+          {card.recruiter_linkedin && (
+            <a
+              href={card.recruiter_linkedin}
+              target="_blank"
+              rel="noopener noreferrer"
+              onClick={(e) => e.stopPropagation()}
+              onPointerDown={(e) => e.stopPropagation()}
+              className="flex items-center gap-1.5 px-3 py-2 rounded-xl bg-linkedin text-white text-[11px] font-medium hover:opacity-90 transition-opacity flex-shrink-0"
+            >
+              <Linkedin size={13} />
+              Profile
+            </a>
+          )}
+        </div>
       )}
     </div>
   );
@@ -175,6 +185,7 @@ function CandidateCardContent({ card }) {
           </div>
         )}
         <div className="flex-1 min-w-0">
+          <div className="text-[9px] text-muted-foreground/60 uppercase tracking-wider font-semibold mb-0.5">Candidate</div>
           <h3 className="text-[15px] font-semibold text-foreground leading-tight">{card.full_name}</h3>
           <p className="text-[13px] text-muted-foreground mt-0.5">
             {card.current_role || 'Open to new opportunities'}
@@ -236,14 +247,14 @@ function CandidateCardContent({ card }) {
           rel="noopener noreferrer"
           onClick={(e) => e.stopPropagation()}
           onPointerDown={(e) => e.stopPropagation()}
-          className="flex items-center gap-2 w-full p-2.5 rounded-xl bg-muted/60 hover:bg-muted transition-colors"
+          className="flex items-center gap-3 w-full p-3 rounded-2xl bg-muted/40 border border-border/30 hover:bg-muted/60 transition-colors"
         >
-          <div className="w-8 h-8 rounded-lg bg-linkedin flex items-center justify-center flex-shrink-0">
-            <Linkedin size={16} className="text-white" />
+          <div className="w-10 h-10 rounded-xl bg-linkedin flex items-center justify-center flex-shrink-0">
+            <Linkedin size={18} className="text-white" />
           </div>
           <div className="flex-1 min-w-0">
-            <div className="text-[11px] font-medium text-foreground">View full profile</div>
-            <div className="text-[10px] text-muted-foreground">LinkedIn</div>
+            <div className="text-[9px] text-muted-foreground/60 uppercase tracking-wider font-semibold">Full Profile</div>
+            <div className="text-[13px] font-semibold text-linkedin">View on LinkedIn</div>
           </div>
         </a>
       )}

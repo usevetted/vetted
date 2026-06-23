@@ -33,7 +33,11 @@ export default function Login() {
   const handleGoogle = () => {
     if (googleLoading) return;
     setGoogleLoading(true);
-    base44.auth.loginWithProvider("google", "/");
+    setError("");
+    Promise.resolve(base44.auth.loginWithProvider("google", "/")).catch((err) => {
+      setGoogleLoading(false);
+      setError(err?.message || "Google sign-in failed. Please try again.");
+    });
   };
 
   return (

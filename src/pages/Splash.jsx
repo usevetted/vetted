@@ -11,6 +11,10 @@ export default function Splash() {
   const [fading, setFading] = useState(false);
 
   useEffect(() => {
+    let fadeTimer;
+    let navTimer;
+    let cancelled = false;
+
     const init = async () => {
       let dest = '/landing';
 
@@ -25,15 +29,21 @@ export default function Splash() {
             dest = '/onboarding/account-type';
           }
         } catch {
-          // Authenticated but profile check failed — go to onboarding, not landing
           dest = '/onboarding/account-type';
         }
       }
 
-      setTimeout(() => setFading(true), 2200);
-      setTimeout(() => navigate(dest, { replace: true }), 2700);
+      if (cancelled) return;
+      fadeTimer = setTimeout(() => setFading(true), 2200);
+      navTimer = setTimeout(() => navigate(dest, { replace: true }), 2700);
     };
     init();
+
+    return () => {
+      cancelled = true;
+      clearTimeout(fadeTimer);
+      clearTimeout(navTimer);
+    };
   }, [navigate, isAuthenticated, user]);
 
   return (
