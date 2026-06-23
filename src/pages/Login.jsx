@@ -22,7 +22,7 @@ export default function Login() {
     setLoading(true);
     try {
       await base44.auth.loginViaEmailPassword(email, password);
-      window.location.href = "/";
+      window.location.href = "/post-login";
     } catch (err) {
       setError(err.message || "Invalid email or password");
     } finally {
@@ -34,10 +34,12 @@ export default function Login() {
     if (googleLoading) return;
     setGoogleLoading(true);
     setError("");
-    Promise.resolve(base44.auth.loginWithProvider("google", "/")).catch((err) => {
+    try {
+      base44.auth.loginWithProvider("google", "/post-login");
+    } catch (err) {
       setGoogleLoading(false);
       setError(err?.message || "Google sign-in failed. Please try again.");
-    });
+    }
   };
 
   return (

@@ -47,8 +47,7 @@ export default function Register() {
       if (token) {
         base44.auth.setToken(token);
       }
-      // Go directly to onboarding — we know this is a brand-new user
-      window.location.href = "/onboarding/account-type";
+      window.location.href = "/post-login";
     } catch (err) {
       setError(err.message || "Invalid verification code");
     } finally {
@@ -73,10 +72,12 @@ export default function Register() {
     if (googleLoading) return;
     setGoogleLoading(true);
     setError("");
-    Promise.resolve(base44.auth.loginWithProvider("google", "/")).catch((err) => {
+    try {
+      base44.auth.loginWithProvider("google", "/post-login");
+    } catch (err) {
       setGoogleLoading(false);
       setError(err?.message || "Google sign-in failed. Please try again.");
-    });
+    }
   };
 
   if (showOtp) {

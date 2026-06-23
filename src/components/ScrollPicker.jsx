@@ -3,17 +3,22 @@ import { useRef, useEffect, useCallback } from 'react';
 export default function ScrollPicker({ items, value, onChange, height = 200, itemHeight = 40 }) {
   const listRef = useRef(null);
   const scrollTimeout = useRef(null);
+  const flagTimer = useRef(null);
   const isProgrammaticScroll = useRef(false);
 
   const scrollToValue = useCallback((val, smooth = false) => {
     const index = items.findIndex(item => item.value === val);
     if (index < 0 || !listRef.current) return;
+    const targetScroll = index * itemHeight;
     isProgrammaticScroll.current = true;
     listRef.current.scrollTo({
-      top: index * itemHeight,
+      top: targetScroll,
       behavior: smooth ? 'smooth' : 'auto',
     });
-    setTimeout(() => { isProgrammaticScroll.current = false; }, 100);
+    clearTimeout(flagTimer.current);
+    flagTimer.current = setTimeout(() => {
+      isProgrammaticScroll.current = false;
+    }, smooth ? 350 : 80);
   }, [items, itemHeight]);
 
   useEffect(() => {
@@ -23,6 +28,13 @@ export default function ScrollPicker({ items, value, onChange, height = 200, ite
   useEffect(() => {
     scrollToValue(value);
   }, [items]); // eslint-disable-line
+
+  useEffect(() => {
+    return () => {
+      clearTimeout(scrollTimeout.current);
+      clearTimeout(flagTimer.current);
+    };
+  }, []);
 
   const handleScroll = () => {
     if (isProgrammaticScroll.current) return;
@@ -39,10 +51,13 @@ export default function ScrollPicker({ items, value, onChange, height = 200, ite
       }
       if (Math.abs(listRef.current.scrollTop - targetScroll) > 1) {
         isProgrammaticScroll.current = true;
-        listRef.current.scrollTo({ top: targetScroll, behavior: 'smooth' });
-        setTimeout(() => { isProgrammaticScroll.current = false; }, 100);
+        listRef.current.scrollTo({ top: targetScroll, behavior: 'auto' });
+        clearTimeout(flagTimer.current);
+        flagTimer.current = setTimeout(() => {
+          isProgrammaticScroll.current = false;
+        }, 80);
       }
-    }, 120);
+    }, 150);
   };
 
   const padCount = Math.max(0, Math.floor((height / itemHeight - 1) / 2));
@@ -59,7 +74,7 @@ export default function ScrollPicker({ items, value, onChange, height = 200, ite
         ref={listRef}
         onScroll={handleScroll}
         className="h-full overflow-y-auto no-scrollbar"
-        style={{ scrollSnapType: 'y mandatory', WebkitOverflowScrolling: 'touch' }}
+        style={{ WebkitOverflowScrolling: 'touch' }}
       >
         {Array.from({ length: padCount }).map((_, i) => (
           <div key={`pad-t-${i}`} style={{ height: itemHeight }} />
@@ -68,7 +83,7 @@ export default function ScrollPicker({ items, value, onChange, height = 200, ite
           <div
             key={i}
             className="flex items-center justify-center"
-            style={{ height: itemHeight, scrollSnapAlign: 'center' }}
+            style={{ height: itemHeight }}
           >
             <span className={`text-[15px] transition-colors duration-150 ${item.value === value ? 'font-semibold text-foreground' : 'text-muted-foreground/40'}`}>
               {item.label}
