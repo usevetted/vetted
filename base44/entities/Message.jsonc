@@ -8,6 +8,12 @@
     "sender_profile_id": {
       "type": "string"
     },
+    "sender_user_id": {
+      "type": "string"
+    },
+    "recipient_user_id": {
+      "type": "string"
+    },
     "content": {
       "type": "string"
     }
@@ -27,28 +33,10 @@
           "created_by_id": "{{user.id}}"
         },
         {
-          "data.match_id": {
-            "$base44_in_query": {
-              "entity": "Match",
-              "field": "id",
-              "query": {
-                "$or": [
-                  {
-                    "data.profile1_id": "{{user.data.profile_id}}"
-                  },
-                  {
-                    "data.profile2_id": "{{user.data.profile_id}}"
-                  },
-                  {
-                    "data.profile1_user_id": "{{user.id}}"
-                  },
-                  {
-                    "data.profile2_user_id": "{{user.id}}"
-                  }
-                ]
-              }
-            }
-          }
+          "data.sender_user_id": "{{user.id}}"
+        },
+        {
+          "data.recipient_user_id": "{{user.id}}"
         }
       ]
     },
