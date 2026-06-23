@@ -61,14 +61,13 @@ export default function CreatePost() {
   const handleSubmit = async (e) => {
     if (e) e.preventDefault();
     
-    if (!validate()) return;
+    if (!validate() || submitting) return;
 
     setSubmitting(true);
     try {
       const postData = {
         title: jobTitle.trim(),
         company: company.trim(),
-        company_logo: companyLogo,
         location: location.trim(),
         remote,
         salary_range: salaryRange.trim(),
@@ -76,18 +75,16 @@ export default function CreatePost() {
         tags,
       };
       
+      if (companyLogo) postData.company_picture = companyLogo;
+      
       await base44.entities.Job.create(postData);
       
       toast({
         title: '✓ Job posting published',
         description: 'Your job is now live and visible to candidates',
-        duration: 2000,
       });
 
-      setTimeout(() => {
-        setSubmitting(false);
-        navigate(-1);
-      }, 2100);
+      setTimeout(() => navigate(-1), 1500);
     } catch (error) {
       setSubmitting(false);
       toast({
