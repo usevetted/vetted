@@ -14,15 +14,6 @@
       "type": "boolean",
       "default": false
     },
-    "two_fa_phone": {
-      "type": "string"
-    },
-    "two_fa_code": {
-      "type": "string"
-    },
-    "two_fa_code_expiry": {
-      "type": "string"
-    },
     "pending_email": {
       "type": "string"
     },

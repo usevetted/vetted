@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
-import { X, ChevronDown, Sun, Moon, Loader2 } from 'lucide-react';
+import { X, ChevronDown, Sun, Moon } from 'lucide-react';
 import { base44 } from '@/api/base44Client';
 import { useTheme } from '@/lib/ThemeContext';
 
@@ -24,27 +24,15 @@ export default function MenuDrawer({ open, onClose, user, profile }) {
   const [passwordResetSent, setPasswordResetSent] = useState(false);
   const [emailChangeSent, setEmailChangeSent] = useState(false);
   const [twoFaEnabled, setTwoFaEnabled] = useState(false);
-  const [showTwoFaSetup, setShowTwoFaSetup] = useState(false);
-  const [twoFaPhone, setTwoFaPhone] = useState('');
-  const [twoFaStep, setTwoFaStep] = useState(null); // 'phone' or 'verify'
-  const [twoFaCode, setTwoFaCode] = useState('');
-  const [twoFaError, setTwoFaError] = useState('');
-  const [twoFaLoading, setTwoFaLoading] = useState(false);
-  const [loadingTwoFaStatus, setLoadingTwoFaStatus] = useState(false);
 
   useEffect(() => {
     if (!open) return;
-    // Fetch actual 2FA status when drawer opens
     const fetchTwoFaStatus = async () => {
-      setLoadingTwoFaStatus(true);
       try {
         const currentUser = await base44.auth.me();
         setTwoFaEnabled(currentUser?.two_fa_enabled || false);
       } catch {
-        // Default to false if fetch fails
         setTwoFaEnabled(false);
-      } finally {
-        setLoadingTwoFaStatus(false);
       }
     };
     fetchTwoFaStatus();
@@ -125,77 +113,7 @@ export default function MenuDrawer({ open, onClose, user, profile }) {
     }
   };
 
-  const handleToggle2FA = async () => {
-    if (twoFaEnabled) {
-      // Disable 2FA - need phone to send code
-      setShowTwoFaSetup(true);
-      setTwoFaStep('verify');
-      setTwoFaCode('');
-      setTwoFaError('');
-      // Send SMS code to their registered phone
-      setTwoFaLoading(true);
-      try {
-        await base44.functions.invoke('sendTwoFaCode', { phoneNumber: user?.two_fa_phone });
-      } catch (err) {
-        setTwoFaError(err?.message || 'Failed to send verification code');
-        setShowTwoFaSetup(false);
-      } finally {
-        setTwoFaLoading(false);
-      }
-    } else {
-      // Enable 2FA - ask for phone first
-      setShowTwoFaSetup(true);
-      setTwoFaStep('phone');
-      setTwoFaPhone('');
-      setTwoFaCode('');
-      setTwoFaError('');
-    }
-  };
 
-  const handleSubmitTwoFaPhone = async () => {
-    if (!twoFaPhone) {
-      setTwoFaError('Phone number is required');
-      return;
-    }
-    setTwoFaLoading(true);
-    try {
-      await base44.functions.invoke('sendTwoFaCode', { phoneNumber: twoFaPhone });
-      setTwoFaStep('verify');
-      setTwoFaCode('');
-      setTwoFaError('');
-    } catch (err) {
-      setTwoFaError(err?.message || 'Failed to send code');
-    } finally {
-      setTwoFaLoading(false);
-    }
-  };
-
-  const handleSubmitTwoFaCode = async () => {
-    if (!twoFaCode || twoFaCode.length !== 6) {
-      setTwoFaError('Code must be 6 digits');
-      return;
-    }
-    setTwoFaLoading(true);
-    try {
-      if (twoFaEnabled) {
-        // Disabling 2FA
-        await base44.functions.invoke('disableTwoFa', { code: twoFaCode });
-        setTwoFaEnabled(false);
-      } else {
-        // Enabling 2FA
-        await base44.functions.invoke('verifyTwoFaSetup', { phoneNumber: twoFaPhone, code: twoFaCode });
-        setTwoFaEnabled(true);
-      }
-      setShowTwoFaSetup(false);
-      setTwoFaPhone('');
-      setTwoFaCode('');
-      setTwoFaStep(null);
-    } catch (err) {
-      setTwoFaError(err?.message || 'Invalid code');
-    } finally {
-      setTwoFaLoading(false);
-    }
-  };
 
   const handleDeactivate = async () => {
     try {
@@ -380,93 +298,16 @@ export default function MenuDrawer({ open, onClose, user, profile }) {
                               <div className="space-y-2 pb-3 border-b border-border/30">
                                 <div className="flex items-center justify-between">
                                   <span className="text-[13px] font-medium text-foreground">Two-factor authentication</span>
-                                  <div className="flex items-center gap-2">
-                                    {twoFaLoading && <Loader2 size={14} className="text-primary animate-spin" />}
-                                    <button
-                                      onClick={handleToggle2FA}
-                                      disabled={twoFaLoading}
-                                      className={`w-10 h-6 rounded-full relative flex-shrink-0 transition-colors duration-200 disabled:opacity-50 ${twoFaEnabled ? 'bg-primary' : 'bg-muted-foreground/30'}`}
-                                    >
-                                      <motion.div
-                                        layout
-                                        transition={{ type: 'spring', stiffness: 500, damping: 30 }}
-                                        className={`absolute top-0.5 w-5 h-5 rounded-full bg-white ${twoFaEnabled ? 'right-0.5' : 'left-0.5'}`}
-                                      />
-                                    </button>
-                                  </div>
+                                  <button
+                                    className={`w-10 h-6 rounded-full relative flex-shrink-0 transition-colors duration-200 ${twoFaEnabled ? 'bg-primary' : 'bg-muted-foreground/30'}`}
+                                  >
+                                    <motion.div
+                                      layout
+                                      transition={{ type: 'spring', stiffness: 500, damping: 30 }}
+                                      className={`absolute top-0.5 w-5 h-5 rounded-full bg-white ${twoFaEnabled ? 'right-0.5' : 'left-0.5'}`}
+                                    />
+                                  </button>
                                 </div>
-                                {twoFaError && !showTwoFaSetup && <p className="text-[11px] text-destructive">{twoFaError}</p>}
-                                {showTwoFaSetup && (
-                                  <div className="mt-2 p-3 bg-primary/5 rounded-lg space-y-2 border border-primary/20">
-                                    {twoFaStep === 'phone' && (
-                                      <>
-                                        <p className="text-[12px] text-foreground font-medium">Enter your phone number:</p>
-                                        <input
-                                          type="tel"
-                                          placeholder="+1234567890"
-                                          value={twoFaPhone}
-                                          onChange={(e) => setTwoFaPhone(e.target.value)}
-                                          className="w-full h-[36px] border border-input rounded-lg px-2.5 text-[12px] bg-card focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary"
-                                        />
-                                        {twoFaError && <p className="text-[11px] text-destructive">{twoFaError}</p>}
-                                        <div className="flex gap-2">
-                                          <button
-                                            onClick={() => {
-                                              setShowTwoFaSetup(false);
-                                              setTwoFaPhone('');
-                                              setTwoFaError('');
-                                              setTwoFaStep(null);
-                                            }}
-                                            className="flex-1 h-[32px] text-[12px] font-medium border border-border rounded-lg hover:bg-muted/30 transition-colors"
-                                          >
-                                            Cancel
-                                          </button>
-                                          <button
-                                            onClick={handleSubmitTwoFaPhone}
-                                            disabled={twoFaLoading || !twoFaPhone}
-                                            className="flex-1 h-[32px] text-[12px] font-medium bg-primary text-white rounded-lg hover:bg-primary/90 disabled:opacity-50 transition-colors"
-                                          >
-                                            {twoFaLoading ? 'Sending...' : 'Send Code'}
-                                          </button>
-                                        </div>
-                                      </>
-                                    )}
-                                    {twoFaStep === 'verify' && (
-                                      <>
-                                        <p className="text-[12px] text-foreground">Enter the 6-digit code sent to your phone:</p>
-                                        <input
-                                          type="text"
-                                          placeholder="000000"
-                                          value={twoFaCode}
-                                          onChange={(e) => setTwoFaCode(e.target.value.replace(/\D/g, '').slice(0, 6))}
-                                          maxLength="6"
-                                          className="w-full h-[36px] border border-input rounded-lg px-2.5 text-[12px] bg-card focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary text-center tracking-widest"
-                                        />
-                                        {twoFaError && <p className="text-[11px] text-destructive">{twoFaError}</p>}
-                                        <div className="flex gap-2">
-                                          <button
-                                            onClick={() => {
-                                              setShowTwoFaSetup(false);
-                                              setTwoFaCode('');
-                                              setTwoFaError('');
-                                              setTwoFaStep(null);
-                                            }}
-                                            className="flex-1 h-[32px] text-[12px] font-medium border border-border rounded-lg hover:bg-muted/30 transition-colors"
-                                          >
-                                            Cancel
-                                          </button>
-                                          <button
-                                            onClick={handleSubmitTwoFaCode}
-                                            disabled={twoFaLoading || twoFaCode.length !== 6}
-                                            className="flex-1 h-[32px] text-[12px] font-medium bg-primary text-white rounded-lg hover:bg-primary/90 disabled:opacity-50 transition-colors"
-                                          >
-                                            {twoFaLoading ? 'Verifying...' : twoFaEnabled ? 'Disable' : 'Enable'}
-                                          </button>
-                                        </div>
-                                      </>
-                                    )}
-                                  </div>
-                                )}
                               </div>
                                           {section.options.map((opt, i) => (
                                 <div key={i}>
