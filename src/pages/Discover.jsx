@@ -53,7 +53,7 @@ export default function Discover() {
       if (isRecruiter) {
         const allProfiles = await base44.entities.Profile.filter({ account_type: 'job_seeker' }, '-created_date', 50);
         const swipedProfileIds = new Set(swipes.map(s => s.target_profile_id));
-        const filtered = allProfiles.filter(p => p.id !== profile.id && !swipedProfileIds.has(p.id));
+        const filtered = allProfiles.filter(p => p.id !== profile.id && p.created_by_id !== profile.created_by_id && !swipedProfileIds.has(p.id));
         setAllCards(filtered);
       } else {
         const allJobs = await base44.entities.Job.list('-created_date', 50);
@@ -116,7 +116,7 @@ export default function Discover() {
       const reciprocalLike = reciprocalSwipes.find(s => s.action === 'like' || s.action === 'super');
       const shouldMatch = reciprocalLike || Math.random() < (action === 'super' ? 0.55 : 0.3);
 
-      if (shouldMatch) {
+      if (shouldMatch && targetProfileId !== profile.id) {
         if (!reciprocalLike) {
           await base44.entities.Swipe.create({
             swiper_profile_id: targetProfileId,
@@ -165,13 +165,13 @@ export default function Discover() {
         <div className="flex items-center gap-2">
           <button
             onClick={() => setFilterOpen(true)}
-            className="w-9 h-9 rounded-full bg-white border border-border/50 flex items-center justify-center shadow-sm hover:bg-muted transition-colors"
+            className="w-11 h-11 rounded-full bg-white border border-border/50 flex items-center justify-center shadow-sm hover:bg-muted transition-colors cursor-pointer"
           >
-            <SlidersHorizontal size={16} className="text-muted-foreground" />
+            <SlidersHorizontal size={18} className="text-muted-foreground" />
           </button>
           <button
             onClick={() => navigate('/profile')}
-            className="w-9 h-9 rounded-full bg-brand-green-light flex items-center justify-center text-[11px] font-semibold text-primary overflow-hidden border border-border/50 shadow-sm"
+            className="w-11 h-11 rounded-full bg-brand-green-light flex items-center justify-center text-[11px] font-semibold text-primary overflow-hidden border border-border/50 shadow-sm cursor-pointer"
           >
             {profile?.profile_picture ? (
               <img src={profile.profile_picture} alt="" className="w-full h-full object-cover" />

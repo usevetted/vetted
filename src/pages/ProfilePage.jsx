@@ -92,7 +92,12 @@ export default function ProfilePage() {
   };
 
   const handleLogout = async () => {
-    await base44.auth.logout('/landing');
+    try {
+      await base44.auth.logout();
+    } catch {
+      // ignore
+    }
+    window.location.href = '/landing';
   };
 
   const initials = profile?.full_name?.split(' ').map(n => n[0]).join('').slice(0, 2).toUpperCase() || 'U';
@@ -108,16 +113,16 @@ export default function ProfilePage() {
         {!editing ? (
           <button
             onClick={() => setEditing(true)}
-            className="flex items-center gap-1.5 text-[13px] font-medium text-primary px-3 py-2 rounded-xl hover:bg-brand-green-bg transition-colors cursor-pointer relative z-30"
+            className="flex items-center gap-1.5 text-[13px] font-medium text-primary px-4 py-2.5 rounded-xl hover:bg-brand-green-bg transition-colors cursor-pointer relative z-30 min-h-[44px]"
           >
-            <Pencil size={14} />
+            <Pencil size={15} />
             Edit
           </button>
         ) : (
           <button
             onClick={handleSave}
             disabled={saving}
-            className="flex items-center gap-1.5 text-[13px] font-medium text-primary px-3 py-2 rounded-xl hover:bg-brand-green-bg transition-colors disabled:opacity-40 cursor-pointer relative z-30"
+            className="flex items-center gap-1.5 text-[13px] font-medium text-primary px-4 py-2.5 rounded-xl hover:bg-brand-green-bg transition-colors disabled:opacity-40 cursor-pointer relative z-30 min-h-[44px]"
           >
             <Check size={14} />
             {saving ? 'Saving...' : 'Save'}
