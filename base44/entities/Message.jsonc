@@ -27,9 +27,6 @@
           "created_by_id": "{{user.id}}"
         },
         {
-          "data.sender_profile_id": "{{user.data.profile_id}}"
-        },
-        {
           "data.match_id": {
             "$base44_in_query": {
               "entity": "Match",
@@ -37,13 +34,10 @@
               "query": {
                 "$or": [
                   {
-                    "created_by_id": "{{user.id}}"
+                    "data.profile1_user_id": "{{user.id}}"
                   },
                   {
-                    "data.profile1_id": "{{user.data.profile_id}}"
-                  },
-                  {
-                    "data.profile2_id": "{{user.data.profile_id}}"
+                    "data.profile2_user_id": "{{user.id}}"
                   }
                 ]
               }
