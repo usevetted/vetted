@@ -20,6 +20,7 @@ export default function AccountSecurity() {
   const [error, setError] = useState('');
   const [success, setSuccess] = useState('');
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
+  const [showDeactivateConfirm, setShowDeactivateConfirm] = useState(false);
 
   const loadUser = useCallback(async () => {
     try {
@@ -105,13 +106,38 @@ export default function AccountSecurity() {
     try {
       const profile = await base44.entities.Profile.list();
       if (profile.length > 0) {
-        await base44.entities.Profile.delete(profile[0].id);
+        const deletionDate = new Date();
+        deletionDate.setDate(deletionDate.getDate() + 14);
+        await base44.entities.Profile.update(profile[0].id, { 
+          scheduled_deletion_date: deletionDate.toISOString()
+        });
+      }
+      setSuccess('Account scheduled for deletion in 14 days. You can cancel anytime.');
+      setShowDeleteConfirm(false);
+      setTimeout(() => {
+        navigate('/profile');
+      }, 2000);
+    } catch (err) {
+      setError(err.message || 'Failed to schedule account deletion');
+      setSaving(false);
+    }
+  };
+
+  const handleDeactivateAccount = async () => {
+    setSaving(true);
+    setError('');
+    try {
+      const profile = await base44.entities.Profile.list();
+      if (profile.length > 0) {
+        await base44.entities.Profile.update(profile[0].id, { 
+          is_active: false
+        });
       }
       await base44.auth.logout();
       sessionStorage.setItem('just_logged_out', 'true');
       window.location.href = '/landing';
     } catch (err) {
-      setError(err.message || 'Failed to delete account');
+      setError(err.message || 'Failed to deactivate account');
       setSaving(false);
     }
   };
@@ -343,6 +369,8 @@ export default function AccountSecurity() {
         {/* Danger Zone */}
         <div className="space-y-3 pt-3">
           <h3 className="text-[12px] font-semibold text-muted-foreground uppercase tracking-wider">Danger Zone</h3>
+
+          {/* Delete Account */}
           <button
             onClick={() => setShowDeleteConfirm(true)}
             className="w-full flex items-center justify-center gap-2 text-[13px] font-medium text-destructive px-4 py-3 rounded-xl hover:bg-destructive/5 transition-colors"
@@ -354,17 +382,47 @@ export default function AccountSecurity() {
           {showDeleteConfirm && (
             <div className="space-y-3 p-4 bg-destructive/10 border border-destructive/20 rounded-xl">
               <p className="text-[13px] font-medium text-destructive">Delete Account?</p>
-              <p className="text-[12px] text-destructive/80">This action cannot be undone. All your data will be permanently deleted.</p>
+              <p className="text-[12px] text-destructive/80">Your account will be deleted in 14 days. You can cancel anytime before then.</p>
               <div className="flex gap-2">
                 <button
                   onClick={handleDeleteAccount}
                   disabled={saving}
                   className="flex-1 text-[13px] font-medium text-white px-4 py-2.5 rounded-xl bg-destructive hover:bg-destructive/90 transition-colors disabled:opacity-40"
                 >
-                  {saving ? 'Deleting...' : 'Delete Forever'}
+                  {saving ? 'Scheduling...' : 'Schedule Deletion'}
                 </button>
                 <button
                   onClick={() => setShowDeleteConfirm(false)}
+                  className="flex-1 text-[13px] font-medium text-foreground px-4 py-2.5 rounded-xl hover:bg-muted transition-colors"
+                >
+                  Cancel
+                </button>
+              </div>
+            </div>
+          )}
+
+          {/* Deactivate Account */}
+          <button
+            onClick={() => setShowDeactivateConfirm(true)}
+            className="w-full flex items-center justify-center gap-2 text-[13px] font-medium text-muted-foreground px-4 py-3 rounded-xl hover:bg-muted/50 transition-colors"
+          >
+            Deactivate Account
+          </button>
+
+          {showDeactivateConfirm && (
+            <div className="space-y-3 p-4 bg-muted/30 border border-border rounded-xl">
+              <p className="text-[13px] font-medium text-foreground">Deactivate Account?</p>
+              <p className="text-[12px] text-muted-foreground">You'll be logged out and your profile will be hidden. You can reactivate anytime by logging back in.</p>
+              <div className="flex gap-2">
+                <button
+                  onClick={handleDeactivateAccount}
+                  disabled={saving}
+                  className="flex-1 text-[13px] font-medium text-white px-4 py-2.5 rounded-xl bg-muted-foreground hover:bg-muted-foreground/90 transition-colors disabled:opacity-40"
+                >
+                  {saving ? 'Deactivating...' : 'Deactivate'}
+                </button>
+                <button
+                  onClick={() => setShowDeactivateConfirm(false)}
                   className="flex-1 text-[13px] font-medium text-foreground px-4 py-2.5 rounded-xl hover:bg-muted transition-colors"
                 >
                   Cancel

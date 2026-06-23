@@ -1,20 +1,13 @@
 import { useContext, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Sheet, SheetContent, SheetTrigger } from '@/components/ui/sheet';
-import { Menu, LogOut, Trash2, Moon, Sun, User, Lock } from 'lucide-react';
+import { Menu, LogOut, Moon, Sun, User, Lock } from 'lucide-react';
 import { ThemeContext } from '@/components/ThemeProvider';
-import DeleteAccountSheet from '@/components/DeleteAccountSheet';
 
-export default function SettingsSheet({ onLogout, onDeleteClick }) {
+export default function SettingsSheet({ onLogout }) {
   const navigate = useNavigate();
   const { theme, toggleTheme } = useContext(ThemeContext);
-  const [deleteOpen, setDeleteOpen] = useState(false);
   const [sheetOpen, setSheetOpen] = useState(false);
-
-  const handleDelete = () => {
-    setSheetOpen(false);
-    onDeleteClick();
-  };
 
   const handleLogout = () => {
     setSheetOpen(false);
@@ -95,24 +88,10 @@ export default function SettingsSheet({ onLogout, onDeleteClick }) {
                 <LogOut size={18} className="text-muted-foreground flex-shrink-0" />
                 <span className="text-[14px] font-medium text-foreground">Sign Out</span>
               </button>
-
-              <button
-                onClick={() => setDeleteOpen(true)}
-                className="w-full flex items-center gap-3 px-4 py-3 rounded-xl hover:bg-destructive/5 transition-colors text-left"
-              >
-                <Trash2 size={18} className="text-destructive/60 flex-shrink-0" />
-                <span className="text-[14px] font-medium text-destructive/70">Delete Account</span>
-              </button>
             </div>
           </div>
         </SheetContent>
       </Sheet>
-
-      <DeleteAccountSheet
-        open={deleteOpen}
-        onClose={() => setDeleteOpen(false)}
-        onConfirm={handleDelete}
-      />
     </>
   );
 }

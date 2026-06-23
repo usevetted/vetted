@@ -113,21 +113,6 @@ export default function ProfilePage() {
     window.location.href = '/landing';
   }, []);
 
-  const handleDeleteAccount = useCallback(async () => {
-    try {
-      await base44.entities.Profile.delete(profile.id);
-    } catch {
-      // ignore
-    }
-    try {
-      await base44.auth.logout();
-    } catch {
-      // ignore
-    }
-    sessionStorage.setItem('just_logged_out', 'true');
-    window.location.href = '/landing';
-  }, [profile.id]);
-
   const initials = profile?.full_name?.split(' ').map(n => n[0]).join('').slice(0, 2).toUpperCase() || 'U';
 
   const inputClass = "w-full h-[44px] border border-input rounded-xl px-3.5 text-[14px] text-foreground bg-muted/30 focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all";
@@ -157,7 +142,7 @@ export default function ProfilePage() {
               {saving ? 'Saving...' : 'Save'}
             </button>
           )}
-          <SettingsSheet onLogout={handleLogout} onDeleteClick={handleDeleteAccount} />
+          <SettingsSheet onLogout={handleLogout} />
         </div>
       </div>
 
