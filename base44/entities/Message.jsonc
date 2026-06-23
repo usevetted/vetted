@@ -34,6 +34,12 @@
               "query": {
                 "$or": [
                   {
+                    "data.profile1_id": "{{user.data.profile_id}}"
+                  },
+                  {
+                    "data.profile2_id": "{{user.data.profile_id}}"
+                  },
+                  {
                     "data.profile1_user_id": "{{user.id}}"
                   },
                   {
