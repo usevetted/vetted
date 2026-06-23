@@ -1,9 +1,10 @@
 import { useState, useEffect, useRef } from 'react';
 import { useNavigate, useOutletContext, useParams } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
-import { ArrowLeft, Send, Info, Linkedin, ShieldAlert, Flag, X } from 'lucide-react';
+import { ArrowLeft, Send, Info, Linkedin, ShieldAlert, Flag, X, HeartCrack } from 'lucide-react';
 import { base44 } from '@/api/base44Client';
 import ReportUserSheet from '@/components/ReportUserSheet';
+import MatchActionsSheet from '@/components/MatchActionsSheet';
 import LoadingScreen from '@/components/LoadingScreen';
 
 export default function Chat() {
@@ -18,6 +19,7 @@ export default function Chat() {
   const [showInfo, setShowInfo] = useState(false);
   const [moderationWarning, setModerationWarning] = useState(null);
   const [reportOpen, setReportOpen] = useState(false);
+  const [actionsOpen, setActionsOpen] = useState(false);
   const messagesEndRef = useRef(null);
 
   useEffect(() => {
@@ -81,6 +83,24 @@ export default function Chat() {
       setInput(content);
     } finally {
       setSending(false);
+    }
+  };
+
+  const handleUnmatch = async () => {
+    try {
+      await base44.entities.Match.update(matchId, { status: 'archived' });
+      navigate('/messages');
+    } catch {
+      // ignore
+    }
+  };
+
+  const handleBlock = async () => {
+    try {
+      await base44.entities.Match.update(matchId, { status: 'blocked' });
+      navigate('/messages');
+    } catch {
+      // ignore
     }
   };
 
@@ -175,13 +195,20 @@ export default function Chat() {
                 </a>
               )}
             </div>
-            <div className="px-4 pb-4">
+            <div className="px-4 pb-4 space-y-3">
               <button
                 onClick={() => { setShowInfo(false); setReportOpen(true); }}
                 className="flex items-center gap-2 text-[13px] font-medium text-destructive"
               >
                 <Flag size={14} />
                 Report {otherName?.split(' ')[0]}
+              </button>
+              <button
+                onClick={() => { setShowInfo(false); setActionsOpen(true); }}
+                className="flex items-center gap-2 text-[13px] font-medium text-muted-foreground hover:text-foreground transition-colors"
+              >
+                <HeartCrack size={14} />
+                Unmatch / Block
               </button>
             </div>
           </motion.div>
@@ -290,6 +317,13 @@ export default function Chat() {
         reportedProfileName={otherName}
         matchId={matchId}
         reporterProfileId={profile.id}
+      />
+      <MatchActionsSheet
+        open={actionsOpen}
+        onClose={() => setActionsOpen(false)}
+        onUnmatch={handleUnmatch}
+        onBlock={handleBlock}
+        otherName={otherName}
       />
     </div>
   );

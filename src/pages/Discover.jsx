@@ -1,7 +1,7 @@
 import { useState, useEffect, useCallback, useMemo } from 'react';
 import { useNavigate, useOutletContext } from 'react-router-dom';
 import { AnimatePresence, motion } from 'framer-motion';
-import { X, Heart, Star, SlidersHorizontal } from 'lucide-react';
+import { X, Heart, Star, SlidersHorizontal, Plus } from 'lucide-react';
 import Logo from '@/components/Logo';
 import SwipeCard from '@/components/SwipeCard';
 import MatchOverlay from '@/components/MatchOverlay';
@@ -134,6 +134,14 @@ export default function Discover() {
       <div className="flex items-center justify-between px-5 pt-2 pb-3 relative z-10">
         <Logo size="sm" />
         <div className="flex items-center gap-2">
+          {isRecruiter && (
+            <button
+              onClick={() => navigate('/post-job')}
+              className="w-11 h-11 rounded-full bg-primary flex items-center justify-center shadow-sm hover:bg-primary/90 transition-colors cursor-pointer"
+            >
+              <Plus size={18} className="text-white" />
+            </button>
+          )}
           <button
             onClick={() => setFilterOpen(true)}
             className="w-11 h-11 rounded-full bg-white border border-border/50 flex items-center justify-center shadow-sm hover:bg-muted transition-colors cursor-pointer"

@@ -80,7 +80,10 @@ Deno.serve(async (req) => {
       profile2_id: profile.id,
     });
 
-    if (existingAs1.length > 0 || existingAs2.length > 0) {
+    const hasBlockingMatch = [...existingAs1, ...existingAs2].some(
+      m => m.status === 'active' || m.status === 'blocked'
+    );
+    if (hasBlockingMatch) {
       return Response.json({ matched: false });
     }
 
