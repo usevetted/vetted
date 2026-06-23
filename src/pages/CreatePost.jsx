@@ -77,9 +77,9 @@ export default function CreatePost() {
     console.log('Job posting created:', postData);
     
     toast({
-      title: 'Success',
-      description: 'Your job posting has been created',
-      duration: 1000,
+      title: '✓ Job posting published',
+      description: 'Your job is now live and visible to candidates',
+      duration: 2000,
     });
 
     setTimeout(() => {
@@ -250,20 +250,22 @@ export default function CreatePost() {
         </div>
 
         {/* Submit Button (Fixed at bottom) */}
-        <div className="px-6 py-4 bg-white border-t border-border/30 flex-shrink-0">
+        <div className="px-6 py-5 bg-white border-t border-border/30 flex-shrink-0 shadow-lg">
           <button
             type="button"
             onClick={handleSubmit}
             disabled={submitting}
-            className="w-full h-[52px] bg-primary text-white rounded-2xl text-[15px] font-semibold hover:bg-primary/90 active:bg-primary/80 transition-colors flex items-center justify-center gap-2 disabled:opacity-60 disabled:cursor-not-allowed whitespace-nowrap"
+            className="w-full h-[56px] bg-primary text-white rounded-xl text-[16px] font-semibold hover:bg-primary/95 active:bg-primary/85 transition-all duration-200 flex items-center justify-center gap-2.5 disabled:opacity-50 disabled:cursor-not-allowed"
           >
             {submitting ? (
               <>
-                <Loader2 size={18} className="animate-spin flex-shrink-0" />
+                <Loader2 size={20} className="animate-spin flex-shrink-0" />
                 <span>Publishing...</span>
               </>
             ) : (
-              <span>Publish Job</span>
+              <>
+                <span>Publish Job Posting</span>
+              </>
             )}
           </button>
         </div>
