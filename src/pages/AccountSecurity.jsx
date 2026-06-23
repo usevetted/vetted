@@ -1,6 +1,6 @@
 import { useState, useCallback } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
-import { ArrowLeft, Mail, Lock, Smartphone, LogOut, AlertCircle } from 'lucide-react';
+import { ArrowLeft, Mail, Lock, Smartphone, LogOut, AlertCircle, Trash2 } from 'lucide-react';
 import Logo from '@/components/Logo';
 import { base44 } from '@/api/base44Client';
 
@@ -19,6 +19,7 @@ export default function AccountSecurity() {
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState('');
   const [success, setSuccess] = useState('');
+  const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
 
   const loadUser = useCallback(async () => {
     try {
@@ -94,6 +95,23 @@ export default function AccountSecurity() {
       window.location.href = '/login';
     } catch (err) {
       setError(err.message || 'Failed to sign out all devices');
+      setSaving(false);
+    }
+  };
+
+  const handleDeleteAccount = async () => {
+    setSaving(true);
+    setError('');
+    try {
+      const profile = await base44.entities.Profile.list();
+      if (profile.length > 0) {
+        await base44.entities.Profile.delete(profile[0].id);
+      }
+      await base44.auth.logout();
+      sessionStorage.setItem('just_logged_out', 'true');
+      window.location.href = '/landing';
+    } catch (err) {
+      setError(err.message || 'Failed to delete account');
       setSaving(false);
     }
   };
@@ -321,7 +339,41 @@ export default function AccountSecurity() {
             Sign Out All Devices
           </button>
         </div>
-      </div>
+
+        {/* Danger Zone */}
+        <div className="space-y-3 pt-3">
+          <h3 className="text-[12px] font-semibold text-muted-foreground uppercase tracking-wider">Danger Zone</h3>
+          <button
+            onClick={() => setShowDeleteConfirm(true)}
+            className="w-full flex items-center justify-center gap-2 text-[13px] font-medium text-destructive px-4 py-3 rounded-xl hover:bg-destructive/5 transition-colors"
+          >
+            <Trash2 size={16} />
+            Delete Account
+          </button>
+
+          {showDeleteConfirm && (
+            <div className="space-y-3 p-4 bg-destructive/10 border border-destructive/20 rounded-xl">
+              <p className="text-[13px] font-medium text-destructive">Delete Account?</p>
+              <p className="text-[12px] text-destructive/80">This action cannot be undone. All your data will be permanently deleted.</p>
+              <div className="flex gap-2">
+                <button
+                  onClick={handleDeleteAccount}
+                  disabled={saving}
+                  className="flex-1 text-[13px] font-medium text-white px-4 py-2.5 rounded-xl bg-destructive hover:bg-destructive/90 transition-colors disabled:opacity-40"
+                >
+                  {saving ? 'Deleting...' : 'Delete Forever'}
+                </button>
+                <button
+                  onClick={() => setShowDeleteConfirm(false)}
+                  className="flex-1 text-[13px] font-medium text-foreground px-4 py-2.5 rounded-xl hover:bg-muted transition-colors"
+                >
+                  Cancel
+                </button>
+              </div>
+            </div>
+          )}
+        </div>
+        </div>
     </div>
   );
 }
