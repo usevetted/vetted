@@ -24,13 +24,13 @@ export default function Splash() {
       } catch {
         // fall through to landing
       }
-      setTimeout(() => navigate('/landing'), 2200);
+      setTimeout(() => navigate('/landing'), 2400);
     };
     init();
   }, [navigate]);
 
   return (
-    <div className="min-h-screen flex flex-col items-center justify-center bg-white">
+    <div className="h-[100dvh] flex flex-col items-center justify-center bg-white">
       <motion.div
         initial={{ opacity: 0, scale: 0.92 }}
         animate={{ opacity: 1, scale: 1 }}

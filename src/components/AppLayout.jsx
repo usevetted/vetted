@@ -2,6 +2,7 @@ import { Outlet, useNavigate, useLocation } from 'react-router-dom';
 import { LayoutGrid, Heart, MessageCircle, User } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import { base44 } from '@/api/base44Client';
+import { useAuth } from '@/lib/AuthContext';
 
 const navItems = [
   { icon: LayoutGrid, label: 'Discover', path: '/discover' },
@@ -13,13 +14,18 @@ const navItems = [
 export default function AppLayout() {
   const navigate = useNavigate();
   const location = useLocation();
+  const { user } = useAuth();
   const [profile, setProfile] = useState(null);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(false);
+  const [retryCount, setRetryCount] = useState(0);
 
   useEffect(() => {
-    const checkProfile = async () => {
+    const loadProfile = async () => {
+      if (!user) return;
+      setLoading(true);
+      setError(false);
       try {
-        const user = await base44.auth.me();
         const profiles = await base44.entities.Profile.filter({ created_by_id: user.id });
         if (profiles.length === 0 || !profiles[0].onboarding_complete) {
           navigate('/onboarding/account-type', { replace: true });
@@ -27,18 +33,32 @@ export default function AppLayout() {
         }
         setProfile(profiles[0]);
       } catch {
-        navigate('/landing', { replace: true });
+        setError(true);
       } finally {
         setLoading(false);
       }
     };
-    checkProfile();
-  }, [navigate]);
+    loadProfile();
+  }, [user, navigate, retryCount]);
 
-  if (loading || !profile) {
+  if (loading || (!profile && !error)) {
     return (
       <div className="fixed inset-0 flex items-center justify-center bg-white">
         <div className="w-7 h-7 border-2 border-secondary border-t-primary rounded-full animate-spin"></div>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="fixed inset-0 flex flex-col items-center justify-center bg-white gap-4 px-8">
+        <p className="text-[14px] text-muted-foreground text-center">Couldn't load your profile. Please check your connection.</p>
+        <button
+          onClick={() => setRetryCount(c => c + 1)}
+          className="px-5 py-2.5 rounded-xl bg-primary text-white text-[13px] font-medium hover:bg-primary/90 transition-colors"
+        >
+          Retry
+        </button>
       </div>
     );
   }

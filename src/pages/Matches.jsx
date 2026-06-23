@@ -39,18 +39,18 @@ export default function Matches() {
   };
 
   return (
-    <div className="flex-1 flex flex-col">
-      <div className="flex items-center justify-between px-5 pt-2 pb-3">
+    <div className="flex-1 flex flex-col min-h-0">
+      <div className="flex items-center justify-between px-5 pt-2 pb-3 flex-shrink-0">
         <Logo size="sm" />
       </div>
-      <div className="px-5 pb-3">
+      <div className="px-5 pb-3 flex-shrink-0">
         <h1 className="text-[22px] font-semibold text-foreground">Matches</h1>
         <p className="text-[13px] text-muted-foreground mt-0.5">
           {matches.length > 0 ? `${matches.length} mutual ${matches.length === 1 ? 'match' : 'matches'}` : 'Your matches will appear here'}
         </p>
       </div>
 
-      <div className="flex-1 overflow-y-auto no-scrollbar px-5 pb-6">
+      <div className="flex-1 overflow-y-auto no-scrollbar px-5 pb-6 min-h-0">
         {loading ? (
           <div className="flex justify-center mt-8">
             <div className="w-7 h-7 border-2 border-secondary border-t-primary rounded-full animate-spin" />

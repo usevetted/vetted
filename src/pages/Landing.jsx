@@ -6,8 +6,8 @@ export default function Landing() {
   const navigate = useNavigate();
 
   return (
-    <div className="min-h-screen bg-white flex justify-center">
-      <div className="w-full max-w-[440px] flex flex-col items-center px-8 pt-[18vh] pb-12 min-h-screen shadow-[0_0_60px_rgba(0,0,0,0.06)]">
+    <div className="h-[100dvh] bg-gradient-to-br from-secondary/60 via-secondary/40 to-brand-green-bg/40 flex justify-center overflow-y-auto no-scrollbar">
+      <div className="w-full max-w-[440px] flex flex-col items-center px-8 pt-[16vh] pb-12 h-[100dvh] shadow-[0_0_60px_rgba(0,0,0,0.06)]">
         <motion.div
           initial={{ opacity: 0, y: 20, scale: 0.96 }}
           animate={{ opacity: 1, y: 0, scale: 1 }}
