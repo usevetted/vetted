@@ -76,11 +76,16 @@ export default function CreatePost() {
     };
     console.log('Job posting created:', postData);
     
-    toast({
+    const { dismiss } = toast({
       title: '✓ Job posting published',
       description: 'Your job is now live and visible to candidates',
       duration: 2000,
     });
+    
+    // Auto-dismiss after duration
+    setTimeout(() => {
+      if (dismiss) dismiss();
+    }, 2000);
 
     setTimeout(() => {
       setSubmitting(false);
@@ -250,7 +255,7 @@ export default function CreatePost() {
         </div>
 
         {/* Submit Button (Fixed at bottom) */}
-        <div className="px-6 py-5 bg-white border-t border-border/30 flex-shrink-0 shadow-lg">
+        <div className="px-6 py-5 bg-white border-t border-border/30 flex-shrink-0 shadow-lg pb-[calc(5rem+env(safe-area-inset-bottom))]">
           <button
             type="button"
             onClick={handleSubmit}
