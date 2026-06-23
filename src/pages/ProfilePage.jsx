@@ -21,6 +21,7 @@ export default function ProfilePage() {
   const [uploadingPic, setUploadingPic] = useState(false);
   const [yearsPickerOpen, setYearsPickerOpen] = useState(false);
   const [menuOpen, setMenuOpen] = useState(false);
+  const [loggingOut, setLoggingOut] = useState(false);
 
 
   const [fullName, setFullName] = useState('');
@@ -105,12 +106,29 @@ export default function ProfilePage() {
   };
 
   const handleLogout = async () => {
+    setLoggingOut(true);
+    
+    // Create a timeout promise that resolves after 5 seconds
+    const timeoutPromise = new Promise((resolve) => {
+      setTimeout(() => resolve('timeout'), 5000);
+    });
+    
+    // Race between logout and timeout
+    const result = await Promise.race([
+      base44.auth.logout().then(() => 'success').catch(() => 'error'),
+      timeoutPromise
+    ]);
+    
+    // Always clear session and redirect, regardless of the result
     try {
-      await base44.auth.logout();
+      // Clear any stored tokens/session data
+      sessionStorage.clear();
+      localStorage.removeItem('auth_token');
     } catch {
       // ignore
     }
-    sessionStorage.setItem('just_logged_out', 'true');
+    
+    // Force redirect to landing page
     window.location.href = '/landing';
   };
 
@@ -381,10 +399,20 @@ export default function ProfilePage() {
 
           <button
             onClick={handleLogout}
-            className="w-full h-[48px] border border-border rounded-2xl text-[14px] font-medium text-muted-foreground hover:bg-muted/30 transition-colors flex items-center justify-center gap-2 mt-4"
+            disabled={loggingOut}
+            className="w-full h-[48px] border border-border rounded-2xl text-[14px] font-medium text-muted-foreground hover:bg-muted/30 disabled:opacity-50 disabled:cursor-not-allowed transition-colors flex items-center justify-center gap-2 mt-4"
           >
-            <LogOut size={16} />
-            Sign Out
+            {loggingOut ? (
+              <>
+                <div className="w-4 h-4 border-2 border-muted-foreground border-t-foreground rounded-full animate-spin" />
+                Signing out...
+              </>
+            ) : (
+              <>
+                <LogOut size={16} />
+                Sign Out
+              </>
+            )}
           </button>
         </div>
       )}
