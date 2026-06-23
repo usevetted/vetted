@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { motion, useMotionValue, useTransform } from 'framer-motion';
-import { MapPin, Linkedin, Building2, FileText } from 'lucide-react';
+import { MapPin, Linkedin, Building2 } from 'lucide-react';
+import ResumeLink from '@/components/ResumeLink';
 
 export default function SwipeCard({ card, type, onSwipe, isTop, index, triggerAction }) {
   const [exitDir, setExitDir] = useState(null);
@@ -233,21 +234,7 @@ function CandidateCardContent({ card }) {
       )}
 
       {card.resume_url && (
-        <a
-          href={card.resume_url}
-          target="_blank"
-          rel="noopener noreferrer"
-          onClick={(e) => e.stopPropagation()}
-          className="flex items-center gap-2 w-full p-2.5 rounded-xl bg-primary/5 hover:bg-primary/10 transition-colors mt-2"
-        >
-          <div className="w-8 h-8 rounded-lg bg-primary/10 flex items-center justify-center flex-shrink-0">
-            <FileText size={16} className="text-primary" />
-          </div>
-          <div className="flex-1 min-w-0">
-            <div className="text-[11px] font-medium text-foreground">View Resume</div>
-            <div className="text-[10px] text-muted-foreground">PDF</div>
-          </div>
-        </a>
+        <ResumeLink url={card.resume_url} compact />
       )}
     </div>
   );
