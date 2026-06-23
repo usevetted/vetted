@@ -2,6 +2,7 @@ import { Toaster } from "@/components/ui/toaster"
 import { QueryClientProvider } from '@tanstack/react-query'
 import { queryClientInstance } from '@/lib/query-client'
 import { BrowserRouter as Router, Route, Routes, Navigate, useLocation } from 'react-router-dom';
+import { useEffect } from 'react';
 import { AnimatePresence, motion } from 'framer-motion';
 import PageNotFound from './lib/PageNotFound';
 import { AuthProvider, useAuth } from '@/lib/AuthContext';
@@ -29,6 +30,14 @@ const AuthenticatedApp = () => {
   const { isLoadingAuth, isLoadingPublicSettings, authError, navigateToLogin } = useAuth();
   const location = useLocation();
 
+  // Handle auth_required via useEffect — calling a redirect during render
+  // is a React anti-pattern that causes double-fires in StrictMode
+  useEffect(() => {
+    if (authError?.type === 'auth_required') {
+      navigateToLogin();
+    }
+  }, [authError, navigateToLogin]);
+
   // Show loading spinner while checking app public settings or auth
   if (isLoadingPublicSettings || isLoadingAuth) {
     return <LoadingScreen />;
@@ -39,9 +48,7 @@ const AuthenticatedApp = () => {
     if (authError.type === 'user_not_registered') {
       return <UserNotRegisteredError />;
     } else if (authError.type === 'auth_required') {
-      // Redirect to login automatically
-      navigateToLogin();
-      return null;
+      return null; // useEffect handles the redirect
     }
   }
 

@@ -25,7 +25,8 @@ export default function Splash() {
             dest = '/onboarding/account-type';
           }
         } catch {
-          // fall through to landing
+          // Authenticated but profile check failed — go to onboarding, not landing
+          dest = '/onboarding/account-type';
         }
       }
 

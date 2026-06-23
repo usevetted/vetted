@@ -91,7 +91,6 @@ export const AuthProvider = ({ children }) => {
 
   const checkUserAuth = async () => {
     try {
-      // Now check if the user is authenticated
       setIsLoadingAuth(true);
       const currentUser = await base44.auth.me();
       setUser(currentUser);
@@ -103,14 +102,9 @@ export const AuthProvider = ({ children }) => {
       setIsLoadingAuth(false);
       setIsAuthenticated(false);
       setAuthChecked(true);
-      
-      // If user auth fails, it might be an expired token
-      if (error.status === 401 || error.status === 403) {
-        setAuthError({
-          type: 'auth_required',
-          message: 'Authentication required'
-        });
-      }
+      // Don't set authError here — let ProtectedRoute handle the redirect
+      // to /login via its unauthenticatedElement. This prevents redirect loops
+      // and keeps public routes accessible when the token is simply missing.
     }
   };
 

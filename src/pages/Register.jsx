@@ -43,10 +43,12 @@ export default function Register() {
     setLoading(true);
     try {
       const result = await base44.auth.verifyOtp({ email, otpCode });
-      if (result?.access_token) {
-        base44.auth.setToken(result.access_token);
+      const token = typeof result === "string" ? result : (result?.access_token || result?.token);
+      if (token) {
+        base44.auth.setToken(token);
       }
-      window.location.href = "/";
+      // Go directly to onboarding — we know this is a brand-new user
+      window.location.href = "/onboarding/account-type";
     } catch (err) {
       setError(err.message || "Invalid verification code");
     } finally {
