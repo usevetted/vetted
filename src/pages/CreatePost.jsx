@@ -1,34 +1,91 @@
-import { useState } from 'react';
+import { useState, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { ArrowLeft } from 'lucide-react';
+import { ArrowLeft, Camera, Loader2 } from 'lucide-react';
 import { useToast } from '@/components/ui/use-toast';
+import { base44 } from '@/api/base44Client';
 
 export default function CreatePost() {
   const navigate = useNavigate();
   const { toast } = useToast();
-  const [title, setTitle] = useState('');
-  const [description, setDescription] = useState('');
+  const fileInputRef = useRef(null);
   const [submitting, setSubmitting] = useState(false);
+  const [errors, setErrors] = useState({});
+
+  const [jobTitle, setJobTitle] = useState('');
+  const [company, setCompany] = useState('');
+  const [companyLogo, setCompanyLogo] = useState('');
+  const [uploadingLogo, setUploadingLogo] = useState(false);
+  const [location, setLocation] = useState('');
+  const [remote, setRemote] = useState(false);
+  const [salaryRange, setSalaryRange] = useState('');
+  const [description, setDescription] = useState('');
+  const [tags, setTags] = useState([]);
+  const [tagInput, setTagInput] = useState('');
+
+  const handleLogoUpload = async (e) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    setUploadingLogo(true);
+    try {
+      const { file_url } = await base44.integrations.Core.UploadFile({ file });
+      setCompanyLogo(file_url);
+    } catch {
+      toast({
+        title: 'Upload failed',
+        description: 'Could not upload logo',
+        variant: 'destructive',
+      });
+    } finally {
+      setUploadingLogo(false);
+    }
+  };
+
+  const handleAddTag = () => {
+    const trimmed = tagInput.trim();
+    if (trimmed && !tags.includes(trimmed)) {
+      setTags([...tags, trimmed]);
+      setTagInput('');
+    }
+  };
+
+  const validate = () => {
+    const e = {};
+    if (!jobTitle.trim()) e.jobTitle = 'Job title is required';
+    if (!company.trim()) e.company = 'Company name is required';
+    if (!location.trim()) e.location = 'Location is required';
+    if (!description.trim()) e.description = 'Job description is required';
+    setErrors(e);
+    return Object.keys(e).length === 0;
+  };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     
-    if (!title.trim() || !description.trim()) {
+    if (!validate()) {
       toast({
         title: 'Missing fields',
-        description: 'Please fill in both title and description',
+        description: 'Please fill in all required fields',
         variant: 'destructive',
       });
       return;
     }
 
     setSubmitting(true);
-    const postData = { title: title.trim(), content: description.trim() };
-    console.log('Post created:', postData);
+    const postData = {
+      job_title: jobTitle.trim(),
+      company: company.trim(),
+      company_logo: companyLogo,
+      location: location.trim(),
+      remote,
+      salary_range: salaryRange.trim(),
+      description: description.trim(),
+      tags,
+    };
+    console.log('Job posting created:', postData);
     
     toast({
       title: 'Success',
-      description: 'Your post has been created',
+      description: 'Your job posting has been created',
     });
 
     setTimeout(() => {
@@ -37,48 +94,161 @@ export default function CreatePost() {
     }, 800);
   };
 
-  return (
-    <div className="flex-1 flex flex-col bg-secondary/30 min-h-0 overflow-y-auto no-scrollbar">
-      {/* Header */}
-      <div className="flex items-center gap-3 px-5 pt-4 pb-4 border-b border-border/50 bg-white sticky top-0 z-10">
-        <button
-          onClick={() => navigate(-1)}
-          className="p-1 -ml-1 hover:bg-muted rounded-lg transition-colors"
-        >
-          <ArrowLeft size={20} className="text-primary" />
-        </button>
-        <h1 className="text-[18px] font-semibold text-foreground">Create Post</h1>
-      </div>
+  const inputClass = "w-full h-[44px] border border-input rounded-xl px-3.5 text-[14px] text-foreground bg-muted/30 focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all";
+  const labelClass = "text-[12px] font-medium text-foreground/70 mb-1.5 block";
+  const errorClass = "text-[11px] text-destructive mt-1";
 
-      {/* Content */}
-      <div className="flex-1 flex items-center justify-center px-5 py-8">
-        <div className="w-full max-w-[500px] bg-white rounded-2xl border border-border/50 shadow-sm p-6">
-          <form onSubmit={handleSubmit} className="flex flex-col gap-5">
-            {/* Title Input */}
+  return (
+    <div className="min-h-[100dvh] bg-gradient-to-br from-secondary/60 via-secondary/40 to-brand-green-bg/40 flex justify-center overflow-y-auto no-scrollbar">
+      <div className="w-full max-w-[600px] min-h-[100dvh] bg-white flex flex-col">
+        {/* Header */}
+        <div className="px-6 pt-4 pb-4 flex items-center gap-3">
+          <button onClick={() => navigate(-1)} className="p-1 -ml-1">
+            <ArrowLeft size={20} className="text-foreground/60" />
+          </button>
+          <h1 className="text-[20px] font-semibold text-foreground">Create Job Posting</h1>
+        </div>
+
+        <div className="px-6 pb-4">
+          <p className="text-[13px] text-muted-foreground">
+            Fill in the details about your job opening
+          </p>
+        </div>
+
+        <div className="flex-1 overflow-y-auto no-scrollbar px-6 pb-6">
+          {/* Company Logo */}
+          <div className="flex flex-col items-center mb-6">
+            <button
+              onClick={() => fileInputRef.current?.click()}
+              className="relative w-[88px] h-[88px] rounded-full overflow-hidden border-2 border-border group"
+            >
+              {companyLogo ? (
+                <img src={companyLogo} alt="Company Logo" className="w-full h-full object-cover" />
+              ) : (
+                <div className="w-full h-full bg-muted flex items-center justify-center">
+                  <Camera size={24} className="text-muted-foreground/50" />
+                </div>
+              )}
+              <div className="absolute inset-0 bg-black/0 group-hover:bg-black/20 transition-colors flex items-center justify-center">
+                <Camera size={20} className="text-white opacity-0 group-hover:opacity-100 transition-opacity" />
+              </div>
+            </button>
+            <p className="text-[12px] text-muted-foreground mt-2">
+              {uploadingLogo ? 'Uploading...' : 'Tap to upload logo'}
+            </p>
+            <input
+              ref={fileInputRef}
+              type="file"
+              accept="image/*"
+              onChange={handleLogoUpload}
+              className="hidden"
+            />
+          </div>
+
+          <p className="text-[11px] text-muted-foreground/60 mb-4 uppercase tracking-wider font-medium">Job Details</p>
+
+          {/* Form fields */}
+          <form onSubmit={handleSubmit} className="space-y-4">
             <div>
-              <label className="block text-[13px] font-medium text-foreground mb-2">
-                Title
-              </label>
+              <label className={labelClass}>Job Title *</label>
               <input
-                type="text"
-                value={title}
-                onChange={(e) => setTitle(e.target.value)}
-                placeholder="Enter post title..."
-                className="w-full h-[44px] border border-input rounded-xl px-4 text-[14px] text-foreground bg-muted/30 focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all"
+                value={jobTitle}
+                onChange={(e) => { setJobTitle(e.target.value); if (errors.jobTitle) setErrors({ ...errors, jobTitle: '' }); }}
+                placeholder="e.g., Senior Product Manager"
+                className={`${inputClass} ${errors.jobTitle ? 'border-destructive' : ''}`}
+              />
+              {errors.jobTitle && <p className={errorClass}>{errors.jobTitle}</p>}
+            </div>
+
+            <div>
+              <label className={labelClass}>Company Name *</label>
+              <input
+                value={company}
+                onChange={(e) => { setCompany(e.target.value); if (errors.company) setErrors({ ...errors, company: '' }); }}
+                placeholder="e.g., Acme Corp"
+                className={`${inputClass} ${errors.company ? 'border-destructive' : ''}`}
+              />
+              {errors.company && <p className={errorClass}>{errors.company}</p>}
+            </div>
+
+            <div>
+              <label className={labelClass}>Location *</label>
+              <input
+                value={location}
+                onChange={(e) => { setLocation(e.target.value); if (errors.location) setErrors({ ...errors, location: '' }); }}
+                placeholder="e.g., San Francisco, CA"
+                className={`${inputClass} ${errors.location ? 'border-destructive' : ''}`}
+              />
+              {errors.location && <p className={errorClass}>{errors.location}</p>}
+            </div>
+
+            {/* Remote toggle */}
+            <div className="flex items-center justify-between p-3.5 bg-muted/30 rounded-xl">
+              <div>
+                <div className="text-[13px] font-medium text-foreground">Remote</div>
+                <div className="text-[11px] text-muted-foreground">Position is fully remote</div>
+              </div>
+              <button
+                type="button"
+                onClick={() => setRemote(!remote)}
+                className={`w-11 h-6 rounded-full transition-colors relative flex-shrink-0 ${remote ? 'bg-primary' : 'bg-muted-foreground/30'}`}
+              >
+                <div className={`absolute top-0.5 w-5 h-5 rounded-full bg-white transition-transform ${remote ? 'translate-x-5' : 'translate-x-0.5'}`} />
+              </button>
+            </div>
+
+            <div>
+              <label className={labelClass}>Salary Range</label>
+              <input
+                value={salaryRange}
+                onChange={(e) => setSalaryRange(e.target.value)}
+                placeholder="e.g., $150k – $200k"
+                className={inputClass}
               />
             </div>
 
-            {/* Description Textarea */}
             <div>
-              <label className="block text-[13px] font-medium text-foreground mb-2">
-                Description / Content
-              </label>
+              <label className={labelClass}>Job Description *</label>
               <textarea
                 value={description}
-                onChange={(e) => setDescription(e.target.value)}
-                placeholder="Write your post content..."
-                rows={6}
-                className="w-full border border-input rounded-xl px-4 py-3 text-[14px] text-foreground bg-muted/30 focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all resize-none"
+                onChange={(e) => { setDescription(e.target.value); if (errors.description) setErrors({ ...errors, description: '' }); }}
+                placeholder="Describe the role, responsibilities, and requirements..."
+                rows={5}
+                className={`w-full border border-input rounded-xl px-3.5 py-2.5 text-[14px] text-foreground bg-muted/30 focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all resize-none ${errors.description ? 'border-destructive' : ''}`}
+              />
+              {errors.description && <p className={errorClass}>{errors.description}</p>}
+            </div>
+
+            {/* Tags */}
+            <div>
+              <label className={labelClass}>Skills / Tags</label>
+              <div className="flex flex-wrap gap-2 mb-2">
+                {tags.map((tag, i) => (
+                  <span
+                    key={i}
+                    className="inline-flex items-center gap-1 text-[12px] font-medium px-3 py-1.5 rounded-full bg-brand-green-light text-primary"
+                  >
+                    {tag}
+                    <button
+                      type="button"
+                      onClick={() => setTags(tags.filter((_, idx) => idx !== i))}
+                    >
+                      ✕
+                    </button>
+                  </span>
+                ))}
+              </div>
+              <input
+                value={tagInput}
+                onChange={(e) => setTagInput(e.target.value)}
+                onKeyDown={(e) => {
+                  if (e.key === 'Enter') {
+                    e.preventDefault();
+                    handleAddTag();
+                  }
+                }}
+                placeholder="Type a skill and press Enter"
+                className={inputClass}
               />
             </div>
 
@@ -86,15 +256,15 @@ export default function CreatePost() {
             <button
               type="submit"
               disabled={submitting}
-              className="w-full h-[48px] bg-primary text-white rounded-xl text-[15px] font-medium hover:bg-primary/90 transition-colors disabled:opacity-50 flex items-center justify-center gap-2"
+              className="w-full h-[52px] bg-primary text-white rounded-2xl text-[15px] font-medium hover:bg-primary/90 transition-colors flex items-center justify-center gap-2 disabled:opacity-40 disabled:cursor-not-allowed mt-6"
             >
               {submitting ? (
                 <>
-                  <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
-                  Posting...
+                  <Loader2 size={17} className="animate-spin" />
+                  Publishing...
                 </>
               ) : (
-                'Post'
+                'Publish Job'
               )}
             </button>
           </form>
