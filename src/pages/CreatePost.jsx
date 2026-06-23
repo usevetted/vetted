@@ -59,16 +59,9 @@ export default function CreatePost() {
   };
 
   const handleSubmit = async (e) => {
-    e.preventDefault();
+    if (e) e.preventDefault();
     
-    if (!validate()) {
-      toast({
-        title: 'Missing fields',
-        description: 'Please fill in all required fields',
-        variant: 'destructive',
-      });
-      return;
-    }
+    if (!validate()) return;
 
     setSubmitting(true);
     const postData = {
@@ -153,7 +146,7 @@ export default function CreatePost() {
               <label className={labelClass}>Job Title *</label>
               <input
                 value={jobTitle}
-                onChange={(e) => { setJobTitle(e.target.value); if (errors.jobTitle) setErrors({ ...errors, jobTitle: '' }); }}
+                onChange={(e) => { setJobTitle(e.target.value); setErrors({}); }}
                 placeholder="e.g., Senior Product Manager"
                 className={`${inputClass} ${errors.jobTitle ? 'border-destructive' : ''}`}
               />
@@ -164,7 +157,7 @@ export default function CreatePost() {
               <label className={labelClass}>Company Name *</label>
               <input
                 value={company}
-                onChange={(e) => { setCompany(e.target.value); if (errors.company) setErrors({ ...errors, company: '' }); }}
+                onChange={(e) => { setCompany(e.target.value); setErrors({}); }}
                 placeholder="e.g., Acme Corp"
                 className={`${inputClass} ${errors.company ? 'border-destructive' : ''}`}
               />
@@ -175,7 +168,7 @@ export default function CreatePost() {
               <label className={labelClass}>Location *</label>
               <input
                 value={location}
-                onChange={(e) => { setLocation(e.target.value); if (errors.location) setErrors({ ...errors, location: '' }); }}
+                onChange={(e) => { setLocation(e.target.value); setErrors({}); }}
                 placeholder="e.g., San Francisco, CA"
                 className={`${inputClass} ${errors.location ? 'border-destructive' : ''}`}
               />
@@ -211,7 +204,7 @@ export default function CreatePost() {
               <label className={labelClass}>Job Description *</label>
               <textarea
                 value={description}
-                onChange={(e) => { setDescription(e.target.value); if (errors.description) setErrors({ ...errors, description: '' }); }}
+                onChange={(e) => { setDescription(e.target.value); setErrors({}); }}
                 placeholder="Describe the role, responsibilities, and requirements..."
                 rows={5}
                 className={`w-full border border-input rounded-xl px-3.5 py-2.5 text-[14px] text-foreground bg-muted/30 focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all resize-none ${errors.description ? 'border-destructive' : ''}`}
@@ -258,7 +251,8 @@ export default function CreatePost() {
         {/* Submit Button (Fixed at bottom) */}
         <div className="px-6 pb-8 pt-4 bg-white border-t border-border/30">
           <button
-            onClick={handleSubmit}
+            type="button"
+            onClick={(e) => handleSubmit(e)}
             disabled={submitting}
             className="w-full h-[52px] bg-primary text-white rounded-2xl text-[15px] font-medium hover:bg-primary/90 transition-colors flex items-center justify-center gap-2 disabled:opacity-40 disabled:cursor-not-allowed"
           >
