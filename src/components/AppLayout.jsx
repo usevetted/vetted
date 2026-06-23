@@ -1,6 +1,6 @@
 import { Outlet, useNavigate, useLocation } from 'react-router-dom';
 import { LayoutGrid, Heart, MessageCircle, User } from 'lucide-react';
-import { useEffect, useState, useRef } from 'react';
+import { useEffect, useState } from 'react';
 import { base44 } from '@/api/base44Client';
 import { useAuth } from '@/lib/AuthContext';
 import LoadingScreen from '@/components/LoadingScreen';
@@ -26,7 +26,6 @@ export default function AppLayout() {
     '/messages': '/messages',
     '/profile': '/profile',
   });
-  const lastTabClick = useRef({});
 
   useEffect(() => {
     const loadProfile = async (attempt = 0) => {
@@ -67,25 +66,6 @@ export default function AppLayout() {
     }
   }, [location.pathname]);
 
-  const handleTabClick = (tabPath) => {
-    const now = Date.now();
-    const lastClick = lastTabClick.current[tabPath] || 0;
-    const isDoubleClick = now - lastClick < 300;
-    lastTabClick.current[tabPath] = now;
-
-    const currentRootPath = navItems.find(item => location.pathname.startsWith(item.path))?.path;
-    const isAlreadyActive = currentRootPath === tabPath;
-
-    if (isAlreadyActive && isDoubleClick) {
-      // Double-tap resets tab stack to root
-      navigate(tabPath);
-      setTabHistory(prev => ({ ...prev, [tabPath]: tabPath }));
-    } else {
-      // Single click restores last position in tab
-      navigate(tabHistory[tabPath]);
-    }
-  };
-
   if (loading || (!profile && !error)) {
     return <LoadingScreen />;
   }
@@ -118,7 +98,7 @@ export default function AppLayout() {
                return (
                  <button
                    key={item.path}
-                   onClick={() => handleTabClick(item.path)}
+                   onClick={() => navigate(tabHistory[item.path])}
                    className="flex flex-col items-center justify-center gap-1 min-w-[44px] min-h-[44px] px-3 py-2 transition-colors group"
                  >
                   <Icon
