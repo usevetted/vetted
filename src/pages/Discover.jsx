@@ -7,6 +7,7 @@ import SwipeCard from '@/components/SwipeCard';
 import MatchOverlay from '@/components/MatchOverlay';
 import FilterSheet from '@/components/FilterSheet';
 import PostJobDropdown from '@/components/PostJobDropdown';
+import SettingsSheet from '@/components/SettingsSheet';
 import { base44 } from '@/api/base44Client';
 import LoadingScreen from '@/components/LoadingScreen';
 import PullToRefresh from '@/components/PullToRefresh';
@@ -130,6 +131,14 @@ export default function Discover() {
 
   const initials = useMemo(() => profile?.full_name?.split(' ').map(n => n[0]).join('').slice(0, 2).toUpperCase() || 'U', [profile?.full_name]);
 
+  const handleLogout = async () => {
+    await base44.auth.logout('/login');
+  };
+
+  const handleDeleteAccount = () => {
+    navigate('/profile');
+  };
+
   return (
     <PullToRefresh onRefresh={loadCards} className="flex-1 flex flex-col bg-secondary/30 min-h-0 relative">
       {/* Header */}
@@ -143,16 +152,12 @@ export default function Discover() {
           >
             <SlidersHorizontal size={18} className="text-muted-foreground" />
           </button>
-          <button
-            onClick={() => navigate('/profile')}
-            className="w-11 h-11 rounded-full bg-brand-green-light flex items-center justify-center text-[12px] font-semibold text-primary overflow-hidden border border-border/50 shadow-sm cursor-pointer hover:shadow-md transition-shadow"
-          >
-            {profile?.profile_picture ? (
-              <img src={profile.profile_picture} alt="" className="w-full h-full object-cover" />
-            ) : (
-              initials
-            )}
-          </button>
+          <SettingsSheet
+            onLogout={handleLogout}
+            onDeleteClick={handleDeleteAccount}
+            profilePicture={profile?.profile_picture}
+            initials={initials}
+          />
         </div>
       </div>
 

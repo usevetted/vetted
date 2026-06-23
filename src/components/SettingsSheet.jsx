@@ -1,10 +1,12 @@
 import { useContext, useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { Sheet, SheetContent, SheetTrigger } from '@/components/ui/sheet';
-import { Menu, LogOut, Trash2, Moon, Sun } from 'lucide-react';
+import { Menu, LogOut, Trash2, Moon, Sun, User, Lock } from 'lucide-react';
 import { ThemeContext } from '@/components/ThemeProvider';
 import DeleteAccountSheet from '@/components/DeleteAccountSheet';
 
 export default function SettingsSheet({ onLogout, onDeleteClick, profilePicture, initials }) {
+  const navigate = useNavigate();
   const { theme, toggleTheme } = useContext(ThemeContext);
   const [deleteOpen, setDeleteOpen] = useState(false);
   const [sheetOpen, setSheetOpen] = useState(false);
@@ -19,22 +21,44 @@ export default function SettingsSheet({ onLogout, onDeleteClick, profilePicture,
     onLogout();
   };
 
+  const handleProfileSettings = () => {
+    setSheetOpen(false);
+    navigate('/profile');
+  };
+
   return (
     <>
       <Sheet open={sheetOpen} onOpenChange={setSheetOpen}>
         <SheetTrigger asChild>
-          <button className="w-11 h-11 rounded-full bg-brand-green-light flex items-center justify-center text-[12px] font-semibold text-primary overflow-hidden border border-border/50 shadow-sm cursor-pointer hover:shadow-md transition-shadow">
-            {profilePicture ? (
-              <img src={profilePicture} alt="" className="w-full h-full object-cover" />
-            ) : (
-              initials
-            )}
+          <button className="w-11 h-11 rounded-full bg-white border border-border/50 flex items-center justify-center shadow-sm hover:bg-muted transition-colors cursor-pointer">
+            <Menu size={18} className="text-primary" />
           </button>
         </SheetTrigger>
         <SheetContent side="bottom" className="h-auto rounded-t-3xl">
           <div className="flex items-center justify-center w-8 h-1 bg-muted rounded-full mx-auto mb-6" />
           
           <div className="space-y-1 pb-4">
+            {/* Profile Settings */}
+            <button
+              onClick={handleProfileSettings}
+              className="w-full flex items-center gap-3 px-4 py-3 rounded-xl hover:bg-muted/50 transition-colors text-left"
+            >
+              <User size={18} className="text-muted-foreground flex-shrink-0" />
+              <span className="text-[14px] font-medium text-foreground">Profile Settings</span>
+            </button>
+
+            {/* Account Security */}
+            <button
+              onClick={handleProfileSettings}
+              className="w-full flex items-center gap-3 px-4 py-3 rounded-xl hover:bg-muted/50 transition-colors text-left"
+            >
+              <Lock size={18} className="text-muted-foreground flex-shrink-0" />
+              <span className="text-[14px] font-medium text-foreground">Account Security</span>
+            </button>
+
+            {/* Divider */}
+            <div className="h-px bg-border my-2" />
+
             {/* Theme toggle */}
             <button
               onClick={toggleTheme}
