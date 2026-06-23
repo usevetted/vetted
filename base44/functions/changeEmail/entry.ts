@@ -28,7 +28,7 @@ Deno.serve(async (req) => {
 
     // Store the pending email, token, and expiry on the user's account BEFORE sending the email
     const tokenExpiry = new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString();
-    await base44.asServiceRole.auth.updateUser(user.id, {
+    await base44.auth.updateMe({
       pending_email: newEmail,
       email_change_token: verificationToken,
       email_change_token_expiry: tokenExpiry,
@@ -42,7 +42,7 @@ Deno.serve(async (req) => {
       });
     } catch (emailError) {
       // Clear the pending email if email fails to send
-      await base44.asServiceRole.auth.updateUser(user.id, {
+      await base44.auth.updateMe({
         pending_email: null,
         email_change_token: null,
         email_change_token_expiry: null,

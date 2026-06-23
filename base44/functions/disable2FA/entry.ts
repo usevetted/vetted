@@ -1,5 +1,5 @@
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.31';
-import speakeasy from 'npm:speakeasy@2.0.0';
+import { authenticator } from 'npm:otplib@12.0.1';
 
 Deno.serve(async (req) => {
   try {
@@ -18,13 +18,8 @@ Deno.serve(async (req) => {
       return Response.json({ error: '2FA is not enabled' }, { status: 400 });
     }
 
-    // Verify the TOTP code using the stored secret
-    const verified = speakeasy.totp.verify({
-      secret: user.two_fa_secret,
-      encoding: 'base32',
-      token: code,
-      window: 2, // Allow ±2 time steps for clock skew
-    });
+    // Verify the TOTP code using the stored secret with otplib
+    const verified = authenticator.verify({ token: code, secret: user.two_fa_secret });
 
     if (!verified) {
       return Response.json({ error: 'Invalid code' }, { status: 400 });
