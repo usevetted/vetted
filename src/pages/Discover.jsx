@@ -1,7 +1,7 @@
-import { useState, useEffect, useCallback, useMemo } from 'react';
+import { useState, useEffect, useCallback, useMemo, useRef } from 'react';
 import { useNavigate, useOutletContext } from 'react-router-dom';
 import { AnimatePresence, motion } from 'framer-motion';
-import { X, Heart, Star, SlidersHorizontal } from 'lucide-react';
+import { X, Heart, Star, SlidersHorizontal, Settings, Plus } from 'lucide-react';
 import Logo from '@/components/Logo';
 import SwipeCard from '@/components/SwipeCard';
 import MatchOverlay from '@/components/MatchOverlay';
@@ -18,6 +18,8 @@ export default function Discover() {
   const [triggerAction, setTriggerAction] = useState(null);
   const [filterOpen, setFilterOpen] = useState(false);
   const [filters, setFilters] = useState({ remoteOnly: false, inPersonOnly: false, openToWork: false, sortBy: 'newest', distance: 50, location: '' });
+  const [profileMenuOpen, setProfileMenuOpen] = useState(false);
+  const profileMenuRef = useRef(null);
 
   const isRecruiter = profile?.account_type === 'recruiter';
 
@@ -72,6 +74,18 @@ export default function Discover() {
   useEffect(() => {
     loadCards();
   }, [loadCards]);
+
+  useEffect(() => {
+    const handleClickOutside = (e) => {
+      if (profileMenuRef.current && !profileMenuRef.current.contains(e.target)) {
+        setProfileMenuOpen(false);
+      }
+    };
+    if (profileMenuOpen) {
+      document.addEventListener('mousedown', handleClickOutside);
+      return () => document.removeEventListener('mousedown', handleClickOutside);
+    }
+  }, [profileMenuOpen]);
 
   const handleSwipe = async (action) => {
     setTriggerAction(null);
@@ -141,15 +155,64 @@ export default function Discover() {
             <SlidersHorizontal size={18} className="text-muted-foreground" />
           </button>
           <button
-            onClick={() => navigate('/profile')}
-            className="w-11 h-11 rounded-full bg-brand-green-light flex items-center justify-center text-[11px] font-semibold text-primary overflow-hidden border border-border/50 shadow-sm cursor-pointer"
+            onClick={() => {}}
+            className="w-11 h-11 rounded-full bg-white border border-border/50 flex items-center justify-center shadow-sm hover:bg-muted transition-colors cursor-pointer"
           >
-            {profile?.profile_picture ? (
-              <img src={profile.profile_picture} alt="" className="w-full h-full object-cover" />
-            ) : (
-              initials
-            )}
+            <Settings size={18} className="text-muted-foreground" />
           </button>
+          <button
+            onClick={() => {}}
+            className="w-11 h-11 rounded-full bg-white border border-border/50 flex items-center justify-center shadow-sm hover:bg-muted transition-colors cursor-pointer"
+          >
+            <Plus size={18} className="text-muted-foreground" />
+          </button>
+          <div className="relative" ref={profileMenuRef}>
+            <button
+              onClick={() => setProfileMenuOpen(!profileMenuOpen)}
+              className="w-11 h-11 rounded-full bg-brand-green-light flex items-center justify-center text-[11px] font-semibold text-primary overflow-hidden border border-border/50 shadow-sm cursor-pointer"
+            >
+              {profile?.profile_picture ? (
+                <img src={profile.profile_picture} alt="" className="w-full h-full object-cover" />
+              ) : (
+                initials
+              )}
+            </button>
+            <AnimatePresence>
+              {profileMenuOpen && (
+                <motion.div
+                  initial={{ opacity: 0, y: -8 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  exit={{ opacity: 0, y: -8 }}
+                  transition={{ duration: 0.15, ease: [0.16, 1, 0.3, 1] }}
+                  className="absolute top-full right-0 mt-2 w-48 bg-white border border-border/50 rounded-2xl shadow-lg overflow-hidden z-50"
+                >
+                  <button
+                    onClick={() => {
+                      navigate('/profile');
+                      setProfileMenuOpen(false);
+                    }}
+                    className="w-full text-left px-4 py-3 text-[13px] font-medium text-foreground hover:bg-muted/50 transition-colors"
+                  >
+                    View Profile
+                  </button>
+                  <div className="border-t border-border/50" />
+                  <button
+                    onClick={() => setProfileMenuOpen(false)}
+                    className="w-full text-left px-4 py-3 text-[13px] font-medium text-foreground hover:bg-muted/50 transition-colors"
+                  >
+                    Settings
+                  </button>
+                  <div className="border-t border-border/50" />
+                  <button
+                    onClick={() => setProfileMenuOpen(false)}
+                    className="w-full text-left px-4 py-3 text-[13px] font-medium text-destructive hover:bg-destructive/10 transition-colors"
+                  >
+                    Logout
+                  </button>
+                </motion.div>
+              )}
+            </AnimatePresence>
+          </div>
         </div>
       </div>
 
