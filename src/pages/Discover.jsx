@@ -174,11 +174,11 @@ export default function Discover() {
               {profileDropdownOpen && (
                 <motion.div
                   ref={profileDropdownRef}
-                  initial={{ opacity: 0, scale: 0.9, y: -8 }}
+                  initial={{ opacity: 0, scale: 0.8, y: -12 }}
                   animate={{ opacity: 1, scale: 1, y: 0 }}
-                  exit={{ opacity: 0, scale: 0.9, y: -8 }}
-                  transition={{ duration: 0.15 }}
-                  className="absolute top-full right-0 mt-2 bg-white dark:bg-card border border-border/50 rounded-2xl shadow-lg p-2 w-40 z-50"
+                  exit={{ opacity: 0, scale: 0.8, y: -12 }}
+                  transition={{ duration: 0.2, type: "spring", stiffness: 400, damping: 30 }}
+                  className="absolute top-full right-0 mt-3 bg-white dark:bg-card border border-border/50 rounded-3xl shadow-lg p-3 w-44 z-50"
                 >
                   {isRecruiter && (
                     <button
@@ -196,7 +196,7 @@ export default function Discover() {
                   )}
                   <button
                     onClick={() => {
-                      setFilterOpen(true);
+                      navigate('/profile-settings');
                       setProfileDropdownOpen(false);
                     }}
                     className="w-full flex items-center gap-3 px-3 py-3 rounded-xl hover:bg-muted/50 transition-colors text-left"
@@ -204,7 +204,7 @@ export default function Discover() {
                     <div className="w-8 h-8 rounded-lg bg-muted/50 flex items-center justify-center flex-shrink-0">
                       <SlidersHorizontal size={16} className="text-muted-foreground" />
                     </div>
-                    <span className="text-[13px] font-medium text-foreground">Filters</span>
+                    <span className="text-[13px] font-medium text-foreground">Settings</span>
                   </button>
                 </motion.div>
               )}

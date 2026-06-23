@@ -1,4 +1,4 @@
-import { useState, useCallback } from 'react';
+import { useState, useCallback, useEffect } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { ArrowLeft, Mail, Lock, Smartphone, LogOut, AlertCircle, Trash2 } from 'lucide-react';
 import Logo from '@/components/Logo';
@@ -33,9 +33,9 @@ export default function AccountSecurity() {
     }
   }, []);
 
-  useState(() => {
+  useEffect(() => {
     loadUser();
-  }, []);
+  }, [loadUser]);
 
   const handleChangePassword = async () => {
     if (!currentPassword || !newPassword || !confirmPassword) {
@@ -91,9 +91,11 @@ export default function AccountSecurity() {
 
   const handleSignOutAllDevices = async () => {
     setSaving(true);
+    setError('');
     try {
       await base44.auth.signOutAllDevices();
-      window.location.href = '/login';
+      sessionStorage.setItem('just_logged_out', 'true');
+      window.location.href = '/landing';
     } catch (err) {
       setError(err.message || 'Failed to sign out all devices');
       setSaving(false);
