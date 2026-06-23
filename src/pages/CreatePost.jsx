@@ -99,25 +99,25 @@ export default function CreatePost() {
   const errorClass = "text-[11px] text-destructive mt-1";
 
   return (
-    <div className="min-h-[100dvh] bg-gradient-to-br from-secondary/60 via-secondary/40 to-brand-green-bg/40 flex justify-center overflow-y-auto no-scrollbar">
+    <div className="min-h-[100dvh] bg-gradient-to-br from-secondary/60 via-secondary/40 to-brand-green-bg/40 flex justify-center">
       <div className="w-full max-w-[600px] min-h-[100dvh] bg-white flex flex-col">
         {/* Header */}
-        <div className="px-6 pt-4 pb-4 flex items-center gap-3">
+        <div className="px-6 pt-4 pb-4 flex items-center gap-3 border-b border-border/30">
           <button onClick={() => navigate(-1)} className="p-1 -ml-1">
             <ArrowLeft size={20} className="text-foreground/60" />
           </button>
           <h1 className="text-[20px] font-semibold text-foreground">Create Job Posting</h1>
         </div>
 
-        <div className="px-6 pb-4">
+        <div className="px-6 pt-3 pb-2">
           <p className="text-[13px] text-muted-foreground">
             Fill in the details about your job opening
           </p>
         </div>
 
-        <div className="flex-1 overflow-y-auto no-scrollbar px-6 pb-6">
+        <div className="flex-1 overflow-y-auto no-scrollbar px-6">
           {/* Company Logo */}
-          <div className="flex flex-col items-center mb-6">
+          <div className="flex flex-col items-center mb-5 pt-2">
             <button
               onClick={() => fileInputRef.current?.click()}
               className="relative w-[88px] h-[88px] rounded-full overflow-hidden border-2 border-border group"
@@ -148,7 +148,7 @@ export default function CreatePost() {
           <p className="text-[11px] text-muted-foreground/60 mb-4 uppercase tracking-wider font-medium">Job Details</p>
 
           {/* Form fields */}
-          <form onSubmit={handleSubmit} className="space-y-4">
+          <form onSubmit={handleSubmit} className="space-y-4 pb-24">
             <div>
               <label className={labelClass}>Job Title *</label>
               <input
@@ -252,22 +252,25 @@ export default function CreatePost() {
               />
             </div>
 
-            {/* Submit Button */}
-            <button
-              type="submit"
-              disabled={submitting}
-              className="w-full h-[52px] bg-primary text-white rounded-2xl text-[15px] font-medium hover:bg-primary/90 transition-colors flex items-center justify-center gap-2 disabled:opacity-40 disabled:cursor-not-allowed mt-6"
-            >
-              {submitting ? (
-                <>
-                  <Loader2 size={17} className="animate-spin" />
-                  Publishing...
-                </>
-              ) : (
-                'Publish Job'
-              )}
-            </button>
           </form>
+        </div>
+
+        {/* Submit Button (Fixed at bottom) */}
+        <div className="px-6 pb-8 pt-4 bg-white border-t border-border/30">
+          <button
+            onClick={handleSubmit}
+            disabled={submitting}
+            className="w-full h-[52px] bg-primary text-white rounded-2xl text-[15px] font-medium hover:bg-primary/90 transition-colors flex items-center justify-center gap-2 disabled:opacity-40 disabled:cursor-not-allowed"
+          >
+            {submitting ? (
+              <>
+                <Loader2 size={17} className="animate-spin" />
+                Publishing...
+              </>
+            ) : (
+              'Publish Job'
+            )}
+          </button>
         </div>
       </div>
     </div>
