@@ -35,13 +35,16 @@ Message to analyze: "${content.replace(/"/g, '\\"').replace(/\n/g, ' ')}"`,
       }
     });
 
-    if (result.allowed) {
+    if (result && result.allowed === true) {
       return { blocked: false, reason: '' };
     }
-    return {
-      blocked: true,
-      reason: result.reason || 'This message violates our community guidelines.'
-    };
+    if (result && result.allowed === false) {
+      return {
+        blocked: true,
+        reason: result.reason || 'This message violates our community guidelines.'
+      };
+    }
+    return { blocked: false, reason: '' };
   } catch {
     return { blocked: false, reason: '' };
   }

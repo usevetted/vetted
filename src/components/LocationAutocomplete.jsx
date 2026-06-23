@@ -59,12 +59,18 @@ export default function LocationAutocomplete({ value, onChange, placeholder = 'S
             const addr = item.address || {};
             const city = addr.city || addr.town || addr.village || addr.hamlet || addr.suburb || addr.neighbourhood || '';
             const state = addr.state || '';
-            if (!city && !state) return null;
-            const label = [city, state].filter(Boolean).join(', ');
+            if (!city || !state) return null;
+            const label = `${city}, ${state}`;
             return { value: label, label, city, stateLabel: state };
           })
           .filter(Boolean);
-        setResults(mapped);
+        const seen = new Set();
+        const deduped = mapped.filter(loc => {
+          if (seen.has(loc.label)) return false;
+          seen.add(loc.label);
+          return true;
+        });
+        setResults(deduped);
         setShowResults(true);
       } catch {
         // ignore aborted/failed requests
