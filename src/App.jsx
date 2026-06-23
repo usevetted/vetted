@@ -26,6 +26,8 @@ import Matches from './pages/Matches';
 import Messages from './pages/Messages';
 import Chat from './pages/Chat';
 import ProfilePage from './pages/ProfilePage';
+import ProfileSettings from './pages/ProfileSettings';
+import AccountSecurity from './pages/AccountSecurity';
 import PostLogin from './pages/PostLogin';
 import PrivacyPolicy from './pages/PrivacyPolicy';
 import PostJob from './pages/PostJob';
@@ -90,6 +92,8 @@ const AuthenticatedApp = () => {
           <Route path="/messages" element={<Messages />} />
           <Route path="/messages/:matchId" element={<Chat />} />
           <Route path="/profile" element={<ProfilePage />} />
+          <Route path="/profile-settings" element={<ProfileSettings />} />
+          <Route path="/account-security" element={<AccountSecurity />} />
           <Route path="/post-job" element={<PostJob />} />
         </Route>
       </Route>

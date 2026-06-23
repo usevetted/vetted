@@ -33,12 +33,12 @@ export default function SettingsSheet({ onLogout, onDeleteClick }) {
           <div className="flex items-center justify-center w-8 h-1 bg-muted rounded-full mx-auto mb-6" />
           
           <div className="space-y-1 pb-4">
-            {/* Profile Settings Section */}
+            {/* Account Section */}
             <div className="px-2 py-3">
               <div className="text-[11px] font-semibold text-muted-foreground uppercase tracking-wider mb-3">Account</div>
               <button
                 onClick={() => {
-                  navigate('/profile');
+                  navigate('/profile-settings');
                   setSheetOpen(false);
                 }}
                 className="w-full flex items-center gap-3 px-4 py-3 rounded-xl hover:bg-muted/50 transition-colors text-left"
@@ -49,7 +49,7 @@ export default function SettingsSheet({ onLogout, onDeleteClick }) {
 
               <button
                 onClick={() => {
-                  navigate('/profile');
+                  navigate('/account-security');
                   setSheetOpen(false);
                 }}
                 className="w-full flex items-center gap-3 px-4 py-3 rounded-xl hover:bg-muted/50 transition-colors text-left"
@@ -62,7 +62,7 @@ export default function SettingsSheet({ onLogout, onDeleteClick }) {
             {/* Divider */}
             <div className="h-px bg-border my-2" />
 
-            {/* Device Preferences Section */}
+            {/* Device Section */}
             <div className="px-2 py-3">
               <div className="text-[11px] font-semibold text-muted-foreground uppercase tracking-wider mb-3">Device</div>
               <button
@@ -86,7 +86,7 @@ export default function SettingsSheet({ onLogout, onDeleteClick }) {
             {/* Divider */}
             <div className="h-px bg-border my-2" />
 
-            {/* Danger Zone */}
+            {/* Account Actions Section */}
             <div className="px-2 py-3">
               <button
                 onClick={handleLogout}
