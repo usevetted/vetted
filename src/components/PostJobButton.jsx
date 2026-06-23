@@ -84,7 +84,7 @@ export default function PostJobButton({ isRecruiter, profile, onJobPosted }) {
               animate={{ y: 0, opacity: 1 }}
               exit={{ y: '100%', opacity: 0 }}
               transition={{ type: 'spring', damping: 25, stiffness: 300 }}
-              className="fixed bottom-0 left-0 right-0 z-[100] max-h-[90vh] rounded-t-2xl shadow-xl bg-card flex flex-col"
+              className="fixed bottom-0 left-0 right-0 z-[200] max-h-[90vh] rounded-t-2xl shadow-xl bg-card flex flex-col"
             >
               <form onSubmit={handleSubmit} className="flex flex-col h-full">
                 {/* Header */}
@@ -100,7 +100,7 @@ export default function PostJobButton({ isRecruiter, profile, onJobPosted }) {
                 </div>
 
                 {/* Content */}
-                <div className="flex-1 overflow-y-auto no-scrollbar px-5 py-4 space-y-4">
+                <div className="flex-1 overflow-y-auto no-scrollbar px-5 py-4 space-y-4 pb-24">
                   {error && (
                     <div className="p-3 bg-destructive/10 border border-destructive/30 rounded-lg">
                       <p className="text-[12px] text-destructive">{error}</p>
