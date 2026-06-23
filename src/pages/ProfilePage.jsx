@@ -157,7 +157,7 @@ export default function ProfilePage() {
               {saving ? 'Saving...' : 'Save'}
             </button>
           )}
-          <SettingsSheet onLogout={handleLogout} onDeleteClick={handleDeleteAccount} profilePicture={editing ? photoPreview || profilePicture : profilePicture} initials={initials} />
+          <SettingsSheet onLogout={handleLogout} onDeleteClick={handleDeleteAccount} />
         </div>
       </div>
 
