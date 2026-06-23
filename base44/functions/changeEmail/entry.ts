@@ -24,7 +24,15 @@ Deno.serve(async (req) => {
     }
 
     const verificationToken = uuidv4();
-    const verificationUrl = `${Deno.env.get('APP_URL') || 'http://localhost:5173'}/reset-password?token=${verificationToken}`;
+    const verificationUrl = `${Deno.env.get('APP_URL') || 'http://localhost:5173'}/verify-email?token=${verificationToken}`;
+
+    // Store the pending email, token, and expiry on the user's account BEFORE sending the email
+    const tokenExpiry = new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString();
+    await base44.asServiceRole.auth.updateUser(user.id, {
+      pending_email: newEmail,
+      email_change_token: verificationToken,
+      email_change_token_expiry: tokenExpiry,
+    });
 
     try {
       await base44.integrations.Core.SendEmail({
@@ -33,6 +41,12 @@ Deno.serve(async (req) => {
         body: `Hello,\n\nPlease confirm your new email address by clicking the link below:\n\n${verificationUrl}\n\nThis link will expire in 24 hours.\n\nIf you didn't request this change, please ignore this email.`,
       });
     } catch (emailError) {
+      // Clear the pending email if email fails to send
+      await base44.asServiceRole.auth.updateUser(user.id, {
+        pending_email: null,
+        email_change_token: null,
+        email_change_token_expiry: null,
+      });
       return Response.json({ error: `Failed to send verification email: ${emailError.message}` }, { status: 500 });
     }
 
