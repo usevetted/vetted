@@ -86,8 +86,11 @@
     --sidebar-border: 0 0% 20%;
     --sidebar-ring: 142 65% 30%;
     --brand-green: 142 65% 30%;
-    --brand-green-light: 150 38% 97%;
-    --brand-green-bg: 150 38% 97%;
+    --brand-green-light: 142 60% 20%;
+    --brand-green-bg: 142 60% 15%;
+    --linkedin: 197 100% 36%;
+    --gold: 43 80% 46%;
+    --pass-red: 0 100% 50%;
   }
 }
 
