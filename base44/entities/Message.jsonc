@@ -19,11 +19,13 @@
   ],
   "rls": {
     "create": {
-      "created_by_id": "{{user.id}}",
-      "data.sender_profile_id": "{{user.data.profile_id}}"
+      "created_by_id": "{{user.id}}"
     },
     "read": {
       "$or": [
+        {
+          "created_by_id": "{{user.id}}"
+        },
         {
           "data.sender_profile_id": "{{user.data.profile_id}}"
         },
@@ -35,7 +37,7 @@
               "query": {
                 "$or": [
                   {
-                    "data.profile1_id": "{{user.data.profile_id}}"
+                    "created_by_id": "{{user.id}}"
                   },
                   {
                     "data.profile2_id": "{{user.data.profile_id}}"
