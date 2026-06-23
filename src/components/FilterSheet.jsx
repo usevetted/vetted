@@ -1,7 +1,24 @@
 import { motion, AnimatePresence } from 'framer-motion';
-import { X } from 'lucide-react';
+import { X, MapPin } from 'lucide-react';
 
 export default function FilterSheet({ open, onClose, filters, setFilters, isRecruiter }) {
+  const toggleWorkArrangement = (type) => {
+    if (type === 'remote') {
+      setFilters({ ...filters, remoteOnly: true, inPersonOnly: false });
+    } else if (type === 'inPerson') {
+      setFilters({ ...filters, remoteOnly: false, inPersonOnly: true });
+    } else {
+      setFilters({ ...filters, remoteOnly: false, inPersonOnly: false });
+    }
+  };
+
+  const toggleBtn = (active) =>
+    `flex items-center justify-center h-[40px] rounded-xl text-[13px] font-medium transition-colors cursor-pointer ${
+      active ? 'bg-primary text-white' : 'bg-muted/50 text-muted-foreground hover:bg-muted'
+    }`;
+
+  const isBoth = !filters.remoteOnly && !filters.inPersonOnly;
+
   return (
     <AnimatePresence>
       {open && (
@@ -28,21 +45,75 @@ export default function FilterSheet({ open, onClose, filters, setFilters, isRecr
               </button>
             </div>
 
-            <div className="space-y-4">
+            <div className="space-y-5 max-h-[50vh] overflow-y-auto no-scrollbar">
+              {/* Work arrangement — job seekers */}
               {!isRecruiter && (
-                <label className="flex items-center justify-between p-3.5 bg-muted/30 rounded-xl cursor-pointer">
-                  <div>
-                    <div className="text-[14px] font-medium text-foreground">Remote only</div>
-                    <div className="text-[12px] text-muted-foreground">Show remote jobs</div>
+                <div>
+                  <label className="text-[12px] font-medium text-foreground/70 mb-2.5 block">Work arrangement</label>
+                  <div className="grid grid-cols-3 gap-2">
+                    <button
+                      className={toggleBtn(filters.remoteOnly && !filters.inPersonOnly)}
+                      onClick={() => toggleWorkArrangement('remote')}
+                    >
+                      Remote
+                    </button>
+                    <button
+                      className={toggleBtn(filters.inPersonOnly && !filters.remoteOnly)}
+                      onClick={() => toggleWorkArrangement('inPerson')}
+                    >
+                      In-person
+                    </button>
+                    <button
+                      className={toggleBtn(isBoth)}
+                      onClick={() => toggleWorkArrangement('both')}
+                    >
+                      Both
+                    </button>
+                  </div>
+                </div>
+              )}
+
+              {/* Distance slider — job seekers */}
+              {!isRecruiter && (
+                <div>
+                  <div className="flex items-center justify-between mb-2.5">
+                    <label className="text-[12px] font-medium text-foreground/70">Distance</label>
+                    <span className="text-[12px] font-semibold text-primary">{filters.distance} mi</span>
                   </div>
                   <input
-                    type="checkbox"
-                    checked={filters.remoteOnly}
-                    onChange={(e) => setFilters({ ...filters, remoteOnly: e.target.checked })}
-                    className="w-5 h-5 rounded accent-primary"
+                    type="range"
+                    min="5"
+                    max="100"
+                    step="5"
+                    value={filters.distance}
+                    onChange={(e) => setFilters({ ...filters, distance: parseInt(e.target.value) })}
+                    className="w-full accent-primary"
                   />
-                </label>
+                  <div className="flex justify-between text-[10px] text-muted-foreground/50 mt-1">
+                    <span>5 mi</span>
+                    <span>100 mi</span>
+                  </div>
+                </div>
               )}
+
+              {/* Location input — recruiters */}
+              {isRecruiter && (
+                <div>
+                  <label className="text-[12px] font-medium text-foreground/70 mb-1.5 block">Job location</label>
+                  <div className="relative">
+                    <MapPin size={16} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-muted-foreground/50" />
+                    <input
+                      value={filters.location}
+                      onChange={(e) => setFilters({ ...filters, location: e.target.value })}
+                      placeholder="City, State"
+                      className="w-full h-[44px] border border-input rounded-xl pl-10 pr-3.5 text-[14px] bg-muted/30 focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all"
+                    />
+                  </div>
+                  <p className="text-[11px] text-muted-foreground/60 mt-1.5">Filter candidates near this location</p>
+                </div>
+              )}
+
+              {/* Open to work — recruiters */}
               {isRecruiter && (
                 <label className="flex items-center justify-between p-3.5 bg-muted/30 rounded-xl cursor-pointer">
                   <div>
@@ -57,16 +128,24 @@ export default function FilterSheet({ open, onClose, filters, setFilters, isRecr
                   />
                 </label>
               )}
+
+              {/* Sort by — everyone */}
               <div>
                 <label className="text-[12px] font-medium text-foreground/70 mb-2 block">Sort by</label>
-                <select
-                  value={filters.sortBy}
-                  onChange={(e) => setFilters({ ...filters, sortBy: e.target.value })}
-                  className="w-full h-[44px] border border-input rounded-xl px-3.5 text-[14px] bg-white focus:outline-none focus:ring-2 focus:ring-primary/20"
-                >
-                  <option value="newest">Newest first</option>
-                  <option value="oldest">Oldest first</option>
-                </select>
+                <div className="grid grid-cols-2 gap-2">
+                  <button
+                    className={toggleBtn(filters.sortBy === 'newest')}
+                    onClick={() => setFilters({ ...filters, sortBy: 'newest' })}
+                  >
+                    Newest
+                  </button>
+                  <button
+                    className={toggleBtn(filters.sortBy === 'oldest')}
+                    onClick={() => setFilters({ ...filters, sortBy: 'oldest' })}
+                  >
+                    Oldest
+                  </button>
+                </div>
               </div>
             </div>
 

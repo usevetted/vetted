@@ -16,17 +16,27 @@ export default function Discover() {
   const [matchData, setMatchData] = useState(null);
   const [triggerAction, setTriggerAction] = useState(null);
   const [filterOpen, setFilterOpen] = useState(false);
-  const [filters, setFilters] = useState({ remoteOnly: false, openToWork: false, sortBy: 'newest' });
+  const [filters, setFilters] = useState({ remoteOnly: false, inPersonOnly: false, openToWork: false, sortBy: 'newest', distance: 50, location: '' });
 
   const isRecruiter = profile?.account_type === 'recruiter';
 
   const cards = useMemo(() => {
     let filtered = [...allCards];
-    if (!isRecruiter && filters.remoteOnly) {
-      filtered = filtered.filter(c => c.remote);
+    if (!isRecruiter) {
+      if (filters.remoteOnly && !filters.inPersonOnly) {
+        filtered = filtered.filter(c => c.remote);
+      } else if (filters.inPersonOnly && !filters.remoteOnly) {
+        filtered = filtered.filter(c => !c.remote);
+      }
     }
-    if (isRecruiter && filters.openToWork) {
-      filtered = filtered.filter(c => c.open_to_work);
+    if (isRecruiter) {
+      if (filters.openToWork) {
+        filtered = filtered.filter(c => c.open_to_work);
+      }
+      if (filters.location.trim()) {
+        const loc = filters.location.trim().toLowerCase();
+        filtered = filtered.filter(c => c.location && c.location.toLowerCase().includes(loc));
+      }
     }
     if (filters.sortBy === 'oldest') {
       filtered.reverse();

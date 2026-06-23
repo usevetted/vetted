@@ -51,7 +51,7 @@ export default function AppLayout() {
     .toUpperCase() || 'U';
 
   return (
-    <div className="h-[100dvh] bg-secondary/40 flex justify-center overflow-hidden">
+    <div className="h-[100dvh] bg-gradient-to-br from-secondary/60 via-secondary/40 to-brand-green-bg/40 flex justify-center overflow-hidden">
       <div className="w-full max-w-[440px] bg-white h-[100dvh] relative flex flex-col shadow-[0_0_60px_rgba(0,0,0,0.06)] overflow-hidden">
         <main className="flex-1 overflow-hidden flex flex-col pt-[env(safe-area-inset-top)] min-h-0">
           <Outlet context={{ profile, setProfile }} />

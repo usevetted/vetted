@@ -108,7 +108,7 @@ export default function ProfilePage() {
         {!editing ? (
           <button
             onClick={() => setEditing(true)}
-            className="flex items-center gap-1.5 text-[13px] font-medium text-primary hover:text-primary/80 transition-colors"
+            className="flex items-center gap-1.5 text-[13px] font-medium text-primary px-3 py-2 rounded-xl hover:bg-brand-green-bg transition-colors cursor-pointer relative z-30"
           >
             <Pencil size={14} />
             Edit
@@ -117,7 +117,7 @@ export default function ProfilePage() {
           <button
             onClick={handleSave}
             disabled={saving}
-            className="flex items-center gap-1.5 text-[13px] font-medium text-primary hover:text-primary/80 transition-colors disabled:opacity-40"
+            className="flex items-center gap-1.5 text-[13px] font-medium text-primary px-3 py-2 rounded-xl hover:bg-brand-green-bg transition-colors disabled:opacity-40 cursor-pointer relative z-30"
           >
             <Check size={14} />
             {saving ? 'Saving...' : 'Save'}
