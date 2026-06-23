@@ -17,6 +17,12 @@ export default function MenuDrawer({ open, onClose, user, profile }) {
   const [deactivateConfirm, setDeactivateConfirm] = useState(false);
   const [deleteConfirm, setDeleteConfirm] = useState(false);
   const [deleteConfirmText, setDeleteConfirmText] = useState('');
+  const [showEmailChange, setShowEmailChange] = useState(false);
+  const [emailForm, setEmailForm] = useState({ new: '', confirm: '' });
+  const [emailError, setEmailError] = useState('');
+  const [emailLoading, setEmailLoading] = useState(false);
+  const [twoFaSetup, setTwoFaSetup] = useState(false);
+  const [twoFaCode, setTwoFaCode] = useState('');
 
   useEffect(() => {
     const observer = new MutationObserver(() => {
@@ -27,13 +33,69 @@ export default function MenuDrawer({ open, onClose, user, profile }) {
   }, []);
 
   const handleToggleDarkMode = () => {
-    setDarkMode(!darkMode);
-    if (darkMode) {
-      document.documentElement.classList.remove('dark');
-      localStorage.setItem('theme', 'light');
-    } else {
+    const newMode = !darkMode;
+    setDarkMode(newMode);
+    if (newMode) {
       document.documentElement.classList.add('dark');
       localStorage.setItem('theme', 'dark');
+    } else {
+      document.documentElement.classList.remove('dark');
+      localStorage.setItem('theme', 'light');
+    }
+  };
+
+  const handleChangeEmail = async () => {
+    setEmailError('');
+    if (!emailForm.new || !emailForm.confirm) {
+      setEmailError('Both fields are required');
+      return;
+    }
+    if (emailForm.new !== emailForm.confirm) {
+      setEmailError('Email addresses do not match');
+      return;
+    }
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(emailForm.new)) {
+      setEmailError('Please enter a valid email address');
+      return;
+    }
+    setEmailLoading(true);
+    try {
+      await base44.auth.changeEmail(emailForm.new);
+      setEmailForm({ new: '', confirm: '' });
+      setShowEmailChange(false);
+    } catch (err) {
+      setEmailError(err?.message || 'Failed to send verification email');
+    } finally {
+      setEmailLoading(false);
+    }
+  };
+
+  const handleToggle2FA = async () => {
+    if (!twoFaEnabled) {
+      setTwoFaSetup(true);
+    } else {
+      setTwoFaEnabled(false);
+      try {
+        await base44.auth.disable2FA();
+      } catch {
+        // ignore
+      }
+    }
+  };
+
+  const handleSetup2FA = async () => {
+    if (!twoFaCode) {
+      setEmailError('Verification code is required');
+      return;
+    }
+    try {
+      await base44.auth.verify2FA(twoFaCode);
+      setTwoFaEnabled(true);
+      setTwoFaSetup(false);
+      setTwoFaCode('');
+    } catch (err) {
+      setEmailError(err?.message || 'Invalid code');
     }
   };
 
@@ -88,14 +150,23 @@ export default function MenuDrawer({ open, onClose, user, profile }) {
     setExpanded(expanded === section ? null : section);
   };
 
+  useEffect(() => {
+    const theme = localStorage.getItem('theme') || 'light';
+    const isDark = theme === 'dark';
+    setDarkMode(isDark);
+    if (isDark) {
+      document.documentElement.classList.add('dark');
+    } else {
+      document.documentElement.classList.remove('dark');
+    }
+  }, []);
+
   const menuItems = [
     {
       id: 'settings',
       label: 'Account Settings',
       options: [
-        { label: 'Display name', value: profile?.full_name || 'Not set' },
-        { label: 'Email address', value: user?.email || 'Not set' },
-        { label: 'Profile photo', value: profile?.profile_picture ? 'Set' : 'Not set' },
+        { label: 'Email address', action: 'changeEmail', value: user?.email || 'Not set' },
         { label: 'Notification preferences', toggle: true, value: notificationsEnabled, onChange: setNotificationsEnabled },
       ],
     },
@@ -104,7 +175,7 @@ export default function MenuDrawer({ open, onClose, user, profile }) {
       label: 'Account Security',
       options: [
         { label: 'Change password', action: 'changePassword' },
-        { label: 'Two-factor authentication', toggle: true, value: twoFaEnabled, onChange: setTwoFaEnabled },
+        { label: '2FA Setup', action: '2fa' },
         { label: 'Active sessions', action: 'sessions' },
         { label: 'Deactivate Account', action: 'deactivate' },
         { label: 'Delete Account', action: 'delete' },
@@ -135,16 +206,16 @@ export default function MenuDrawer({ open, onClose, user, profile }) {
             animate={{ x: 0 }}
             exit={{ x: '100%' }}
             transition={{ type: 'spring', damping: 25, stiffness: 300 }}
-            className="fixed right-0 top-0 bottom-0 w-[85vw] max-w-[340px] bg-white z-[100] flex flex-col rounded-l-2xl shadow-xl"
+            className="fixed right-0 top-0 bottom-0 w-[85vw] max-w-[340px] bg-card z-[100] flex flex-col rounded-l-2xl shadow-xl"
           >
             {/* Header */}
-            <div className="flex items-center justify-between px-5 pt-3 pb-3 border-b border-border/30">
+            <div className="flex items-center justify-between px-5 pt-3 pb-3 border-b border-border">
               <h2 className="text-[16px] font-semibold text-foreground">Menu</h2>
               <button
                 onClick={onClose}
-                className="w-8 h-8 rounded-full hover:bg-muted/40 flex items-center justify-center transition-colors"
+                className="w-8 h-8 rounded-full hover:bg-primary/10 flex items-center justify-center transition-colors"
               >
-                <X size={18} className="text-foreground/70" />
+                <X size={18} className="text-foreground" />
               </button>
             </div>
 
@@ -154,15 +225,15 @@ export default function MenuDrawer({ open, onClose, user, profile }) {
                 <div key={section.id} className="border-b border-border/20 last:border-b-0">
                   <button
                     onClick={() => toggleSection(section.id)}
-                    className="w-full flex items-center justify-between px-5 py-3 hover:bg-muted/20 transition-colors"
+                    className="w-full flex items-center justify-between px-5 py-3 hover:bg-primary/5 transition-colors"
                   >
                     <span className="text-[14px] font-medium text-foreground">{section.label}</span>
                     <motion.div
-                      animate={{ rotate: expanded === section.id ? 180 : 0 }}
-                      transition={{ duration: 0.2 }}
-                    >
-                      <ChevronDown size={16} className="text-muted-foreground/50" />
-                    </motion.div>
+                        animate={{ rotate: expanded === section.id ? 180 : 0 }}
+                        transition={{ duration: 0.2 }}
+                      >
+                        <ChevronDown size={16} className="text-foreground/60" />
+                      </motion.div>
                   </button>
 
                   <AnimatePresence>
@@ -172,28 +243,65 @@ export default function MenuDrawer({ open, onClose, user, profile }) {
                         animate={{ height: 'auto', opacity: 1 }}
                         exit={{ height: 0, opacity: 0 }}
                         transition={{ duration: 0.2 }}
-                        className="overflow-hidden bg-muted/5 border-t border-border/20"
+                        className="overflow-hidden bg-primary/5 border-t border-primary/20"
                       >
                         <div className="px-5 py-2">
                           {/* Account Settings content */}
                           {section.id === 'settings' && (
                             <div className="space-y-3">
                               {section.options.map((opt, i) => (
-                                <div key={i} className="flex items-center justify-between py-2">
-                                  <span className="text-[13px] text-foreground/70">{opt.label}</span>
-                                  {opt.toggle ? (
-                                    <button
-                                      onClick={() => opt.onChange(!opt.value)}
-                                      className={`w-10 h-6 rounded-full relative flex-shrink-0 transition-colors duration-200 ${opt.value ? 'bg-primary' : 'bg-muted-foreground/30'}`}
-                                    >
-                                      <motion.div
-                                        layout
-                                        transition={{ type: 'spring', stiffness: 500, damping: 30 }}
-                                        className={`absolute top-0.5 w-5 h-5 rounded-full bg-white ${opt.value ? 'right-0.5' : 'left-0.5'}`}
-                                      />
-                                    </button>
-                                  ) : (
-                                    <span className="text-[12px] text-muted-foreground truncate ml-2">{opt.value}</span>
+                                <div key={i}>
+                                  {opt.action === 'changeEmail' && (
+                                    <>
+                                      <button
+                                        onClick={() => setShowEmailChange(!showEmailChange)}
+                                        className="text-[13px] text-foreground py-2 hover:text-primary transition-colors text-left"
+                                      >
+                                        {opt.label}
+                                      </button>
+                                      <p className="text-[11px] text-muted-foreground mb-2">{opt.value}</p>
+                                      {showEmailChange && (
+                                        <div className="mt-2 p-3 bg-primary/5 rounded-lg space-y-2 border border-primary/20">
+                                          <input
+                                            type="email"
+                                            placeholder="New email address"
+                                            value={emailForm.new}
+                                            onChange={(e) => setEmailForm({ ...emailForm, new: e.target.value })}
+                                            className="w-full h-[36px] border border-input rounded-lg px-2.5 text-[12px] bg-card focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary"
+                                          />
+                                          <input
+                                            type="email"
+                                            placeholder="Confirm email address"
+                                            value={emailForm.confirm}
+                                            onChange={(e) => setEmailForm({ ...emailForm, confirm: e.target.value })}
+                                            className="w-full h-[36px] border border-input rounded-lg px-2.5 text-[12px] bg-card focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary"
+                                          />
+                                          {emailError && <p className="text-[11px] text-destructive">{emailError}</p>}
+                                          <button
+                                            onClick={handleChangeEmail}
+                                            disabled={emailLoading}
+                                            className="w-full h-[34px] bg-primary text-white text-[12px] font-medium rounded-lg hover:bg-primary/90 disabled:opacity-50 transition-colors"
+                                          >
+                                            {emailLoading ? 'Sending...' : 'Send Verification Email'}
+                                          </button>
+                                        </div>
+                                      )}
+                                    </>
+                                  )}
+                                  {opt.toggle && (
+                                    <div className="flex items-center justify-between py-2">
+                                      <span className="text-[13px] text-foreground">{opt.label}</span>
+                                      <button
+                                        onClick={() => opt.onChange(!opt.value)}
+                                        className={`w-10 h-6 rounded-full relative flex-shrink-0 transition-colors duration-200 ${opt.value ? 'bg-primary' : 'bg-muted-foreground/30'}`}
+                                      >
+                                        <motion.div
+                                          layout
+                                          transition={{ type: 'spring', stiffness: 500, damping: 30 }}
+                                          className={`absolute top-0.5 w-5 h-5 rounded-full bg-white ${opt.value ? 'right-0.5' : 'left-0.5'}`}
+                                        />
+                                      </button>
+                                    </div>
                                   )}
                                 </div>
                               ))}
@@ -205,20 +313,65 @@ export default function MenuDrawer({ open, onClose, user, profile }) {
                             <div className="space-y-3">
                               {section.options.map((opt, i) => (
                                 <div key={i}>
+                                  {opt.action === '2fa' && (
+                                    <>
+                                      <button
+                                        onClick={handleToggle2FA}
+                                        className="flex items-center justify-between py-2 w-full text-left"
+                                      >
+                                        <span className="text-[13px] text-foreground">Two-factor authentication</span>
+                                        <button
+                                          onClick={(e) => {
+                                            e.stopPropagation();
+                                            handleToggle2FA();
+                                          }}
+                                          className={`w-10 h-6 rounded-full relative flex-shrink-0 transition-colors duration-200 ${twoFaEnabled ? 'bg-primary' : 'bg-muted-foreground/30'}`}
+                                        >
+                                          <motion.div
+                                            layout
+                                            transition={{ type: 'spring', stiffness: 500, damping: 30 }}
+                                            className={`absolute top-0.5 w-5 h-5 rounded-full bg-white ${twoFaEnabled ? 'right-0.5' : 'left-0.5'}`}
+                                          />
+                                        </button>
+                                      </button>
+                                      {twoFaSetup && !twoFaEnabled && (
+                                        <div className="mt-2 p-3 bg-primary/5 rounded-lg space-y-2 border border-primary/20">
+                                          <p className="text-[12px] text-foreground">Enter the 6-digit code from your email:</p>
+                                          <input
+                                            type="text"
+                                            placeholder="000000"
+                                            value={twoFaCode}
+                                            onChange={(e) => setTwoFaCode(e.target.value.slice(0, 6))}
+                                            maxLength="6"
+                                            className="w-full h-[36px] border border-input rounded-lg px-2.5 text-[12px] bg-card focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary text-center tracking-widest"
+                                          />
+                                          {emailError && <p className="text-[11px] text-destructive">{emailError}</p>}
+                                          <button
+                                            onClick={handleSetup2FA}
+                                            className="w-full h-[34px] bg-primary text-white text-[12px] font-medium rounded-lg hover:bg-primary/90 transition-colors"
+                                          >
+                                            Verify Code
+                                          </button>
+                                        </div>
+                                      )}
+                                    </>
+                                  )}
                                   {opt.action === 'changePassword' && (
                                     <>
                                       <button
                                         onClick={() => setShowChangePassword(!showChangePassword)}
-                                        className="text-[13px] text-foreground/70 py-2 hover:text-primary transition-colors text-left"
+                                        className="text-[13px] text-foreground py-2.5 hover:text-primary transition-colors text-left"
                                       >
                                         {opt.label}
                                       </button>
-                                      <button
-                                        onClick={() => navigate('/forgot-password')}
-                                        className="text-[11px] text-primary/70 hover:text-primary transition-colors mb-2"
-                                      >
-                                        Forgot password?
-                                      </button>
+                                      <div className="mt-1 mb-3">
+                                        <button
+                                          onClick={() => navigate('/forgot-password')}
+                                          className="text-[11px] text-primary hover:underline transition-colors"
+                                        >
+                                          Forgot password?
+                                        </button>
+                                      </div>
                                       {showChangePassword && (
                                         <div className="mt-2 p-3 bg-white/50 rounded-lg space-y-2 border border-border/30">
                                           <input
@@ -256,7 +409,7 @@ export default function MenuDrawer({ open, onClose, user, profile }) {
                                   )}
                                   {opt.action === 'sessions' && (
                                     <div>
-                                      <p className="text-[13px] text-foreground/70 py-2">{opt.label}</p>
+                                      <p className="text-[13px] text-foreground py-2">{opt.label}</p>
                                       <p className="text-[12px] text-muted-foreground">Current device</p>
                                     </div>
                                   )}
@@ -332,7 +485,7 @@ export default function MenuDrawer({ open, onClose, user, profile }) {
                                   )}
                                   {opt.toggle && (
                                     <div className="flex items-center justify-between py-2">
-                                      <span className="text-[13px] text-foreground/70">{opt.label}</span>
+                                      <span className="text-[13px] text-foreground">{opt.label}</span>
                                       <button
                                         onClick={() => opt.onChange(!opt.value)}
                                         className={`w-10 h-6 rounded-full relative flex-shrink-0 transition-colors duration-200 ${opt.value ? 'bg-primary' : 'bg-muted-foreground/30'}`}
@@ -356,17 +509,21 @@ export default function MenuDrawer({ open, onClose, user, profile }) {
                               <div className="flex items-center justify-between py-2">
                                 <div className="flex items-center gap-2">
                                   {darkMode ? (
-                                    <Moon size={14} className="text-muted-foreground/50" />
+                                    <Moon size={14} className="text-foreground/60" />
                                   ) : (
-                                    <Sun size={14} className="text-muted-foreground/50" />
+                                    <Sun size={14} className="text-foreground/60" />
                                   )}
-                                  <span className="text-[13px] text-foreground/70">Dark mode</span>
+                                  <span className="text-[13px] text-foreground">Dark mode</span>
                                 </div>
                                 <button
                                   onClick={handleToggleDarkMode}
-                                  className={`w-10 h-6 rounded-full transition-colors relative flex-shrink-0 ${darkMode ? 'bg-primary' : 'bg-muted-foreground/30'}`}
+                                  className={`w-10 h-6 rounded-full relative flex-shrink-0 transition-colors duration-200 ${darkMode ? 'bg-primary' : 'bg-muted-foreground/30'}`}
                                 >
-                                  <div className={`absolute top-0.5 w-5 h-5 rounded-full bg-white transition-transform ${darkMode ? 'translate-x-4.5' : 'translate-x-0.5'}`} />
+                                  <motion.div
+                                    layout
+                                    transition={{ type: 'spring', stiffness: 500, damping: 30 }}
+                                    className={`absolute top-0.5 w-5 h-5 rounded-full bg-white ${darkMode ? 'right-0.5' : 'left-0.5'}`}
+                                  />
                                 </button>
                               </div>
                             </div>
