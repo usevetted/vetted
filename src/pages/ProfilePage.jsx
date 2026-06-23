@@ -105,36 +105,27 @@ export default function ProfilePage() {
   };
 
   const handleLogout = async () => {
+    // Attempt clean sign out via Base44
     try {
-      // Call logout with hard 5-second timeout
-      const controller = new AbortController();
-      const timeout = setTimeout(() => controller.abort(), 5000);
-      
-      try {
-        await Promise.race([
-          Promise.resolve(base44.auth.logout()),
-          new Promise((_, reject) => 
-            controller.signal.addEventListener('abort', () => reject(new Error('timeout')))
-          )
-        ]);
-      } finally {
-        clearTimeout(timeout);
-      }
-    } catch (error) {
-      // Timeout or error occurred, proceed with cleanup
-      console.error('Sign out error:', error);
-    } finally {
-      // Always clear session, tokens, and cached data
-      try {
-        sessionStorage.clear();
-        localStorage.clear();
-      } catch {
-        // ignore storage errors
-      }
-      
-      // Force redirect to landing
-      window.location.href = '/landing';
+      await base44.auth.logout();
+    } catch {
+      // Fallback: clear everything and force redirect
     }
+    
+    // Emergency cleanup: wipe all session data and cookies
+    try {
+      localStorage.clear();
+      sessionStorage.clear();
+      // Clear all cookies
+      document.cookie.split(";").forEach((c) => {
+        document.cookie = c.replace(/^ +/, "").replace(/=.*/, `=;expires=${new Date().toUTCString()};path=/`);
+      });
+    } catch {
+      // ignore
+    }
+    
+    // Hard redirect to restart app completely
+    window.location.href = '/login';
   };
 
   const initials = profile?.full_name?.split(' ').map(n => n[0]).join('').slice(0, 2).toUpperCase() || 'U';
