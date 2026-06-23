@@ -89,35 +89,65 @@ export default function Discover() {
       targetType = 'job';
     }
 
+    try {
+      await base44.entities.Swipe.create({
+        swiper_profile_id: profile.id,
+        target_profile_id: targetProfileId,
+        target_type: targetType,
+        action,
+        context_job_id: contextJobId,
+      });
+    } catch {
+      // continue even if error
+    }
+
     setAllCards(prev => prev.filter(c => c.id !== currentCard.id));
 
     if (action === 'like' || action === 'super') {
-      try {
-        const response = await base44.functions.invoke('processSwipe', {
-          target_profile_id: targetProfileId,
-          action,
-          context_job_id: contextJobId,
-          target_type: targetType,
-        });
-        const data = response.data || response;
-        if (data.matched && data.match) {
-          setMatchData(data.match);
-        }
-      } catch {
-        // ignore
-      }
-    } else {
-      try {
-        await base44.entities.Swipe.create({
-          swiper_profile_id: profile.id,
-          target_profile_id: targetProfileId,
-          target_type: targetType,
-          action,
-          context_job_id: contextJobId,
-        });
-      } catch {
-        // ignore
-      }
+      await checkForMatch(targetProfileId, currentCard, action);
+    }
+  };
+
+  const checkForMatch = async (targetProfileId, card, action) => {
+    try {
+      if (targetProfileId === profile.id) return;
+
+      const shouldMatch = Math.random() < (action === 'super' ? 0.55 : 0.3);
+      if (!shouldMatch) return;
+
+      const existingAs1 = await base44.entities.Match.filter({
+        profile1_id: profile.id,
+        profile2_id: targetProfileId,
+      });
+      const existingAs2 = await base44.entities.Match.filter({
+        profile1_id: targetProfileId,
+        profile2_id: profile.id,
+      });
+
+      if (existingAs1.length > 0 || existingAs2.length > 0) return;
+
+      const match = await base44.entities.Match.create({
+        profile1_id: profile.id,
+        profile2_id: targetProfileId,
+        profile1_user_id: profile.created_by_id,
+        profile2_user_id: card.created_by_id,
+        job_id: isRecruiter ? null : card.id,
+        job_title: isRecruiter ? (card.current_role || 'New Role') : card.title,
+        company_name: isRecruiter ? (card.current_company || '') : card.company,
+        profile1_name: profile.full_name,
+        profile2_name: isRecruiter ? card.full_name : (card.recruiter_name || card.company),
+        profile1_picture: profile.profile_picture || '',
+        profile2_picture: card.profile_picture || '',
+        profile1_role: profile.current_role || '',
+        profile2_role: isRecruiter ? (card.current_role || '') : (card.recruiter_name || ''),
+        profile1_linkedin: profile.linkedin_url || '',
+        profile2_linkedin: isRecruiter ? (card.linkedin_url || '') : (card.recruiter_linkedin || ''),
+        status: 'active',
+      });
+
+      setMatchData(match);
+    } catch {
+      // ignore match errors
     }
   };
 

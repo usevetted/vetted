@@ -3,6 +3,7 @@ import { useNavigate, useOutletContext, useParams } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import { ArrowLeft, Send, Info, Linkedin, ShieldAlert, Flag, X } from 'lucide-react';
 import { base44 } from '@/api/base44Client';
+import { moderateContent } from '@/lib/contentModeration';
 import ReportUserSheet from '@/components/ReportUserSheet';
 import LoadingScreen from '@/components/LoadingScreen';
 
@@ -60,23 +61,27 @@ export default function Chat() {
     setSending(true);
     setModerationWarning(null);
     const content = input.trim();
-    setInput('');
     try {
-      const response = await base44.functions.invoke('sendMessage', {
-        match_id: matchId,
-        content,
-      });
-      const data = response.data || response;
-      if (data.error === 'blocked') {
-        setModerationWarning(data.reason);
+      const moderation = await moderateContent(content);
+      if (moderation.blocked) {
+        setModerationWarning(moderation.reason);
+        setSending(false);
         return;
       }
-      if (data.message) {
-        setMessages(prev => {
-          if (prev.some(m => m.id === data.message.id)) return prev;
-          return [...prev, data.message];
-        });
-      }
+      const isP1 = match.profile1_id === profile.id;
+      const recipientUserId = isP1 ? (match.profile2_user_id || '') : (match.profile1_user_id || '');
+      setInput('');
+      const created = await base44.entities.Message.create({
+        match_id: matchId,
+        sender_profile_id: profile.id,
+        sender_user_id: profile.created_by_id,
+        recipient_user_id: recipientUserId,
+        content,
+      });
+      setMessages(prev => {
+        if (prev.some(m => m.id === created.id)) return prev;
+        return [...prev, created];
+      });
     } catch {
       setInput(content);
     } finally {

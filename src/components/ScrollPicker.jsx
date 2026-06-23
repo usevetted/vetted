@@ -2,63 +2,62 @@ import { useRef, useEffect, useCallback } from 'react';
 
 export default function ScrollPicker({ items, value, onChange, height = 200, itemHeight = 40 }) {
   const listRef = useRef(null);
-  const scrollTimer = useRef(null);
-  const snapTimer = useRef(null);
-  const isSnapping = useRef(false);
+  const scrollTimeout = useRef(null);
+  const flagTimer = useRef(null);
+  const isProgrammaticScroll = useRef(false);
 
-  const snapToValue = useCallback((val, smooth = false) => {
+  const scrollToValue = useCallback((val, smooth = false) => {
     const index = items.findIndex(item => item.value === val);
     if (index < 0 || !listRef.current) return;
-    isSnapping.current = true;
+    const targetScroll = index * itemHeight;
+    isProgrammaticScroll.current = true;
     listRef.current.scrollTo({
-      top: index * itemHeight,
+      top: targetScroll,
       behavior: smooth ? 'smooth' : 'auto',
     });
-    clearTimeout(snapTimer.current);
-    snapTimer.current = setTimeout(() => {
-      isSnapping.current = false;
-    }, smooth ? 250 : 50);
+    clearTimeout(flagTimer.current);
+    flagTimer.current = setTimeout(() => {
+      isProgrammaticScroll.current = false;
+    }, smooth ? 350 : 80);
   }, [items, itemHeight]);
 
   useEffect(() => {
-    snapToValue(value);
+    scrollToValue(value);
   }, []); // eslint-disable-line
 
   useEffect(() => {
-    snapToValue(value);
+    scrollToValue(value);
   }, [items]); // eslint-disable-line
 
   useEffect(() => {
     return () => {
-      clearTimeout(scrollTimer.current);
-      clearTimeout(snapTimer.current);
+      clearTimeout(scrollTimeout.current);
+      clearTimeout(flagTimer.current);
     };
   }, []);
 
   const handleScroll = () => {
-    if (isSnapping.current) return;
-    clearTimeout(scrollTimer.current);
-    scrollTimer.current = setTimeout(() => {
+    if (isProgrammaticScroll.current) return;
+    clearTimeout(scrollTimeout.current);
+    scrollTimeout.current = setTimeout(() => {
       if (!listRef.current) return;
-      const scrollTop = listRef.current.scrollTop;
-      const index = Math.round(scrollTop / itemHeight);
+      const index = Math.round(listRef.current.scrollTop / itemHeight);
       const clampedIndex = Math.max(0, Math.min(items.length - 1, index));
+      const targetScroll = clampedIndex * itemHeight;
       const selectedItem = items[clampedIndex];
 
       if (selectedItem && selectedItem.value !== value) {
         onChange(selectedItem.value);
       }
-
-      const targetScroll = clampedIndex * itemHeight;
-      if (Math.abs(scrollTop - targetScroll) > 1) {
-        isSnapping.current = true;
-        listRef.current.scrollTo({ top: targetScroll, behavior: 'smooth' });
-        clearTimeout(snapTimer.current);
-        snapTimer.current = setTimeout(() => {
-          isSnapping.current = false;
-        }, 250);
+      if (Math.abs(listRef.current.scrollTop - targetScroll) > 1) {
+        isProgrammaticScroll.current = true;
+        listRef.current.scrollTo({ top: targetScroll, behavior: 'auto' });
+        clearTimeout(flagTimer.current);
+        flagTimer.current = setTimeout(() => {
+          isProgrammaticScroll.current = false;
+        }, 80);
       }
-    }, 100);
+    }, 150);
   };
 
   const padCount = Math.max(0, Math.floor((height / itemHeight - 1) / 2));
