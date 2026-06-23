@@ -23,7 +23,29 @@
       "data.sender_profile_id": "{{user.data.profile_id}}"
     },
     "read": {
-      "created_by_id": "{{user.id}}"
+      "$or": [
+        {
+          "data.sender_profile_id": "{{user.data.profile_id}}"
+        },
+        {
+          "data.match_id": {
+            "$base44_in_query": {
+              "entity": "Match",
+              "field": "id",
+              "query": {
+                "$or": [
+                  {
+                    "data.profile1_id": "{{user.data.profile_id}}"
+                  },
+                  {
+                    "data.profile2_id": "{{user.data.profile_id}}"
+                  }
+                ]
+              }
+            }
+          }
+        }
+      ]
     },
     "update": {
       "created_by_id": "{{user.id}}"
