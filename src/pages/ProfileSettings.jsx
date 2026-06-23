@@ -66,7 +66,7 @@ export default function ProfileSettings() {
   };
 
   return (
-    <div className="flex-1 flex flex-col overflow-y-auto no-scrollbar min-h-0">
+    <div className="flex-1 flex flex-col overflow-y-auto no-scrollbar min-h-0 bg-background">
       {/* Header */}
       <div className="flex items-center justify-between px-5 pt-2 pb-3 relative z-10">
         <button onClick={() => navigate('/profile')} className="p-2 -ml-2">
