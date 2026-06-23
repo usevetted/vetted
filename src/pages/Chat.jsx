@@ -68,10 +68,14 @@ export default function Chat() {
         return;
       }
       setInput('');
-      await base44.entities.Message.create({
+      const created = await base44.entities.Message.create({
         match_id: matchId,
         sender_profile_id: profile.id,
         content,
+      });
+      setMessages(prev => {
+        if (prev.some(m => m.id === created.id)) return prev;
+        return [...prev, created];
       });
     } catch {
       setInput(content);

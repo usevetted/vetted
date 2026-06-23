@@ -128,6 +128,8 @@ export default function Discover() {
       const match = await base44.entities.Match.create({
         profile1_id: profile.id,
         profile2_id: targetProfileId,
+        profile1_user_id: profile.created_by_id,
+        profile2_user_id: card.created_by_id,
         job_id: isRecruiter ? null : card.id,
         job_title: isRecruiter ? (card.current_role || 'New Role') : card.title,
         company_name: isRecruiter ? (card.current_company || '') : card.company,
