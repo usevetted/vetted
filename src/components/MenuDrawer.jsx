@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
-import { X, ChevronDown, Sun, Moon } from 'lucide-react';
+import { X, ChevronDown, Sun, Moon, Loader2 } from 'lucide-react';
 import { base44 } from '@/api/base44Client';
 import { useTheme } from '@/lib/ThemeContext';
 
@@ -142,6 +142,7 @@ export default function MenuDrawer({ open, onClose, user, profile }) {
         setShowTwoFaSetup(true);
       } catch (err) {
         setTwoFaError(err?.message || 'Failed to start 2FA setup');
+        setShowTwoFaSetup(false);
       } finally {
         setTwoFaLoading(false);
       }
@@ -363,18 +364,22 @@ export default function MenuDrawer({ open, onClose, user, profile }) {
                               <div className="space-y-2 pb-3 border-b border-border/30">
                                 <div className="flex items-center justify-between">
                                   <span className="text-[13px] font-medium text-foreground">Two-factor authentication</span>
-                                  <button
-                                    onClick={handleToggle2FA}
-                                    disabled={twoFaLoading}
-                                    className={`w-10 h-6 rounded-full relative flex-shrink-0 transition-colors duration-200 disabled:opacity-50 ${twoFaEnabled ? 'bg-primary' : 'bg-muted-foreground/30'}`}
-                                  >
-                                    <motion.div
-                                      layout
-                                      transition={{ type: 'spring', stiffness: 500, damping: 30 }}
-                                      className={`absolute top-0.5 w-5 h-5 rounded-full bg-white ${twoFaEnabled ? 'right-0.5' : 'left-0.5'}`}
-                                    />
-                                  </button>
+                                  <div className="flex items-center gap-2">
+                                    {twoFaLoading && <Loader2 size={14} className="text-primary animate-spin" />}
+                                    <button
+                                      onClick={handleToggle2FA}
+                                      disabled={twoFaLoading}
+                                      className={`w-10 h-6 rounded-full relative flex-shrink-0 transition-colors duration-200 disabled:opacity-50 ${twoFaEnabled ? 'bg-primary' : 'bg-muted-foreground/30'}`}
+                                    >
+                                      <motion.div
+                                        layout
+                                        transition={{ type: 'spring', stiffness: 500, damping: 30 }}
+                                        className={`absolute top-0.5 w-5 h-5 rounded-full bg-white ${twoFaEnabled ? 'right-0.5' : 'left-0.5'}`}
+                                      />
+                                    </button>
+                                  </div>
                                 </div>
+                                {twoFaError && !showTwoFaSetup && <p className="text-[11px] text-destructive">{twoFaError}</p>}
                                 {showTwoFaSetup && (
                                   <div className="mt-2 p-3 bg-primary/5 rounded-lg space-y-2 border border-primary/20">
                                     {twoFaQR && (

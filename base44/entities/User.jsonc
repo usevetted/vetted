@@ -1,4 +1,6 @@
 {
+  "name": "User",
+  "type": "object",
   "properties": {
     "role": {
       "type": "string",
@@ -7,11 +9,33 @@
         "admin",
         "user"
       ]
+    },
+    "two_fa_enabled": {
+      "type": "boolean",
+      "default": false
+    },
+    "two_fa_secret": {
+      "type": "string",
+      "nullable": true
+    },
+    "two_fa_pending_secret": {
+      "type": "string",
+      "nullable": true
+    },
+    "pending_email": {
+      "type": "string",
+      "nullable": true
+    },
+    "email_change_token": {
+      "type": "string",
+      "nullable": true
+    },
+    "email_change_token_expiry": {
+      "type": "string",
+      "nullable": true
     }
   },
   "required": [
     "role"
-  ],
-  "name": "User",
-  "type": "object"
+  ]
 }
