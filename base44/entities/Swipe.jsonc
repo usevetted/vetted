@@ -34,17 +34,16 @@
   ],
   "rls": {
     "create": {
-      "created_by_id": "{{user.id}}",
-      "data.swiper_profile_id": "{{user.data.profile_id}}"
+      "created_by_id": "{{user.id}}"
     },
     "read": {
-      "data.swiper_profile_id": "{{user.data.profile_id}}"
+      "created_by_id": "{{user.id}}"
     },
     "update": {
-      "data.swiper_profile_id": "{{user.data.profile_id}}"
+      "created_by_id": "{{user.id}}"
     },
     "delete": {
-      "data.swiper_profile_id": "{{user.data.profile_id}}"
+      "created_by_id": "{{user.id}}"
     }
   }
 }
