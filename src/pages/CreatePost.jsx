@@ -64,33 +64,38 @@ export default function CreatePost() {
     if (!validate()) return;
 
     setSubmitting(true);
-    const postData = {
-      job_title: jobTitle.trim(),
-      company: company.trim(),
-      company_logo: companyLogo,
-      location: location.trim(),
-      remote,
-      salary_range: salaryRange.trim(),
-      description: description.trim(),
-      tags,
-    };
-    console.log('Job posting created:', postData);
-    
-    const { dismiss } = toast({
-      title: '✓ Job posting published',
-      description: 'Your job is now live and visible to candidates',
-      duration: 2000,
-    });
-    
-    // Auto-dismiss after duration
-    setTimeout(() => {
-      if (dismiss) dismiss();
-    }, 2000);
+    try {
+      const postData = {
+        title: jobTitle.trim(),
+        company: company.trim(),
+        company_logo: companyLogo,
+        location: location.trim(),
+        remote,
+        salary_range: salaryRange.trim(),
+        description: description.trim(),
+        tags,
+      };
+      
+      await base44.entities.Job.create(postData);
+      
+      toast({
+        title: '✓ Job posting published',
+        description: 'Your job is now live and visible to candidates',
+        duration: 2000,
+      });
 
-    setTimeout(() => {
+      setTimeout(() => {
+        setSubmitting(false);
+        navigate(-1);
+      }, 2100);
+    } catch (error) {
       setSubmitting(false);
-      navigate(-1);
-    }, 2100);
+      toast({
+        title: 'Error',
+        description: 'Failed to publish job posting',
+        variant: 'destructive',
+      });
+    }
   };
 
   const inputClass = "w-full h-[44px] border border-input rounded-xl px-3.5 text-[14px] text-foreground bg-muted/30 focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all";
