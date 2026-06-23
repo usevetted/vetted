@@ -74,9 +74,25 @@ export default function PostJobForm({ onClose, onSuccess, recruiterProfile }) {
         recruiter_linkedin: recruiterProfile.linkedin_url || '',
       });
 
+      setFormData({
+        title: '',
+        company: '',
+        location: '',
+        remote: false,
+        employmentType: 'Full Time',
+        salaryMin: '',
+        salaryMax: '',
+        description: '',
+        skills: [],
+        experienceLevel: 'Mid Level',
+        deadline: '',
+      });
+      setErrors({});
+      setSubmitError('');
       onSuccess();
     } catch (err) {
-      setSubmitError(err?.message || 'Failed to post job. Please try again.');
+      console.error('Job submission error:', err);
+      setSubmitError(err?.message || err?.toString() || 'Failed to post job. Please try again.');
     } finally {
       setLoading(false);
     }
@@ -302,6 +318,7 @@ export default function PostJobForm({ onClose, onSuccess, recruiterProfile }) {
           Cancel
         </button>
         <motion.button
+          type="submit"
           whileTap={{ scale: 0.95 }}
           disabled={loading}
           className="flex-1 h-[40px] bg-primary text-white rounded-lg text-[13px] font-medium hover:bg-primary/90 disabled:opacity-50 transition-colors flex items-center justify-center gap-2"
