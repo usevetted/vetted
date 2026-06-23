@@ -96,9 +96,9 @@ export default function Chat() {
   const initials = otherName?.split(' ').map(n => n[0]).join('').slice(0, 2).toUpperCase() || 'U';
 
   return (
-    <div className="flex-1 flex flex-col bg-white">
+    <div className="flex-1 flex flex-col bg-white min-h-0">
       {/* Chat header */}
-      <div className="flex items-center gap-3 px-4 pt-2 pb-3 border-b border-border/50 bg-white">
+      <div className="flex items-center gap-3 px-4 pt-2 pb-3 border-b border-border/50 bg-white relative z-10">
         <button onClick={() => navigate('/messages')} className="p-1 -ml-1">
           <ArrowLeft size={20} className="text-primary" />
         </button>
@@ -121,8 +121,8 @@ export default function Chat() {
             Online
           </div>
         </div>
-        <button onClick={() => setShowInfo(!showInfo)} className="p-1.5">
-          <Info size={18} className="text-muted-foreground/50" />
+        <button onClick={() => setShowInfo(!showInfo)} className="w-9 h-9 rounded-full flex items-center justify-center hover:bg-muted transition-colors">
+          <Info size={18} className="text-muted-foreground" />
         </button>
       </div>
 
@@ -162,7 +162,7 @@ export default function Chat() {
       </AnimatePresence>
 
       {/* Messages */}
-      <div className="flex-1 overflow-y-auto no-scrollbar px-4 py-4 flex flex-col gap-2.5">
+      <div className="flex-1 overflow-y-auto no-scrollbar px-4 py-4 flex flex-col gap-2.5 min-h-0">
         <div className="text-[10px] text-muted-foreground/40 text-center mb-2">
           {new Date(match.created_date).toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' })}
         </div>

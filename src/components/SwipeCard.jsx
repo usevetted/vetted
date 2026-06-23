@@ -1,34 +1,35 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { motion, useMotionValue, useTransform } from 'framer-motion';
 import { MapPin, Linkedin, Building2 } from 'lucide-react';
 
-export default function SwipeCard({ card, type, onSwipe, isTop, index }) {
-  const [exitX, setExitX] = useState(0);
-  const [exitY, setExitY] = useState(0);
+export default function SwipeCard({ card, type, onSwipe, isTop, index, triggerAction }) {
+  const [exitDir, setExitDir] = useState(null);
   const x = useMotionValue(0);
   const y = useMotionValue(0);
-  const rotate = useTransform(x, [-200, 0, 200], [-18, 0, 18]);
+  const rotate = useTransform(x, [-300, 0, 300], [-20, 0, 20]);
   const likeOpacity = useTransform(x, [20, 100], [0, 1]);
   const passOpacity = useTransform(x, [-100, -20], [1, 0]);
   const superOpacity = useTransform(y, [-100, -20], [1, 0]);
-  const likeScale = useTransform(x, [20, 100], [0.6, 1]);
-  const passScale = useTransform(x, [-100, -20], [1, 0.6]);
-  const superScale = useTransform(y, [-100, -20], [1, 0.6]);
+
+  useEffect(() => {
+    if (triggerAction && isTop && !exitDir) {
+      setExitDir(triggerAction);
+    }
+  }, [triggerAction, isTop, exitDir]);
 
   if (!card) return null;
 
   const handleDragEnd = (e, info) => {
     const threshold = 100;
-    if (info.offset.x > threshold) {
-      setExitX(500);
-      onSwipe('like');
-    } else if (info.offset.x < -threshold) {
-      setExitX(-500);
-      onSwipe('pass');
-    } else if (info.offset.y < -threshold) {
-      setExitY(-500);
-      onSwipe('super');
-    }
+    if (info.offset.x > threshold) setExitDir('like');
+    else if (info.offset.x < -threshold) setExitDir('pass');
+    else if (info.offset.y < -threshold) setExitDir('super');
+  };
+
+  const exitVariants = {
+    like: { x: 600, opacity: 0 },
+    pass: { x: -600, opacity: 0 },
+    super: { y: -600, opacity: 0, scale: 0.6 },
   };
 
   const stampClass = "absolute top-10 px-5 py-2 rounded-2xl border-[3px] text-base font-extrabold tracking-wider uppercase";
@@ -37,40 +38,37 @@ export default function SwipeCard({ card, type, onSwipe, isTop, index }) {
     <motion.div
       className="absolute inset-0 flex items-center justify-center"
       style={{ zIndex: isTop ? 30 : 30 - index }}
-      initial={{ scale: isTop ? 1 : 0.92, y: isTop ? 0 : 18, opacity: isTop ? 1 : 0.4 }}
-      animate={{ scale: isTop ? 1 : 0.92, y: isTop ? 0 : 18, opacity: isTop ? 1 : 0.4 }}
+      initial={{ scale: isTop ? 1 : 0.95, y: isTop ? 0 : 8 }}
+      animate={{ scale: isTop ? 1 : 0.95, y: isTop ? 0 : 8 }}
       transition={{ type: 'spring', stiffness: 300, damping: 30 }}
     >
       <motion.div
-        drag={isTop}
+        drag={isTop && !exitDir}
         dragConstraints={{ left: 0, right: 0, top: 0, bottom: 0 }}
-        dragElastic={0.75}
+        dragElastic={0.7}
         onDragEnd={handleDragEnd}
         style={{ x, y, rotate }}
-        animate={exitX !== 0
-          ? { x: exitX, opacity: 0, rotate: exitX > 0 ? 30 : -30 }
-          : exitY !== 0
-            ? { y: exitY, opacity: 0, scale: 0.5, rotate: 0 }
-            : {}}
-        transition={{ type: 'spring', stiffness: 200, damping: 22 }}
+        animate={exitDir ? exitVariants[exitDir] : {}}
+        transition={exitDir ? { duration: 0.4, ease: [0.32, 0, 0.67, 0] } : { type: 'spring', stiffness: 300, damping: 30 }}
+        onAnimationComplete={() => { if (exitDir) onSwipe(exitDir); }}
         className="w-full bg-white rounded-[24px] border border-border/40 shadow-[0_12px_50px_rgba(0,0,0,0.12)] overflow-hidden cursor-grab active:cursor-grabbing"
       >
         {isTop && (
           <>
             <motion.div
-              style={{ opacity: likeOpacity, scale: likeScale }}
+              style={{ opacity: likeOpacity }}
               className={`${stampClass} right-8 border-primary text-primary bg-brand-green-bg/90 rotate-[-15]`}
             >
               Interested
             </motion.div>
             <motion.div
-              style={{ opacity: passOpacity, scale: passScale }}
+              style={{ opacity: passOpacity }}
               className={`${stampClass} left-8 border-pass text-pass bg-red-50/90 rotate-[15]`}
             >
               Pass
             </motion.div>
             <motion.div
-              style={{ opacity: superOpacity, scale: superScale }}
+              style={{ opacity: superOpacity }}
               className={`${stampClass} left-1/2 -translate-x-1/2 border-gold text-gold bg-yellow-50/90 rotate-[-5]`}
             >
               Super
@@ -78,11 +76,7 @@ export default function SwipeCard({ card, type, onSwipe, isTop, index }) {
           </>
         )}
 
-        {type === 'job' ? (
-          <JobCardContent card={card} />
-        ) : (
-          <CandidateCardContent card={card} />
-        )}
+        {type === 'job' ? <JobCardContent card={card} /> : <CandidateCardContent card={card} />}
       </motion.div>
     </motion.div>
   );

@@ -1,7 +1,8 @@
 import { Toaster } from "@/components/ui/toaster"
 import { QueryClientProvider } from '@tanstack/react-query'
 import { queryClientInstance } from '@/lib/query-client'
-import { BrowserRouter as Router, Route, Routes, Navigate } from 'react-router-dom';
+import { BrowserRouter as Router, Route, Routes, Navigate, useLocation } from 'react-router-dom';
+import { AnimatePresence, motion } from 'framer-motion';
 import PageNotFound from './lib/PageNotFound';
 import { AuthProvider, useAuth } from '@/lib/AuthContext';
 import UserNotRegisteredError from '@/components/UserNotRegisteredError';
@@ -25,6 +26,7 @@ import ProfilePage from './pages/ProfilePage';
 
 const AuthenticatedApp = () => {
   const { isLoadingAuth, isLoadingPublicSettings, authError, navigateToLogin } = useAuth();
+  const location = useLocation();
 
   // Show loading spinner while checking app public settings or auth
   if (isLoadingPublicSettings || isLoadingAuth) {
@@ -46,9 +48,18 @@ const AuthenticatedApp = () => {
     }
   }
 
-  // Render the main app
+  const isPublicRoute = ['/', '/landing', '/login', '/register', '/forgot-password', '/reset-password'].includes(location.pathname);
+
   return (
-    <Routes>
+    <AnimatePresence mode="wait">
+    <motion.div
+      key={isPublicRoute ? location.pathname : 'app'}
+      initial={{ opacity: 0, y: 6 }}
+      animate={{ opacity: 1, y: 0 }}
+      exit={{ opacity: 0, y: -6 }}
+      transition={{ duration: 0.3, ease: [0.16, 1, 0.3, 1] }}
+    >
+    <Routes location={location}>
       {/* Public routes */}
       <Route path="/" element={<Splash />} />
       <Route path="/landing" element={<Landing />} />
@@ -74,6 +85,8 @@ const AuthenticatedApp = () => {
 
       <Route path="*" element={<PageNotFound />} />
     </Routes>
+    </motion.div>
+    </AnimatePresence>
   );
 };
 

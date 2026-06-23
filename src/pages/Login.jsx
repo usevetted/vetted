@@ -7,6 +7,7 @@ import { Label } from "@/components/ui/label";
 import { LogIn, Mail, Lock, Loader2 } from "lucide-react";
 import AuthLayout from "@/components/AuthLayout";
 import GoogleIcon from "@/components/GoogleIcon";
+import { motion } from "framer-motion";
 
 export default function Login() {
   const [email, setEmail] = useState("");
@@ -33,6 +34,11 @@ export default function Login() {
   };
 
   return (
+    <motion.div
+      initial={{ opacity: 0, y: 12 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.4, ease: [0.16, 1, 0.3, 1] }}
+    >
     <AuthLayout
       icon={LogIn}
       title="Welcome back"
@@ -121,5 +127,6 @@ export default function Login() {
         </Button>
       </form>
     </AuthLayout>
+    </motion.div>
   );
 }
