@@ -25,8 +25,8 @@ export default function MenuDrawer({ open, onClose, user, profile }) {
   const [emailChangeSent, setEmailChangeSent] = useState(false);
   const [twoFaEnabled, setTwoFaEnabled] = useState(false);
   const [showTwoFaSetup, setShowTwoFaSetup] = useState(false);
-  const [twoFaQR, setTwoFaQR] = useState('');
-  const [twoFaSecret, setTwoFaSecret] = useState('');
+  const [twoFaPhone, setTwoFaPhone] = useState('');
+  const [twoFaStep, setTwoFaStep] = useState(null); // 'phone' or 'verify'
   const [twoFaCode, setTwoFaCode] = useState('');
   const [twoFaError, setTwoFaError] = useState('');
   const [twoFaLoading, setTwoFaLoading] = useState(false);
@@ -127,29 +127,50 @@ export default function MenuDrawer({ open, onClose, user, profile }) {
 
   const handleToggle2FA = async () => {
     if (twoFaEnabled) {
-      // Disable 2FA
+      // Disable 2FA - need phone to send code
       setShowTwoFaSetup(true);
+      setTwoFaStep('verify');
       setTwoFaCode('');
       setTwoFaError('');
-    } else {
-      // Enable 2FA - fetch setup
+      // Send SMS code to their registered phone
       setTwoFaLoading(true);
-      setTwoFaError('');
       try {
-        const res = await base44.functions.invoke('setup2FA', {});
-        setTwoFaQR(res.data.qrCode);
-        setTwoFaSecret(res.data.secret);
-        setShowTwoFaSetup(true);
+        await base44.functions.invoke('sendTwoFaCode', { phoneNumber: user?.two_fa_phone });
       } catch (err) {
-        setTwoFaError(err?.message || 'Failed to start 2FA setup');
+        setTwoFaError(err?.message || 'Failed to send verification code');
         setShowTwoFaSetup(false);
       } finally {
         setTwoFaLoading(false);
       }
+    } else {
+      // Enable 2FA - ask for phone first
+      setShowTwoFaSetup(true);
+      setTwoFaStep('phone');
+      setTwoFaPhone('');
+      setTwoFaCode('');
+      setTwoFaError('');
     }
   };
 
-  const handleSubmitTwoFA = async () => {
+  const handleSubmitTwoFaPhone = async () => {
+    if (!twoFaPhone) {
+      setTwoFaError('Phone number is required');
+      return;
+    }
+    setTwoFaLoading(true);
+    try {
+      await base44.functions.invoke('sendTwoFaCode', { phoneNumber: twoFaPhone });
+      setTwoFaStep('verify');
+      setTwoFaCode('');
+      setTwoFaError('');
+    } catch (err) {
+      setTwoFaError(err?.message || 'Failed to send code');
+    } finally {
+      setTwoFaLoading(false);
+    }
+  };
+
+  const handleSubmitTwoFaCode = async () => {
     if (!twoFaCode || twoFaCode.length !== 6) {
       setTwoFaError('Code must be 6 digits');
       return;
@@ -157,23 +178,18 @@ export default function MenuDrawer({ open, onClose, user, profile }) {
     setTwoFaLoading(true);
     try {
       if (twoFaEnabled) {
-        // Disabling
-        await base44.functions.invoke('disable2FA', { code: twoFaCode });
+        // Disabling 2FA
+        await base44.functions.invoke('disableTwoFa', { code: twoFaCode });
         setTwoFaEnabled(false);
-        setShowTwoFaSetup(false);
-        setTwoFaCode('');
       } else {
-        // Enabling
-        await base44.functions.invoke('verify2FASetup', {
-          secret: twoFaSecret,
-          code: twoFaCode,
-        });
+        // Enabling 2FA
+        await base44.functions.invoke('verifyTwoFaSetup', { phoneNumber: twoFaPhone, code: twoFaCode });
         setTwoFaEnabled(true);
-        setShowTwoFaSetup(false);
-        setTwoFaCode('');
-        setTwoFaSecret('');
-        setTwoFaQR('');
       }
+      setShowTwoFaSetup(false);
+      setTwoFaPhone('');
+      setTwoFaCode('');
+      setTwoFaStep(null);
     } catch (err) {
       setTwoFaError(err?.message || 'Invalid code');
     } finally {
@@ -382,43 +398,73 @@ export default function MenuDrawer({ open, onClose, user, profile }) {
                                 {twoFaError && !showTwoFaSetup && <p className="text-[11px] text-destructive">{twoFaError}</p>}
                                 {showTwoFaSetup && (
                                   <div className="mt-2 p-3 bg-primary/5 rounded-lg space-y-2 border border-primary/20">
-                                    {twoFaQR && (
+                                    {twoFaStep === 'phone' && (
                                       <>
-                                        <p className="text-[12px] text-foreground font-medium">Scan with Google Authenticator:</p>
-                                        <img src={twoFaQR} alt="2FA QR Code" className="w-full max-w-[120px] mx-auto border border-primary rounded-lg" />
-                                        <p className="text-[11px] text-muted-foreground text-center">Or enter this key manually:</p>
-                                        <p className="text-[11px] font-mono bg-card p-2 rounded text-center text-foreground break-all">{twoFaSecret}</p>
+                                        <p className="text-[12px] text-foreground font-medium">Enter your phone number:</p>
+                                        <input
+                                          type="tel"
+                                          placeholder="+1234567890"
+                                          value={twoFaPhone}
+                                          onChange={(e) => setTwoFaPhone(e.target.value)}
+                                          className="w-full h-[36px] border border-input rounded-lg px-2.5 text-[12px] bg-card focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary"
+                                        />
+                                        {twoFaError && <p className="text-[11px] text-destructive">{twoFaError}</p>}
+                                        <div className="flex gap-2">
+                                          <button
+                                            onClick={() => {
+                                              setShowTwoFaSetup(false);
+                                              setTwoFaPhone('');
+                                              setTwoFaError('');
+                                              setTwoFaStep(null);
+                                            }}
+                                            className="flex-1 h-[32px] text-[12px] font-medium border border-border rounded-lg hover:bg-muted/30 transition-colors"
+                                          >
+                                            Cancel
+                                          </button>
+                                          <button
+                                            onClick={handleSubmitTwoFaPhone}
+                                            disabled={twoFaLoading || !twoFaPhone}
+                                            className="flex-1 h-[32px] text-[12px] font-medium bg-primary text-white rounded-lg hover:bg-primary/90 disabled:opacity-50 transition-colors"
+                                          >
+                                            {twoFaLoading ? 'Sending...' : 'Send Code'}
+                                          </button>
+                                        </div>
                                       </>
                                     )}
-                                    <p className="text-[12px] text-foreground">Enter the 6-digit code:</p>
-                                    <input
-                                      type="text"
-                                      placeholder="000000"
-                                      value={twoFaCode}
-                                      onChange={(e) => setTwoFaCode(e.target.value.replace(/\D/g, '').slice(0, 6))}
-                                      maxLength="6"
-                                      className="w-full h-[36px] border border-input rounded-lg px-2.5 text-[12px] bg-card focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary text-center tracking-widest"
-                                    />
-                                    {twoFaError && <p className="text-[11px] text-destructive">{twoFaError}</p>}
-                                    <div className="flex gap-2">
-                                      <button
-                                        onClick={() => {
-                                          setShowTwoFaSetup(false);
-                                          setTwoFaCode('');
-                                          setTwoFaError('');
-                                        }}
-                                        className="flex-1 h-[32px] text-[12px] font-medium border border-border rounded-lg hover:bg-muted/30 transition-colors"
-                                      >
-                                        Cancel
-                                      </button>
-                                      <button
-                                        onClick={handleSubmitTwoFA}
-                                        disabled={twoFaLoading || twoFaCode.length !== 6}
-                                        className="flex-1 h-[32px] text-[12px] font-medium bg-primary text-white rounded-lg hover:bg-primary/90 disabled:opacity-50 transition-colors"
-                                      >
-                                        {twoFaLoading ? 'Verifying...' : twoFaEnabled ? 'Disable' : 'Enable'}
-                                      </button>
-                                    </div>
+                                    {twoFaStep === 'verify' && (
+                                      <>
+                                        <p className="text-[12px] text-foreground">Enter the 6-digit code sent to your phone:</p>
+                                        <input
+                                          type="text"
+                                          placeholder="000000"
+                                          value={twoFaCode}
+                                          onChange={(e) => setTwoFaCode(e.target.value.replace(/\D/g, '').slice(0, 6))}
+                                          maxLength="6"
+                                          className="w-full h-[36px] border border-input rounded-lg px-2.5 text-[12px] bg-card focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary text-center tracking-widest"
+                                        />
+                                        {twoFaError && <p className="text-[11px] text-destructive">{twoFaError}</p>}
+                                        <div className="flex gap-2">
+                                          <button
+                                            onClick={() => {
+                                              setShowTwoFaSetup(false);
+                                              setTwoFaCode('');
+                                              setTwoFaError('');
+                                              setTwoFaStep(null);
+                                            }}
+                                            className="flex-1 h-[32px] text-[12px] font-medium border border-border rounded-lg hover:bg-muted/30 transition-colors"
+                                          >
+                                            Cancel
+                                          </button>
+                                          <button
+                                            onClick={handleSubmitTwoFaCode}
+                                            disabled={twoFaLoading || twoFaCode.length !== 6}
+                                            className="flex-1 h-[32px] text-[12px] font-medium bg-primary text-white rounded-lg hover:bg-primary/90 disabled:opacity-50 transition-colors"
+                                          >
+                                            {twoFaLoading ? 'Verifying...' : twoFaEnabled ? 'Disable' : 'Enable'}
+                                          </button>
+                                        </div>
+                                      </>
+                                    )}
                                   </div>
                                 )}
                               </div>
