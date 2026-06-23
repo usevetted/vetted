@@ -15,24 +15,19 @@
       "default": false
     },
     "two_fa_secret": {
-      "type": "string",
-      "nullable": true
+      "type": "string"
     },
     "two_fa_pending_secret": {
-      "type": "string",
-      "nullable": true
+      "type": "string"
     },
     "pending_email": {
-      "type": "string",
-      "nullable": true
+      "type": "string"
     },
     "email_change_token": {
-      "type": "string",
-      "nullable": true
+      "type": "string"
     },
     "email_change_token_expiry": {
-      "type": "string",
-      "nullable": true
+      "type": "string"
     }
   },
   "required": [
