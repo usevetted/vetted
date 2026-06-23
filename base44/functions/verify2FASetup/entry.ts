@@ -1,5 +1,5 @@
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.31';
-import { authenticator } from 'npm:otplib@12.0.1';
+import speakeasy from 'npm:speakeasy@2.0.0';
 
 Deno.serve(async (req) => {
   try {
@@ -11,20 +11,33 @@ Deno.serve(async (req) => {
     const { secret, code } = body;
 
     if (!secret || !code) {
-      return Response.json({ error: 'Secret and code are required' }, { status: 400 });
+      return Response.json({ error: 'Missing secret or code' }, { status: 400 });
     }
 
-    const isValid = authenticator.check(code, secret);
-    if (!isValid) {
+    // Verify the TOTP code
+    const verified = speakeasy.totp.verify({
+      secret: secret,
+      encoding: 'base32',
+      token: code,
+      window: 2, // Allow ±2 time steps for clock skew
+    });
+
+    if (!verified) {
       return Response.json({ error: 'Invalid code' }, { status: 400 });
     }
 
-    await base44.asServiceRole.entities.User.update(user.id, {
-      totp_secret: secret,
+    // Permanently save the secret and enable 2FA
+    await base44.auth.updateMe({
+      two_fa_secret: secret,
+      two_fa_pending_secret: null, // Clear pending
       two_fa_enabled: true,
     });
 
-    return Response.json({ success: true, message: '2FA has been enabled' });
+    return Response.json({
+      data: {
+        message: '2FA enabled successfully',
+      },
+    });
   } catch (error) {
     return Response.json({ error: error.message }, { status: 500 });
   }
