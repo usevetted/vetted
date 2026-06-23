@@ -1,9 +1,10 @@
 import { Outlet, useNavigate, useLocation } from 'react-router-dom';
-import { LayoutGrid, Heart, MessageCircle, User } from 'lucide-react';
+import { LayoutGrid, Heart, MessageCircle, User, Menu } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import { base44 } from '@/api/base44Client';
 import { useAuth } from '@/lib/AuthContext';
 import LoadingScreen from '@/components/LoadingScreen';
+import MenuDrawer from '@/components/MenuDrawer';
 
 const navItems = [
   { icon: LayoutGrid, label: 'Discover', path: '/discover' },
@@ -20,6 +21,7 @@ export default function AppLayout() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(false);
   const [retryCount, setRetryCount] = useState(0);
+  const [menuOpen, setMenuOpen] = useState(false);
 
   useEffect(() => {
     const loadProfile = async (attempt = 0) => {
@@ -72,8 +74,18 @@ export default function AppLayout() {
   }
 
   return (
-    <div className="h-[100dvh] bg-white overflow-hidden">
+    <div className="h-[100dvh] bg-white dark:bg-slate-950 overflow-hidden">
       <div className="w-full h-[100dvh] relative flex flex-col overflow-hidden">
+        {/* Header */}
+        <div className="flex-shrink-0 px-5 py-3 bg-white dark:bg-slate-950 border-b border-border/50 dark:border-slate-800 flex items-center justify-between">
+          <button
+            onClick={() => setMenuOpen(true)}
+            className="p-1.5 rounded-lg hover:bg-muted dark:hover:bg-slate-800 transition-colors"
+          >
+            <Menu size={22} className="text-foreground" />
+          </button>
+          <div className="flex-1" />
+        </div>
         <main className="flex-1 overflow-hidden flex flex-col pt-[env(safe-area-inset-top)] min-h-0">
           <Outlet context={{ profile, setProfile }} />
         </main>
@@ -106,6 +118,7 @@ export default function AppLayout() {
           </div>
         </nav>
       </div>
+      <MenuDrawer open={menuOpen} onClose={() => setMenuOpen(false)} />
     </div>
   );
 }
