@@ -43,8 +43,7 @@ export default function AccountType() {
           open_to_work: true,
         });
         navigate('/onboarding/profile-setup', { replace: true });
-      } catch (e) {
-        // fallback navigation
+      } catch {
         navigate('/onboarding/profile-setup', { replace: true });
       }
     }
@@ -70,8 +69,8 @@ export default function AccountType() {
   ];
 
   return (
-    <div className="min-h-screen bg-white flex justify-center">
-      <div className="w-full max-w-[440px] px-6 pt-14 pb-12 min-h-screen shadow-[0_0_60px_rgba(0,0,0,0.06)] flex flex-col">
+    <div className="min-h-[100dvh] bg-gradient-to-br from-secondary/60 via-secondary/40 to-brand-green-bg/40 flex justify-center overflow-y-auto no-scrollbar">
+      <div className="w-full max-w-[600px] px-6 pt-14 pb-12 min-h-[100dvh] flex flex-col">
         <div className="flex flex-col items-center mb-1">
           <Logo size="sm" />
         </div>

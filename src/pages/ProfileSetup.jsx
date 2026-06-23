@@ -1,9 +1,21 @@
 import { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
-import { Camera, Linkedin, ArrowRight, X, Plus, ArrowLeft, Check } from 'lucide-react';
+import { Camera, Linkedin, ArrowRight, X, Plus, ArrowLeft, Check, ChevronDown } from 'lucide-react';
 import Logo from '@/components/Logo';
+import LinkedInImportSheet from '@/components/LinkedInImportSheet';
+import PickerSheet from '@/components/PickerSheet';
+import LocationPickerSheet from '@/components/LocationPickerSheet';
 import { base44 } from '@/api/base44Client';
+
+const yearsOptions = [
+  { value: 'Less than 1 year', label: 'Less than 1 year' },
+  ...Array.from({ length: 29 }, (_, i) => {
+    const n = i + 1;
+    return { value: `${n} year${n > 1 ? 's' : ''}`, label: `${n} year${n > 1 ? 's' : ''}` };
+  }),
+  { value: '30+ years', label: '30+ years' },
+];
 
 export default function ProfileSetup() {
   const navigate = useNavigate();
@@ -11,6 +23,10 @@ export default function ProfileSetup() {
   const [profile, setProfile] = useState(null);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
+  const [errors, setErrors] = useState({});
+  const [linkedInImportOpen, setLinkedInImportOpen] = useState(false);
+  const [yearsPickerOpen, setYearsPickerOpen] = useState(false);
+  const [locationPickerOpen, setLocationPickerOpen] = useState(false);
 
   const [fullName, setFullName] = useState('');
   const [profilePicture, setProfilePicture] = useState('');
@@ -81,18 +97,33 @@ export default function ProfileSetup() {
     }
   };
 
-  const handleLinkedInImport = () => {
-    const url = window.prompt('Enter your LinkedIn profile URL to import:');
-    if (url) {
-      setLinkedinUrl(url);
-      // Simulate partial import
-      if (!fullName) setFullName('Imported from LinkedIn');
-      if (!bio) setBio('Profile imported from LinkedIn. Edit your details below.');
+  const handleLinkedInImportComplete = (data) => {
+    if (data.full_name) setFullName(data.full_name);
+    if (data.current_role) setCurrentRole(data.current_role);
+    if (data.current_company) setCurrentCompany(data.current_company);
+    if (data.location) setLocation(data.location);
+    if (data.bio) setBio(data.bio);
+    if (data.skills && data.skills.length > 0) setSkills(data.skills);
+    if (data.linkedin_url) setLinkedinUrl(data.linkedin_url);
+  };
+
+  const validate = () => {
+    const e = {};
+    if (!fullName.trim()) e.fullName = 'Full name is required';
+    if (!yearsExperience) e.yearsExperience = 'Years of experience is required';
+    if (!location) e.location = 'Location is required';
+    if (!bio.trim()) e.bio = 'Bio is required';
+    if (skills.length === 0) e.skills = 'Add at least one skill';
+    if (isEmployed) {
+      if (!currentRole.trim()) e.currentRole = 'Current role is required';
+      if (!currentCompany.trim()) e.currentCompany = 'Current company is required';
     }
+    setErrors(e);
+    return Object.keys(e).length === 0;
   };
 
   const handleSave = async () => {
-    if (!fullName.trim()) return;
+    if (!validate()) return;
     setSaving(true);
     try {
       await base44.entities.Profile.update(profile.id, {
@@ -128,10 +159,11 @@ export default function ProfileSetup() {
 
   const inputClass = "w-full h-[44px] border border-input rounded-xl px-3.5 text-[14px] text-foreground bg-muted/30 focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all";
   const labelClass = "text-[12px] font-medium text-foreground/70 mb-1.5 block";
+  const errorClass = "text-[11px] text-destructive mt-1";
 
   return (
-    <div className="min-h-screen bg-white flex justify-center">
-      <div className="w-full max-w-[440px] min-h-screen shadow-[0_0_60px_rgba(0,0,0,0.06)] flex flex-col">
+    <div className="min-h-[100dvh] bg-gradient-to-br from-secondary/60 via-secondary/40 to-brand-green-bg/40 flex justify-center overflow-y-auto no-scrollbar">
+      <div className="w-full max-w-[600px] min-h-[100dvh] bg-white flex flex-col">
         {/* Header */}
         <div className="px-6 pt-14 pb-4 flex items-center justify-between">
           <button onClick={() => navigate('/onboarding/account-type')} className="p-1 -ml-1">
@@ -144,7 +176,7 @@ export default function ProfileSetup() {
         <div className="px-6 pb-6">
           <h1 className="text-[20px] font-semibold text-foreground">Set up your profile</h1>
           <p className="text-[13px] text-muted-foreground mt-0.5">
-            {isRecruiter ? 'This is how you\'ll appear to candidates' : 'This is how you\'ll appear to recruiters'}
+            {isRecruiter ? "This is how you'll appear to candidates" : "This is how you'll appear to recruiters"}
           </p>
         </div>
 
@@ -157,7 +189,7 @@ export default function ProfileSetup() {
             className="rounded-3xl p-[1.5px] bg-gradient-to-br from-linkedin via-primary to-linkedin mb-5"
           >
             <button
-              onClick={handleLinkedInImport}
+              onClick={() => setLinkedInImportOpen(true)}
               className="w-full bg-white rounded-3xl p-5 flex items-center gap-4 hover:bg-brand-green-bg/30 transition-colors text-left"
             >
               <div className="w-12 h-12 rounded-2xl bg-linkedin flex items-center justify-center flex-shrink-0 shadow-sm">
@@ -209,13 +241,14 @@ export default function ProfileSetup() {
           {/* Form fields */}
           <div className="space-y-4">
             <div>
-              <label className={labelClass}>Full Name</label>
+              <label className={labelClass}>Full Name *</label>
               <input
                 value={fullName}
-                onChange={(e) => setFullName(e.target.value)}
+                onChange={(e) => { setFullName(e.target.value); if (errors.fullName) setErrors({ ...errors, fullName: '' }); }}
                 placeholder="Alex Rivera"
-                className={inputClass}
+                className={`${inputClass} ${errors.fullName ? 'border-destructive' : ''}`}
               />
+              {errors.fullName && <p className={errorClass}>{errors.fullName}</p>}
             </div>
 
             {/* Employment status toggle */}
@@ -239,22 +272,24 @@ export default function ProfileSetup() {
             {isEmployed && (
               <>
                 <div>
-                  <label className={labelClass}>{isRecruiter ? 'Your Role' : 'Current Role'}</label>
+                  <label className={labelClass}>{isRecruiter ? 'Your Role *' : 'Current Role *'}</label>
                   <input
                     value={currentRole}
-                    onChange={(e) => setCurrentRole(e.target.value)}
+                    onChange={(e) => { setCurrentRole(e.target.value); if (errors.currentRole) setErrors({ ...errors, currentRole: '' }); }}
                     placeholder={isRecruiter ? 'Senior Recruiter' : 'Product Manager'}
-                    className={inputClass}
+                    className={`${inputClass} ${errors.currentRole ? 'border-destructive' : ''}`}
                   />
+                  {errors.currentRole && <p className={errorClass}>{errors.currentRole}</p>}
                 </div>
                 <div>
-                  <label className={labelClass}>{isRecruiter ? 'Company you recruit for' : 'Current Company'}</label>
+                  <label className={labelClass}>{isRecruiter ? 'Company you recruit for *' : 'Current Company *'}</label>
                   <input
                     value={currentCompany}
-                    onChange={(e) => setCurrentCompany(e.target.value)}
+                    onChange={(e) => { setCurrentCompany(e.target.value); if (errors.currentCompany) setErrors({ ...errors, currentCompany: '' }); }}
                     placeholder={isRecruiter ? 'Acme Corp' : 'Stripe'}
-                    className={inputClass}
+                    className={`${inputClass} ${errors.currentCompany ? 'border-destructive' : ''}`}
                   />
+                  {errors.currentCompany && <p className={errorClass}>{errors.currentCompany}</p>}
                 </div>
               </>
             )}
@@ -269,23 +304,31 @@ export default function ProfileSetup() {
             )}
 
             <div>
-              <label className={labelClass}>Years of Experience</label>
-              <input
-                value={yearsExperience}
-                onChange={(e) => setYearsExperience(e.target.value)}
-                placeholder="5 years"
-                className={inputClass}
-              />
+              <label className={labelClass}>Years of Experience *</label>
+              <button
+                onClick={() => setYearsPickerOpen(true)}
+                className={`${inputClass} flex items-center justify-between ${errors.yearsExperience ? 'border-destructive' : ''}`}
+              >
+                <span className={yearsExperience ? 'text-foreground' : 'text-muted-foreground/50'}>
+                  {yearsExperience || 'Select years of experience'}
+                </span>
+                <ChevronDown size={16} className="text-muted-foreground/50" />
+              </button>
+              {errors.yearsExperience && <p className={errorClass}>{errors.yearsExperience}</p>}
             </div>
 
             <div>
-              <label className={labelClass}>Location</label>
-              <input
-                value={location}
-                onChange={(e) => setLocation(e.target.value)}
-                placeholder="San Francisco, CA"
-                className={inputClass}
-              />
+              <label className={labelClass}>Location *</label>
+              <button
+                onClick={() => setLocationPickerOpen(true)}
+                className={`${inputClass} flex items-center justify-between ${errors.location ? 'border-destructive' : ''}`}
+              >
+                <span className={location ? 'text-foreground' : 'text-muted-foreground/50'}>
+                  {location || 'Select your city and state'}
+                </span>
+                <ChevronDown size={16} className="text-muted-foreground/50" />
+              </button>
+              {errors.location && <p className={errorClass}>{errors.location}</p>}
             </div>
 
             {!isRecruiter && (
@@ -301,19 +344,20 @@ export default function ProfileSetup() {
             )}
 
             <div>
-              <label className={labelClass}>Bio</label>
+              <label className={labelClass}>Bio *</label>
               <textarea
                 value={bio}
-                onChange={(e) => setBio(e.target.value)}
+                onChange={(e) => { setBio(e.target.value); if (errors.bio) setErrors({ ...errors, bio: '' }); }}
                 placeholder="Brief summary of your background and what you're looking for..."
                 rows={3}
-                className="w-full border border-input rounded-xl px-3.5 py-2.5 text-[14px] text-foreground bg-muted/30 focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all resize-none"
+                className={`w-full border border-input rounded-xl px-3.5 py-2.5 text-[14px] text-foreground bg-muted/30 focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all resize-none ${errors.bio ? 'border-destructive' : ''}`}
               />
+              {errors.bio && <p className={errorClass}>{errors.bio}</p>}
             </div>
 
             {/* Skills */}
             <div>
-              <label className={labelClass}>Top Skills</label>
+              <label className={labelClass}>Top Skills *</label>
               <div className="flex flex-wrap gap-2 mb-2">
                 {skills.map((skill, i) => (
                   <span
@@ -343,6 +387,7 @@ export default function ProfileSetup() {
                 placeholder="Type a skill and press Enter"
                 className={inputClass}
               />
+              {errors.skills && <p className={errorClass}>{errors.skills}</p>}
             </div>
 
             {/* LinkedIn URL */}
@@ -370,7 +415,7 @@ export default function ProfileSetup() {
         <div className="px-6 pb-8 pt-3 bg-white border-t border-border/30">
           <button
             onClick={handleSave}
-            disabled={saving || !fullName.trim()}
+            disabled={saving}
             className="w-full h-[52px] bg-primary text-white rounded-2xl text-[15px] font-medium hover:bg-primary/90 transition-colors flex items-center justify-center gap-2 disabled:opacity-40 disabled:cursor-not-allowed"
           >
             {saving ? 'Saving...' : 'Save & Continue'}
@@ -378,6 +423,27 @@ export default function ProfileSetup() {
           </button>
         </div>
       </div>
+
+      {/* Sheets */}
+      <LinkedInImportSheet
+        open={linkedInImportOpen}
+        onClose={() => setLinkedInImportOpen(false)}
+        onImport={handleLinkedInImportComplete}
+      />
+      <PickerSheet
+        open={yearsPickerOpen}
+        onClose={() => setYearsPickerOpen(false)}
+        title="Years of Experience"
+        items={yearsOptions}
+        value={yearsExperience}
+        onChange={setYearsExperience}
+      />
+      <LocationPickerSheet
+        open={locationPickerOpen}
+        onClose={() => setLocationPickerOpen(false)}
+        value={location}
+        onChange={setLocation}
+      />
     </div>
   );
 }

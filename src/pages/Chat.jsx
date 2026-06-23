@@ -1,8 +1,10 @@
 import { useState, useEffect, useRef } from 'react';
 import { useNavigate, useOutletContext, useParams } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
-import { ArrowLeft, Send, Info, Linkedin } from 'lucide-react';
+import { ArrowLeft, Send, Info, Linkedin, ShieldAlert, Flag, X } from 'lucide-react';
 import { base44 } from '@/api/base44Client';
+import { moderateContent } from '@/lib/contentModeration';
+import ReportUserSheet from '@/components/ReportUserSheet';
 
 export default function Chat() {
   const { matchId } = useParams();
@@ -14,6 +16,8 @@ export default function Chat() {
   const [loading, setLoading] = useState(true);
   const [sending, setSending] = useState(false);
   const [showInfo, setShowInfo] = useState(false);
+  const [moderationWarning, setModerationWarning] = useState(null);
+  const [reportOpen, setReportOpen] = useState(false);
   const messagesEndRef = useRef(null);
 
   useEffect(() => {
@@ -54,9 +58,16 @@ export default function Chat() {
   const handleSend = async () => {
     if (!input.trim() || sending) return;
     setSending(true);
+    setModerationWarning(null);
     const content = input.trim();
-    setInput('');
     try {
+      const moderation = await moderateContent(content);
+      if (moderation.blocked) {
+        setModerationWarning(moderation.reason);
+        setSending(false);
+        return;
+      }
+      setInput('');
       await base44.entities.Message.create({
         match_id: matchId,
         sender_profile_id: profile.id,
@@ -93,6 +104,7 @@ export default function Chat() {
   const otherPicture = isProfile1 ? match.profile2_picture : match.profile1_picture;
   const otherLinkedin = isProfile1 ? match.profile2_linkedin : match.profile1_linkedin;
   const otherRole = isProfile1 ? match.profile2_role : match.profile1_role;
+  const otherProfileId = isProfile1 ? match.profile2_id : match.profile1_id;
   const initials = otherName?.split(' ').map(n => n[0]).join('').slice(0, 2).toUpperCase() || 'U';
 
   return (
@@ -123,6 +135,12 @@ export default function Chat() {
         </div>
         <button onClick={() => setShowInfo(!showInfo)} className="w-9 h-9 rounded-full flex items-center justify-center hover:bg-muted transition-colors">
           <Info size={18} className="text-muted-foreground" />
+        </button>
+        <button
+          onClick={() => setReportOpen(true)}
+          className="w-9 h-9 rounded-full flex items-center justify-center hover:bg-destructive/10 transition-colors"
+        >
+          <Flag size={17} className="text-muted-foreground hover:text-destructive" />
         </button>
       </div>
 
@@ -156,6 +174,15 @@ export default function Chat() {
                   <span className="text-[12px] font-medium text-linkedin">View Profile</span>
                 </a>
               )}
+            </div>
+            <div className="px-4 pb-4">
+              <button
+                onClick={() => { setShowInfo(false); setReportOpen(true); }}
+                className="flex items-center gap-2 text-[13px] font-medium text-destructive"
+              >
+                <Flag size={14} />
+                Report {otherName?.split(' ')[0]}
+              </button>
             </div>
           </motion.div>
         )}
@@ -201,6 +228,32 @@ export default function Chat() {
         <div ref={messagesEndRef} />
       </div>
 
+      {/* Moderation warning */}
+      <AnimatePresence>
+        {moderationWarning && (
+          <motion.div
+            initial={{ height: 0, opacity: 0 }}
+            animate={{ height: 'auto', opacity: 1 }}
+            exit={{ height: 0, opacity: 0 }}
+            className="overflow-hidden"
+          >
+            <div className="px-4 py-3 bg-destructive/10 border-t border-destructive/20 flex items-start gap-2">
+              <ShieldAlert size={16} className="text-destructive flex-shrink-0 mt-0.5" />
+              <div className="flex-1">
+                <p className="text-[12px] font-medium text-destructive">Message Blocked</p>
+                <p className="text-[11px] text-destructive/80 mt-0.5">{moderationWarning}</p>
+                <p className="text-[10px] text-muted-foreground mt-1">
+                  Repeated violations may result in account suspension. You can also report this conversation.
+                </p>
+              </div>
+              <button onClick={() => setModerationWarning(null)} className="text-destructive/60 hover:text-destructive flex-shrink-0 mt-0.5">
+                <X size={14} />
+              </button>
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
       {/* Input */}
       <div className="px-4 pt-2 pb-6 border-t border-border/50 bg-white">
         <div className="flex items-center gap-2.5">
@@ -221,10 +274,23 @@ export default function Chat() {
             disabled={!input.trim() || sending}
             className="w-[40px] h-[40px] bg-primary rounded-full flex items-center justify-center flex-shrink-0 disabled:opacity-40 hover:bg-primary/90 transition-colors active:scale-95"
           >
-            <Send size={16} className="text-white" />
+            {sending ? (
+              <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+            ) : (
+              <Send size={16} className="text-white" />
+            )}
           </button>
         </div>
       </div>
+
+      <ReportUserSheet
+        open={reportOpen}
+        onClose={() => setReportOpen(false)}
+        reportedProfileId={otherProfileId}
+        reportedProfileName={otherName}
+        matchId={matchId}
+        reporterProfileId={profile.id}
+      />
     </div>
   );
 }

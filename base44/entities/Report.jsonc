@@ -1,0 +1,71 @@
+{
+  "name": "Report",
+  "type": "object",
+  "properties": {
+    "reporter_profile_id": {
+      "type": "string"
+    },
+    "reported_profile_id": {
+      "type": "string"
+    },
+    "reported_profile_name": {
+      "type": "string"
+    },
+    "match_id": {
+      "type": "string"
+    },
+    "reason": {
+      "type": "string",
+      "enum": [
+        "harassment",
+        "hate_speech",
+        "threats",
+        "sexual_content",
+        "spam",
+        "impersonation",
+        "sharing_pii",
+        "illegal_activity",
+        "self_harm",
+        "other"
+      ]
+    },
+    "description": {
+      "type": "string"
+    },
+    "message_content": {
+      "type": "string"
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "pending",
+        "reviewing",
+        "resolved",
+        "dismissed"
+      ],
+      "default": "pending"
+    },
+    "moderator_notes": {
+      "type": "string"
+    }
+  },
+  "required": [
+    "reporter_profile_id",
+    "reported_profile_id",
+    "reason"
+  ],
+  "rls": {
+    "create": {
+      "created_by_id": "{{user.id}}"
+    },
+    "read": {
+      "created_by_id": "{{user.id}}"
+    },
+    "update": {
+      "created_by_id": "{{user.id}}"
+    },
+    "delete": {
+      "created_by_id": "{{user.id}}"
+    }
+  }
+}

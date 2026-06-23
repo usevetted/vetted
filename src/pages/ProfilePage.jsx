@@ -1,9 +1,19 @@
 import { useState, useEffect, useRef } from 'react';
 import { useNavigate, useOutletContext } from 'react-router-dom';
-import { motion } from 'framer-motion';
-import { Camera, Linkedin, Briefcase, MapPin, DollarSign, X, Plus, LogOut, Pencil, Check, Building2 } from 'lucide-react';
+import { Camera, Linkedin, Briefcase, MapPin, DollarSign, X, Plus, LogOut, Pencil, Check, Building2, ChevronDown } from 'lucide-react';
 import Logo from '@/components/Logo';
+import PickerSheet from '@/components/PickerSheet';
+import LocationPickerSheet from '@/components/LocationPickerSheet';
 import { base44 } from '@/api/base44Client';
+
+const yearsOptions = [
+  { value: 'Less than 1 year', label: 'Less than 1 year' },
+  ...Array.from({ length: 29 }, (_, i) => {
+    const n = i + 1;
+    return { value: `${n} year${n > 1 ? 's' : ''}`, label: `${n} year${n > 1 ? 's' : ''}` };
+  }),
+  { value: '30+ years', label: '30+ years' },
+];
 
 export default function ProfilePage() {
   const navigate = useNavigate();
@@ -12,6 +22,8 @@ export default function ProfilePage() {
   const [editing, setEditing] = useState(false);
   const [saving, setSaving] = useState(false);
   const [uploadingPic, setUploadingPic] = useState(false);
+  const [yearsPickerOpen, setYearsPickerOpen] = useState(false);
+  const [locationPickerOpen, setLocationPickerOpen] = useState(false);
 
   const [fullName, setFullName] = useState('');
   const [currentRole, setCurrentRole] = useState('');
@@ -97,6 +109,7 @@ export default function ProfilePage() {
     } catch {
       // ignore
     }
+    sessionStorage.setItem('just_logged_out', 'true');
     window.location.href = '/landing';
   };
 
@@ -210,11 +223,27 @@ export default function ProfilePage() {
 
           <div>
             <label className={labelClass}>Years of Experience</label>
-            <input value={yearsExperience} onChange={(e) => setYearsExperience(e.target.value)} className={inputClass} />
+            <button
+              onClick={() => setYearsPickerOpen(true)}
+              className={`${inputClass} flex items-center justify-between`}
+            >
+              <span className={yearsExperience ? 'text-foreground' : 'text-muted-foreground/50'}>
+                {yearsExperience || 'Select years of experience'}
+              </span>
+              <ChevronDown size={16} className="text-muted-foreground/50" />
+            </button>
           </div>
           <div>
             <label className={labelClass}>Location</label>
-            <input value={location} onChange={(e) => setLocation(e.target.value)} className={inputClass} />
+            <button
+              onClick={() => setLocationPickerOpen(true)}
+              className={`${inputClass} flex items-center justify-between`}
+            >
+              <span className={location ? 'text-foreground' : 'text-muted-foreground/50'}>
+                {location || 'Select your city and state'}
+              </span>
+              <ChevronDown size={16} className="text-muted-foreground/50" />
+            </button>
           </div>
           {!isRecruiter && (
             <div>
@@ -348,6 +377,21 @@ export default function ProfilePage() {
           </button>
         </div>
       )}
+
+      <PickerSheet
+        open={yearsPickerOpen}
+        onClose={() => setYearsPickerOpen(false)}
+        title="Years of Experience"
+        items={yearsOptions}
+        value={yearsExperience}
+        onChange={setYearsExperience}
+      />
+      <LocationPickerSheet
+        open={locationPickerOpen}
+        onClose={() => setLocationPickerOpen(false)}
+        value={location}
+        onChange={setLocation}
+      />
     </div>
   );
 }
