@@ -79,12 +79,13 @@ export default function CreatePost() {
     toast({
       title: 'Success',
       description: 'Your job posting has been created',
+      duration: 1000,
     });
 
     setTimeout(() => {
       setSubmitting(false);
       navigate(-1);
-    }, 800);
+    }, 1200);
   };
 
   const inputClass = "w-full h-[44px] border border-input rounded-xl px-3.5 text-[14px] text-foreground bg-muted/30 focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all";
@@ -249,20 +250,20 @@ export default function CreatePost() {
         </div>
 
         {/* Submit Button (Fixed at bottom) */}
-        <div className="px-6 pb-8 pt-4 bg-white border-t border-border/30">
+        <div className="px-6 py-4 bg-white border-t border-border/30 flex-shrink-0">
           <button
             type="button"
-            onClick={(e) => handleSubmit(e)}
+            onClick={handleSubmit}
             disabled={submitting}
-            className="w-full h-[52px] bg-primary text-white rounded-2xl text-[15px] font-medium hover:bg-primary/90 transition-colors flex items-center justify-center gap-2 disabled:opacity-40 disabled:cursor-not-allowed"
+            className="w-full h-[52px] bg-primary text-white rounded-2xl text-[15px] font-semibold hover:bg-primary/90 active:bg-primary/80 transition-colors flex items-center justify-center gap-2 disabled:opacity-60 disabled:cursor-not-allowed whitespace-nowrap"
           >
             {submitting ? (
               <>
-                <Loader2 size={17} className="animate-spin" />
-                Publishing...
+                <Loader2 size={18} className="animate-spin flex-shrink-0" />
+                <span>Publishing...</span>
               </>
             ) : (
-              'Publish Job'
+              <span>Publish Job</span>
             )}
           </button>
         </div>
