@@ -20,6 +20,7 @@ export default function Splash() {
         const isAuthed = await base44.auth.isAuthenticated();
         if (isAuthed) {
           const user = await base44.auth.me();
+          if (!user) throw new Error('No user');
           const profiles = await base44.entities.Profile.filter({ created_by_id: user.id });
           if (profiles.length > 0 && profiles[0].onboarding_complete) {
             navigate('/discover', { replace: true });
@@ -29,7 +30,7 @@ export default function Splash() {
           return;
         }
       } catch {
-        // fall through to landing
+        // Not authenticated — fall through to landing
       }
       setTimeout(() => setFading(true), 2600);
       setTimeout(() => navigate('/landing'), 3100);

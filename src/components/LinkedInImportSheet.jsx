@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Linkedin, ArrowRight, Loader2 } from 'lucide-react';
+import { Linkedin, ArrowRight, Loader2, AlertCircle } from 'lucide-react';
 import { base44 } from '@/api/base44Client';
 
 export default function LinkedInImportSheet({ open, onClose, onImport }) {
@@ -15,19 +15,48 @@ export default function LinkedInImportSheet({ open, onClose, onImport }) {
     }
   }, [open]);
 
-  const isValid = (v) => v && typeof v === 'string' && !['null', 'None', 'N/A', 'undefined', ''].includes(v.trim());
+  const isValid = (v) => v && typeof v === 'string' && !['null', 'None', 'N/A', 'undefined', 'unknown', ''].includes(v.trim());
+
+  const extractNameFromUrl = (urlStr) => {
+    const match = urlStr.match(/linkedin\.com\/in\/([^/?]+)/i);
+    if (match) {
+      return match[1]
+        .replace(/[-_]/g, ' ')
+        .replace(/\b\w/g, c => c.toUpperCase())
+        .trim();
+    }
+    return '';
+  };
 
   const handleImport = async () => {
     if (!url.trim()) return;
     setImporting(true);
     setError('');
 
+    const linkedinUrl = url.trim();
+    const nameHint = extractNameFromUrl(linkedinUrl);
+
     try {
-      const result = await Promise.race([
+      const response = await Promise.race([
         base44.integrations.Core.InvokeLLM({
-          prompt: `Search for the LinkedIn profile at this URL and extract the person's professional information. URL: ${url.trim()}`,
+          prompt: `You are a professional profile extractor. A user wants to import their LinkedIn profile data.
+
+LinkedIn URL: ${linkedinUrl}
+Extracted name hint from URL: ${nameHint || 'unknown'}
+
+Use web search to find information about this person. Search for their name along with "LinkedIn" to find their professional details. Look for their current job title, company, location, and skills from any public sources available (company websites, conference bios, news articles, GitHub, etc).
+
+Extract the following fields. If you cannot find a field, return an empty string for it. Do NOT make up data — only return what you find from real search results.
+
+Return a JSON object with these exact fields:
+- full_name: The person's full name (use the name hint if found in search results)
+- current_role: Their current job title
+- current_company: Their current employer
+- location: Their city and state/country
+- bio: A 1-2 sentence professional summary based on what you found
+- skills: An array of their top skills (max 8)`,
           add_context_from_internet: true,
-          model: 'gemini_3_flash',
+          model: 'gemini_3_1_pro',
           response_json_schema: {
             type: 'object',
             properties: {
@@ -41,15 +70,19 @@ export default function LinkedInImportSheet({ open, onClose, onImport }) {
           }
         }),
         new Promise((_, reject) =>
-          setTimeout(() => reject(new Error('timeout')), 45000)
+          setTimeout(() => reject(new Error('timeout')), 60000)
         )
       ]);
 
-      let data = result;
-      if (typeof result === 'string') {
-        try { data = JSON.parse(result); } catch { data = {}; }
+      // The SDK returns an Axios response — the actual data is in response.data
+      let data = response?.data ?? response;
+      if (typeof data === 'string') {
+        try { data = JSON.parse(data); } catch { data = {}; }
       }
-      data = data?.data || data;
+      // Handle potential double-wrapping
+      if (data?.data && typeof data.data === 'object') {
+        data = data.data;
+      }
 
       const imported = {};
       if (isValid(data?.full_name)) imported.full_name = data.full_name;
@@ -62,18 +95,19 @@ export default function LinkedInImportSheet({ open, onClose, onImport }) {
         if (validSkills.length > 0) imported.skills = validSkills;
       }
 
+      // If we at least got a name, consider it a success
       if (Object.keys(imported).length === 0) {
-        setError('Could not extract profile data from this URL. Please fill in manually.');
+        setError('Could not find profile data for this URL. Please fill in your details manually below.');
         return;
       }
 
-      onImport({ ...imported, linkedin_url: url.trim() });
+      onImport({ ...imported, linkedin_url: linkedinUrl });
       onClose();
     } catch (err) {
       setError(
         err?.message === 'timeout'
-          ? 'Import timed out. Please try again or fill in manually.'
-          : 'Could not import from this URL. Please fill in manually.'
+          ? 'Import timed out after 60 seconds. Please try again or fill in manually.'
+          : 'Could not import from this URL. Please fill in your details manually.'
       );
     } finally {
       setImporting(false);
@@ -108,18 +142,27 @@ export default function LinkedInImportSheet({ open, onClose, onImport }) {
                 <p className="text-[12px] text-muted-foreground">Enter your LinkedIn profile URL</p>
               </div>
             </div>
+
             <input
               value={url}
               onChange={(e) => setUrl(e.target.value)}
-              onKeyDown={(e) => { if (e.key === 'Enter') { e.preventDefault(); handleImport(); } }}
-              placeholder="linkedin.com/in/username"
+              onKeyDown={(e) => { if (e.key === 'Enter' && !importing) { e.preventDefault(); handleImport(); } }}
+              placeholder="linkedin.com/in/your-name"
               className="w-full h-[48px] border border-input rounded-xl px-4 text-[14px] bg-muted/30 focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all"
               autoFocus
             />
-            {error && <p className="text-[12px] text-destructive mt-2">{error}</p>}
-            <p className="text-[11px] text-muted-foreground/60 mt-2">
-              We'll search for your public profile. This can take up to 30 seconds.
+
+            {error && (
+              <div className="flex items-start gap-2 mt-3 p-3 rounded-xl bg-destructive/10">
+                <AlertCircle size={15} className="text-destructive flex-shrink-0 mt-0.5" />
+                <p className="text-[12px] text-destructive">{error}</p>
+              </div>
+            )}
+
+            <p className="text-[11px] text-muted-foreground/60 mt-3">
+              We'll search the web for your public profile info. This can take up to 60 seconds.
             </p>
+
             <button
               onClick={handleImport}
               disabled={importing || !url.trim()}
@@ -128,7 +171,7 @@ export default function LinkedInImportSheet({ open, onClose, onImport }) {
               {importing ? (
                 <>
                   <Loader2 size={16} className="animate-spin" />
-                  Importing...
+                  Searching...
                 </>
               ) : (
                 <>

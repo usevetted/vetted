@@ -1,7 +1,7 @@
 import { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
-import { Camera, Linkedin, ArrowRight, X, Plus, ArrowLeft, Check, ChevronDown } from 'lucide-react';
+import { Camera, Linkedin, ArrowRight, X, Plus, ArrowLeft, ChevronDown } from 'lucide-react';
 import Logo from '@/components/Logo';
 import LinkedInImportSheet from '@/components/LinkedInImportSheet';
 import PickerSheet from '@/components/PickerSheet';
