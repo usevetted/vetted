@@ -105,12 +105,10 @@ export default function ProfilePage() {
 
   const handleLogout = useCallback(async () => {
     try {
-      await base44.auth.logout();
+      await base44.auth.logout('/login');
     } catch {
       // ignore
     }
-    sessionStorage.setItem('just_logged_out', 'true');
-    window.location.href = '/landing';
   }, []);
 
   const initials = profile?.full_name?.split(' ').map(n => n[0]).join('').slice(0, 2).toUpperCase() || 'U';
