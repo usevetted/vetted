@@ -24,23 +24,19 @@ Deno.serve(async (req) => {
     }
 
     const verificationToken = uuidv4();
-    const tokenExpiry = new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString();
+    const verificationUrl = `${Deno.env.get('APP_URL') || 'http://localhost:5173'}/reset-password?token=${verificationToken}`;
 
-    await base44.asServiceRole.entities.User.update(user.id, {
-      email_change_token: verificationToken,
-      email_change_token_expiry: tokenExpiry,
-      pending_email: newEmail,
-    });
+    try {
+      await base44.integrations.Core.SendEmail({
+        to: newEmail,
+        subject: 'Verify your new email address',
+        body: `Hello,\n\nPlease confirm your new email address by clicking the link below:\n\n${verificationUrl}\n\nThis link will expire in 24 hours.\n\nIf you didn't request this change, please ignore this email.`,
+      });
+    } catch (emailError) {
+      return Response.json({ error: `Failed to send verification email: ${emailError.message}` }, { status: 500 });
+    }
 
-    const verificationUrl = `${Deno.env.get('APP_URL') || 'http://localhost:5173'}/verify-email?token=${verificationToken}`;
-
-    await base44.integrations.Core.SendEmail({
-      to: newEmail,
-      subject: 'Verify your new email address',
-      body: `Click the link below to verify your new email address:\n\n${verificationUrl}\n\nThis link will expire in 24 hours.`,
-    });
-
-    return Response.json({ success: true, message: 'Verification email sent' });
+    return Response.json({ success: true, message: 'Verification email sent to ' + newEmail });
   } catch (error) {
     return Response.json({ error: error.message }, { status: 500 });
   }

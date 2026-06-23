@@ -13,7 +13,6 @@ export default function MenuDrawer({ open, onClose, user, profile }) {
   const [passwordForm, setPasswordForm] = useState({ current: '', new: '', confirm: '' });
   const [passwordError, setPasswordError] = useState('');
   const [passwordLoading, setPasswordLoading] = useState(false);
-  const [twoFaEnabled, setTwoFaEnabled] = useState(false);
   const [notificationsEnabled, setNotificationsEnabled] = useState(true);
   const [deactivateConfirm, setDeactivateConfirm] = useState(false);
   const [deleteConfirm, setDeleteConfirm] = useState(false);
@@ -22,15 +21,15 @@ export default function MenuDrawer({ open, onClose, user, profile }) {
   const [emailForm, setEmailForm] = useState({ new: '', confirm: '' });
   const [emailError, setEmailError] = useState('');
   const [emailLoading, setEmailLoading] = useState(false);
-  const [twoFaSetup, setTwoFaSetup] = useState(false);
-  const [twoFaCode, setTwoFaCode] = useState('');
-  const [twoFaDisableConfirm, setTwoFaDisableConfirm] = useState(false);
-  const [twoFaDisableCode, setTwoFaDisableCode] = useState('');
-  const [twoFaLoading, setTwoFaLoading] = useState(false);
   const [passwordResetSent, setPasswordResetSent] = useState(false);
-  const [twoFaQR, setTwoFaQR] = useState(null);
-  const [twoFaSecret, setTwoFaSecret] = useState(null);
   const [emailChangeSent, setEmailChangeSent] = useState(false);
+  const [twoFaEnabled, setTwoFaEnabled] = useState(false);
+  const [showTwoFaSetup, setShowTwoFaSetup] = useState(false);
+  const [twoFaQR, setTwoFaQR] = useState('');
+  const [twoFaSecret, setTwoFaSecret] = useState('');
+  const [twoFaCode, setTwoFaCode] = useState('');
+  const [twoFaError, setTwoFaError] = useState('');
+  const [twoFaLoading, setTwoFaLoading] = useState(false);
 
 
 
@@ -68,16 +67,6 @@ export default function MenuDrawer({ open, onClose, user, profile }) {
       setEmailLoading(false);
     }
   };
-
-  const handleToggle2FA = async () => {
-    if (!twoFaEnabled) {
-      await handleEnable2FA();
-    } else {
-      setTwoFaDisableConfirm(true);
-    }
-  };
-
-
 
   const handleChangePassword = async () => {
     setPasswordError('');
@@ -119,58 +108,56 @@ export default function MenuDrawer({ open, onClose, user, profile }) {
     }
   };
 
-  const handleDisable2FA = async () => {
-    if (!twoFaDisableCode || twoFaDisableCode.length !== 6) {
-      setEmailError('Code must be 6 digits');
-      return;
-    }
-    setEmailError('');
-    setTwoFaLoading(true);
-    try {
-      await base44.functions.invoke('disable2FA', { code: twoFaDisableCode });
-      setTwoFaEnabled(false);
-      setTwoFaDisableConfirm(false);
-      setTwoFaDisableCode('');
-    } catch (err) {
-      setEmailError(err?.message || 'Failed to disable 2FA');
-    } finally {
-      setTwoFaLoading(false);
-    }
-  };
-
-  const handleEnable2FA = async () => {
-    setEmailError('');
-    setTwoFaLoading(true);
-    try {
-      const response = await base44.functions.invoke('setup2FA', {});
-      setTwoFaQR(response.data.qrCode);
-      setTwoFaSecret(response.data.secret);
-      setTwoFaSetup(true);
-    } catch (err) {
-      setEmailError(err?.message || 'Failed to start 2FA setup');
-    } finally {
-      setTwoFaLoading(false);
-    }
-  };
-
-  const handleVerifyTwoFA = async () => {
-    if (!twoFaCode || twoFaCode.length !== 6) {
-      setEmailError('Code must be 6 digits');
-      return;
-    }
-    setTwoFaLoading(true);
-    try {
-      await base44.functions.invoke('verify2FASetup', {
-        secret: twoFaSecret,
-        code: twoFaCode,
-      });
-      setTwoFaEnabled(true);
-      setTwoFaSetup(false);
+  const handleToggle2FA = async () => {
+    if (twoFaEnabled) {
+      // Disable 2FA
+      setShowTwoFaSetup(true);
       setTwoFaCode('');
-      setTwoFaSecret(null);
-      setTwoFaQR(null);
+      setTwoFaError('');
+    } else {
+      // Enable 2FA - fetch setup
+      setTwoFaLoading(true);
+      setTwoFaError('');
+      try {
+        const res = await base44.functions.invoke('setup2FA', {});
+        setTwoFaQR(res.data.qrCode);
+        setTwoFaSecret(res.data.secret);
+        setShowTwoFaSetup(true);
+      } catch (err) {
+        setTwoFaError(err?.message || 'Failed to start 2FA setup');
+      } finally {
+        setTwoFaLoading(false);
+      }
+    }
+  };
+
+  const handleSubmitTwoFA = async () => {
+    if (!twoFaCode || twoFaCode.length !== 6) {
+      setTwoFaError('Code must be 6 digits');
+      return;
+    }
+    setTwoFaLoading(true);
+    try {
+      if (twoFaEnabled) {
+        // Disabling
+        await base44.functions.invoke('disable2FA', { code: twoFaCode });
+        setTwoFaEnabled(false);
+        setShowTwoFaSetup(false);
+        setTwoFaCode('');
+      } else {
+        // Enabling
+        await base44.functions.invoke('verify2FASetup', {
+          secret: twoFaSecret,
+          code: twoFaCode,
+        });
+        setTwoFaEnabled(true);
+        setShowTwoFaSetup(false);
+        setTwoFaCode('');
+        setTwoFaSecret('');
+        setTwoFaQR('');
+      }
     } catch (err) {
-      setEmailError(err?.message || 'Invalid code');
+      setTwoFaError(err?.message || 'Invalid code');
     } finally {
       setTwoFaLoading(false);
     }
@@ -361,7 +348,8 @@ export default function MenuDrawer({ open, onClose, user, profile }) {
                                   <span className="text-[13px] font-medium text-foreground">Two-factor authentication</span>
                                   <button
                                     onClick={handleToggle2FA}
-                                    className={`w-10 h-6 rounded-full relative flex-shrink-0 transition-colors duration-200 ${twoFaEnabled ? 'bg-primary' : 'bg-muted-foreground/30'}`}
+                                    disabled={twoFaLoading}
+                                    className={`w-10 h-6 rounded-full relative flex-shrink-0 transition-colors duration-200 disabled:opacity-50 ${twoFaEnabled ? 'bg-primary' : 'bg-muted-foreground/30'}`}
                                   >
                                     <motion.div
                                       layout
@@ -370,68 +358,48 @@ export default function MenuDrawer({ open, onClose, user, profile }) {
                                     />
                                   </button>
                                 </div>
-                                      {twoFaSetup && !twoFaEnabled && (
-                                        <div className="mt-2 p-3 bg-primary/5 rounded-lg space-y-2 border border-primary/20">
-                                          <p className="text-[12px] text-foreground font-medium mb-2">Scan with Google Authenticator:</p>
-                                          {twoFaQR && (
-                                            <img src={twoFaQR} alt="2FA QR Code" className="w-full max-w-[150px] mx-auto border border-primary rounded-lg" />
-                                          )}
-                                          <p className="text-[11px] text-muted-foreground text-center">Or enter this key manually:</p>
-                                          {twoFaSecret && (
-                                            <p className="text-[11px] font-mono bg-card p-2 rounded text-center text-foreground break-all">{twoFaSecret}</p>
-                                          )}
-                                          <p className="text-[12px] text-foreground mt-2">Enter the 6-digit code from your authenticator app:</p>
-                                          <input
-                                            type="text"
-                                            placeholder="000000"
-                                            value={twoFaCode}
-                                            onChange={(e) => setTwoFaCode(e.target.value.slice(0, 6))}
-                                            maxLength="6"
-                                            className="w-full h-[36px] border border-input rounded-lg px-2.5 text-[12px] bg-card focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary text-center tracking-widest"
-                                          />
-                                          {emailError && <p className="text-[11px] text-destructive">{emailError}</p>}
-                                          <button
-                                            onClick={handleVerifyTwoFA}
-                                            disabled={twoFaLoading || twoFaCode.length !== 6}
-                                            className="w-full h-[34px] bg-primary text-white text-[12px] font-medium rounded-lg hover:bg-primary/90 disabled:opacity-50 transition-colors"
-                                          >
-                                            {twoFaLoading ? 'Verifying...' : 'Verify & Enable'}
-                                          </button>
-                                        </div>
-                                      )}
-                                      {twoFaDisableConfirm && (
-                                        <div className="mt-2 p-3 bg-pass/5 rounded-lg border border-pass/20 space-y-2">
-                                          <p className="text-[12px] text-foreground/80">Enter the 6-digit code from your authenticator to disable 2FA:</p>
-                                          <input
-                                            type="text"
-                                            placeholder="000000"
-                                            value={twoFaDisableCode}
-                                            onChange={(e) => setTwoFaDisableCode(e.target.value.slice(0, 6))}
-                                            maxLength="6"
-                                            className="w-full h-[36px] border border-input rounded-lg px-2.5 text-[12px] bg-card focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary text-center tracking-widest"
-                                          />
-                                          {emailError && <p className="text-[11px] text-destructive">{emailError}</p>}
-                                          <div className="flex gap-2">
-                                            <button
-                                              onClick={() => {
-                                                setTwoFaDisableConfirm(false);
-                                                setTwoFaDisableCode('');
-                                              }}
-                                              className="flex-1 h-[32px] text-[12px] font-medium border border-border rounded-lg hover:bg-muted/30 transition-colors"
-                                            >
-                                              Cancel
-                                            </button>
-                                            <button
-                                              onClick={handleDisable2FA}
-                                              disabled={twoFaLoading || twoFaDisableCode.length !== 6}
-                                              className="flex-1 h-[32px] text-[12px] font-medium bg-pass text-white rounded-lg hover:bg-pass/90 disabled:opacity-50 transition-colors"
-                                            >
-                                              {twoFaLoading ? 'Disabling...' : 'Disable'}
-                                            </button>
-                                          </div>
-                                          </div>
-                                          )}
-                                          </div>
+                                {showTwoFaSetup && (
+                                  <div className="mt-2 p-3 bg-primary/5 rounded-lg space-y-2 border border-primary/20">
+                                    {twoFaQR && (
+                                      <>
+                                        <p className="text-[12px] text-foreground font-medium">Scan with Google Authenticator:</p>
+                                        <img src={twoFaQR} alt="2FA QR Code" className="w-full max-w-[120px] mx-auto border border-primary rounded-lg" />
+                                        <p className="text-[11px] text-muted-foreground text-center">Or enter this key manually:</p>
+                                        <p className="text-[11px] font-mono bg-card p-2 rounded text-center text-foreground break-all">{twoFaSecret}</p>
+                                      </>
+                                    )}
+                                    <p className="text-[12px] text-foreground">Enter the 6-digit code:</p>
+                                    <input
+                                      type="text"
+                                      placeholder="000000"
+                                      value={twoFaCode}
+                                      onChange={(e) => setTwoFaCode(e.target.value.replace(/\D/g, '').slice(0, 6))}
+                                      maxLength="6"
+                                      className="w-full h-[36px] border border-input rounded-lg px-2.5 text-[12px] bg-card focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary text-center tracking-widest"
+                                    />
+                                    {twoFaError && <p className="text-[11px] text-destructive">{twoFaError}</p>}
+                                    <div className="flex gap-2">
+                                      <button
+                                        onClick={() => {
+                                          setShowTwoFaSetup(false);
+                                          setTwoFaCode('');
+                                          setTwoFaError('');
+                                        }}
+                                        className="flex-1 h-[32px] text-[12px] font-medium border border-border rounded-lg hover:bg-muted/30 transition-colors"
+                                      >
+                                        Cancel
+                                      </button>
+                                      <button
+                                        onClick={handleSubmitTwoFA}
+                                        disabled={twoFaLoading || twoFaCode.length !== 6}
+                                        className="flex-1 h-[32px] text-[12px] font-medium bg-primary text-white rounded-lg hover:bg-primary/90 disabled:opacity-50 transition-colors"
+                                      >
+                                        {twoFaLoading ? 'Verifying...' : twoFaEnabled ? 'Disable' : 'Enable'}
+                                      </button>
+                                    </div>
+                                  </div>
+                                )}
+                              </div>
                                           {section.options.map((opt, i) => (
                                 <div key={i}>
                                   {opt.action === 'changePassword' && (
