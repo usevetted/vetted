@@ -42,18 +42,15 @@ export default function PostJobButton({ isRecruiter, profile, onJobPosted }) {
       });
 
       if (result.data.success) {
-        toast.custom(
-          (t) => (
-            <div className="flex items-center gap-3 px-4 py-3 bg-white rounded-lg shadow-lg border border-primary/20">
-              <Check size={20} className="text-primary flex-shrink-0" />
-              <div className="flex flex-col">
-                <span className="text-[13px] font-semibold text-primary">Success!</span>
-                <span className="text-[12px] text-primary/80">Job posted successfully.</span>
-              </div>
-            </div>
-          ),
-          { duration: 3000 }
-        );
+        toast.success('Job posted successfully', {
+          duration: 3000,
+          icon: <Check size={18} className="text-primary" />,
+          style: {
+            background: 'white',
+            color: 'hsl(146, 48%, 19%)',
+            border: '1px solid hsl(146, 48%, 19%, 0.2)',
+          },
+        });
         setFormData({ title: '', company: '', location: '', remote: false, description: '' });
         setModalOpen(false);
         onJobPosted();
