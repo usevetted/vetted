@@ -29,8 +29,8 @@ export default function Splash() {
         }
       }
 
-      setFading(true);
-      setTimeout(() => navigate(dest, { replace: true }), 400);
+      setTimeout(() => setFading(true), 2200);
+      setTimeout(() => navigate(dest, { replace: true }), 2700);
     };
     init();
   }, [navigate, isAuthenticated, user]);
@@ -40,7 +40,7 @@ export default function Splash() {
       <motion.div
         initial={{ opacity: 0, scale: 0.92 }}
         animate={{ opacity: fading ? 0 : 1, scale: fading ? 0.95 : 1 }}
-        transition={{ duration: fading ? 0.4 : 0.6, ease: [0.16, 1, 0.3, 1] }}
+        transition={{ duration: fading ? 0.5 : 0.7, ease: [0.16, 1, 0.3, 1] }}
         className="flex flex-col items-center"
       >
         <Logo size="xl" tagline taglineText="Smarter hiring. Mutual fit." showBar animate />

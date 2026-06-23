@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { motion, useMotionValue, useTransform } from 'framer-motion';
 import { MapPin, Linkedin, Building2 } from 'lucide-react';
 import ResumeLink from '@/components/ResumeLink';
+import ExpandableText from '@/components/ExpandableText';
 
 export default function SwipeCard({ card, type, onSwipe, isTop, index, triggerAction }) {
   const [exitDir, setExitDir] = useState(null);
@@ -52,7 +53,7 @@ export default function SwipeCard({ card, type, onSwipe, isTop, index, triggerAc
         animate={exitDir ? exitVariants[exitDir] : {}}
         transition={exitDir ? { duration: 0.4, ease: [0.32, 0, 0.67, 0] } : { type: 'spring', stiffness: 300, damping: 30 }}
         onAnimationComplete={() => { if (exitDir) onSwipe(exitDir); }}
-        className="w-full bg-white rounded-[24px] border border-border/40 shadow-[0_12px_50px_rgba(0,0,0,0.12)] overflow-hidden cursor-grab active:cursor-grabbing"
+        className="relative w-full h-full bg-white rounded-[24px] border border-border/40 shadow-[0_12px_50px_rgba(0,0,0,0.12)] overflow-hidden cursor-grab active:cursor-grabbing flex flex-col"
       >
         {isTop && (
           <>
@@ -77,7 +78,9 @@ export default function SwipeCard({ card, type, onSwipe, isTop, index, triggerAc
           </>
         )}
 
-        {type === 'job' ? <JobCardContent card={card} /> : <CandidateCardContent card={card} />}
+        <div className="flex-1 overflow-y-auto no-scrollbar">
+          {type === 'job' ? <JobCardContent card={card} /> : <CandidateCardContent card={card} />}
+        </div>
       </motion.div>
     </motion.div>
   );
@@ -113,15 +116,20 @@ function JobCardContent({ card }) {
 
       <div className="h-px bg-border/50 mb-4" />
 
-      <p className="text-[12px] text-muted-foreground leading-relaxed mb-4">{card.description}</p>
+      <ExpandableText text={card.description} className="mb-4" />
 
       {card.tags && card.tags.length > 0 && (
         <div className="flex flex-wrap gap-1.5 mb-4">
-          {card.tags.map((tag, i) => (
+          {card.tags.slice(0, 6).map((tag, i) => (
             <span key={i} className="text-[10px] font-medium px-2.5 py-1 rounded-full bg-muted text-muted-foreground">
               {tag}
             </span>
           ))}
+          {card.tags.length > 6 && (
+            <span className="text-[10px] font-medium px-2.5 py-1 rounded-full bg-muted text-muted-foreground">
+              +{card.tags.length - 6}
+            </span>
+          )}
         </div>
       )}
 
@@ -138,6 +146,7 @@ function JobCardContent({ card }) {
           target="_blank"
           rel="noopener noreferrer"
           onClick={(e) => e.stopPropagation()}
+          onPointerDown={(e) => e.stopPropagation()}
           className="flex items-center gap-2 w-full p-2.5 rounded-xl bg-muted/60 hover:bg-muted transition-colors"
         >
           <div className="w-8 h-8 rounded-lg bg-linkedin flex items-center justify-center flex-shrink-0">
@@ -202,16 +211,21 @@ function CandidateCardContent({ card }) {
       </div>
 
       {card.bio && (
-        <p className="text-[12px] text-muted-foreground leading-relaxed mb-4">{card.bio}</p>
+        <ExpandableText text={card.bio} className="mb-4" />
       )}
 
       {card.skills && card.skills.length > 0 && (
         <div className="flex flex-wrap gap-1.5 mb-4">
-          {card.skills.map((skill, i) => (
+          {card.skills.slice(0, 6).map((skill, i) => (
             <span key={i} className="text-[10px] font-medium px-2.5 py-1 rounded-full bg-muted text-muted-foreground">
               {skill}
             </span>
           ))}
+          {card.skills.length > 6 && (
+            <span className="text-[10px] font-medium px-2.5 py-1 rounded-full bg-muted text-muted-foreground">
+              +{card.skills.length - 6}
+            </span>
+          )}
         </div>
       )}
 
@@ -221,6 +235,7 @@ function CandidateCardContent({ card }) {
           target="_blank"
           rel="noopener noreferrer"
           onClick={(e) => e.stopPropagation()}
+          onPointerDown={(e) => e.stopPropagation()}
           className="flex items-center gap-2 w-full p-2.5 rounded-xl bg-muted/60 hover:bg-muted transition-colors"
         >
           <div className="w-8 h-8 rounded-lg bg-linkedin flex items-center justify-center flex-shrink-0">
