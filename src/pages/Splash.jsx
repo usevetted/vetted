@@ -10,30 +10,32 @@ export default function Splash() {
 
   useEffect(() => {
     const init = async () => {
-      if (sessionStorage.getItem('just_logged_out') === 'true') {
-        sessionStorage.removeItem('just_logged_out');
-        setTimeout(() => setFading(true), 2600);
-        setTimeout(() => navigate('/landing'), 3100);
-        return;
-      }
-      try {
-        const isAuthed = await base44.auth.isAuthenticated();
-        if (isAuthed) {
-          const user = await base44.auth.me();
-          if (!user) throw new Error('No user');
-          const profiles = await base44.entities.Profile.filter({ created_by_id: user.id });
-          if (profiles.length > 0 && profiles[0].onboarding_complete) {
-            navigate('/discover', { replace: true });
-            return;
+      let dest = '/landing';
+
+      if (sessionStorage.getItem('just_logged_out') !== 'true') {
+        try {
+          const isAuthed = await base44.auth.isAuthenticated();
+          if (isAuthed) {
+            const user = await base44.auth.me();
+            if (user) {
+              const profiles = await base44.entities.Profile.filter({ created_by_id: user.id });
+              if (profiles.length > 0 && profiles[0].onboarding_complete) {
+                dest = '/discover';
+              } else {
+                dest = '/onboarding/account-type';
+              }
+            }
           }
-          navigate('/onboarding/account-type', { replace: true });
-          return;
+        } catch {
+          // Not authenticated — go to landing
         }
-      } catch {
-        // Not authenticated — fall through to landing
+      } else {
+        sessionStorage.removeItem('just_logged_out');
       }
+
+      // Always show splash animation for the full duration, then navigate
       setTimeout(() => setFading(true), 2600);
-      setTimeout(() => navigate('/landing'), 3100);
+      setTimeout(() => navigate(dest, { replace: true }), 3100);
     };
     init();
   }, [navigate]);
