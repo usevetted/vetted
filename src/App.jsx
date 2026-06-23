@@ -2,7 +2,7 @@ import { Toaster } from "@/components/ui/toaster"
 import { QueryClientProvider } from '@tanstack/react-query'
 import { queryClientInstance } from '@/lib/query-client'
 import { BrowserRouter as Router, Route, Routes, Navigate, useLocation } from 'react-router-dom';
-import { useEffect } from 'react';
+import { useEffect, Suspense, lazy } from 'react';
 import { AnimatePresence, motion } from 'framer-motion';
 import PageNotFound from './lib/PageNotFound';
 import { AuthProvider, useAuth } from '@/lib/AuthContext';
@@ -11,25 +11,28 @@ import UserNotRegisteredError from '@/components/UserNotRegisteredError';
 import ScrollToTop from './components/ScrollToTop';
 import LoadingScreen from './components/LoadingScreen';
 import ProtectedRoute from '@/components/ProtectedRoute';
-// Page imports
+// Public page imports
 import Splash from './pages/Splash';
 import Landing from './pages/Landing';
 import Login from '@/pages/Login';
 import Register from '@/pages/Register';
 import ForgotPassword from '@/pages/ForgotPassword';
+import PrivacyPolicy from './pages/PrivacyPolicy';
+// Onboarding imports
 import AccountType from './pages/AccountType';
 import ProfileSetup from './pages/ProfileSetup';
+// Layout
 import AppLayout from './components/AppLayout';
-import Discover from './pages/Discover';
-import Matches from './pages/Matches';
-import Messages from './pages/Messages';
-import Chat from './pages/Chat';
-import ProfilePage from './pages/ProfilePage';
-import ProfileSettings from './pages/ProfileSettings';
-import AccountSecurity from './pages/AccountSecurity';
-import PostLogin from './pages/PostLogin';
-import PrivacyPolicy from './pages/PrivacyPolicy';
-import PostJob from './pages/PostJob';
+// Lazy-loaded app pages
+const Discover = lazy(() => import('./pages/Discover'));
+const Matches = lazy(() => import('./pages/Matches'));
+const Messages = lazy(() => import('./pages/Messages'));
+const Chat = lazy(() => import('./pages/Chat'));
+const ProfilePage = lazy(() => import('./pages/ProfilePage'));
+const ProfileSettings = lazy(() => import('./pages/ProfileSettings'));
+const AccountSecurity = lazy(() => import('./pages/AccountSecurity'));
+const PostJob = lazy(() => import('./pages/PostJob'));
+const PostLogin = lazy(() => import('./pages/PostLogin'));
 
 const AuthenticatedApp = () => {
   const { isLoadingAuth, isLoadingPublicSettings, authError, navigateToLogin } = useAuth();
@@ -85,14 +88,14 @@ const AuthenticatedApp = () => {
 
         {/* Protected routes - main app (with layout) */}
         <Route element={<AppLayout />}>
-          <Route path="/discover" element={<Discover />} />
-          <Route path="/matches" element={<Matches />} />
-          <Route path="/messages" element={<Messages />} />
-          <Route path="/messages/:matchId" element={<Chat />} />
-          <Route path="/profile" element={<ProfilePage />} />
-          <Route path="/profile-settings" element={<ProfileSettings />} />
-          <Route path="/account-security" element={<AccountSecurity />} />
-          <Route path="/post-job" element={<PostJob />} />
+          <Route path="/discover" element={<Suspense fallback={<LoadingScreen fullscreen={false} />}><Discover /></Suspense>} />
+          <Route path="/matches" element={<Suspense fallback={<LoadingScreen fullscreen={false} />}><Matches /></Suspense>} />
+          <Route path="/messages" element={<Suspense fallback={<LoadingScreen fullscreen={false} />}><Messages /></Suspense>} />
+          <Route path="/messages/:matchId" element={<Suspense fallback={<LoadingScreen fullscreen={false} />}><Chat /></Suspense>} />
+          <Route path="/profile" element={<Suspense fallback={<LoadingScreen fullscreen={false} />}><ProfilePage /></Suspense>} />
+          <Route path="/profile-settings" element={<Suspense fallback={<LoadingScreen fullscreen={false} />}><ProfileSettings /></Suspense>} />
+          <Route path="/account-security" element={<Suspense fallback={<LoadingScreen fullscreen={false} />}><AccountSecurity /></Suspense>} />
+          <Route path="/post-job" element={<Suspense fallback={<LoadingScreen fullscreen={false} />}><PostJob /></Suspense>} />
         </Route>
       </Route>
 
