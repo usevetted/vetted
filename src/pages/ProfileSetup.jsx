@@ -97,6 +97,7 @@ export default function ProfileSetup() {
     if (data.bio) setBio(data.bio);
     if (data.skills && data.skills.length > 0) setSkills(data.skills);
     if (data.linkedin_url) setLinkedinUrl(data.linkedin_url);
+    if (data.profile_picture) setProfilePicture(data.profile_picture);
   };
 
   const validate = () => {
