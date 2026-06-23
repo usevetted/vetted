@@ -30,8 +30,25 @@ export default function MenuDrawer({ open, onClose, user, profile }) {
   const [twoFaCode, setTwoFaCode] = useState('');
   const [twoFaError, setTwoFaError] = useState('');
   const [twoFaLoading, setTwoFaLoading] = useState(false);
+  const [loadingTwoFaStatus, setLoadingTwoFaStatus] = useState(false);
 
-
+  useEffect(() => {
+    if (!open) return;
+    // Fetch actual 2FA status when drawer opens
+    const fetchTwoFaStatus = async () => {
+      setLoadingTwoFaStatus(true);
+      try {
+        const currentUser = await base44.auth.me();
+        setTwoFaEnabled(currentUser?.two_fa_enabled || false);
+      } catch {
+        // Default to false if fetch fails
+        setTwoFaEnabled(false);
+      } finally {
+        setLoadingTwoFaStatus(false);
+      }
+    };
+    fetchTwoFaStatus();
+  }, [open]);
 
   const handleToggleDarkMode = () => {
     toggleDarkMode(!darkMode);

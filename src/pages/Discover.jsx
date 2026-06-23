@@ -15,6 +15,7 @@ export default function Discover() {
   const { profile } = useOutletContext();
   const [allCards, setAllCards] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(false);
   const [matchData, setMatchData] = useState(null);
   const [triggerAction, setTriggerAction] = useState(null);
   const [filterOpen, setFilterOpen] = useState(false);
@@ -49,6 +50,7 @@ export default function Discover() {
   const loadCards = useCallback(async () => {
     if (!profile) return;
     setLoading(true);
+    setError(false);
     try {
       const swipes = await base44.entities.Swipe.filter({ swiper_profile_id: profile.id });
 
@@ -63,8 +65,8 @@ export default function Discover() {
         const filtered = allJobs.filter(j => !swipedJobIds.has(j.id));
         setAllCards(filtered);
       }
-    } catch {
-      // ignore
+    } catch (err) {
+      setError(true);
     } finally {
       setLoading(false);
     }
@@ -189,6 +191,8 @@ export default function Discover() {
       <div className="flex-1 flex flex-col items-center justify-center px-5 py-3 relative min-h-0">
         {loading ? (
           <LoadingScreen fullscreen={false} />
+        ) : error ? (
+          <ErrorState onRetry={loadCards} />
         ) : cards.length === 0 ? (
           <EmptyState onRefresh={loadCards} />
         ) : (
@@ -262,6 +266,24 @@ export default function Discover() {
         setFilters={setFilters}
         isRecruiter={isRecruiter}
       />
+    </div>
+  );
+}
+
+function ErrorState({ onRetry }) {
+  return (
+    <div className="flex flex-col items-center text-center px-8">
+      <div className="w-16 h-16 rounded-full bg-destructive/10 flex items-center justify-center mb-4">
+        <Heart size={28} className="text-destructive/40" />
+      </div>
+      <h3 className="text-[16px] font-semibold text-foreground mb-1">Something went wrong</h3>
+      <p className="text-[13px] text-muted-foreground mb-5">Couldn't load cards. Please check your connection and try again.</p>
+      <button
+        onClick={onRetry}
+        className="px-5 py-2.5 rounded-xl bg-primary text-white text-[13px] font-medium hover:bg-primary/90 transition-colors"
+      >
+        Retry
+      </button>
     </div>
   );
 }

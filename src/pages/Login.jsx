@@ -30,12 +30,12 @@ export default function Login() {
     }
   };
 
-  const handleGoogle = async () => {
+  const handleGoogle = () => {
     if (googleLoading) return;
     setGoogleLoading(true);
     setError("");
     try {
-      await base44.auth.loginWithProvider("google", "/post-login");
+      base44.auth.loginWithProvider("google", "/post-login");
     } catch (err) {
       setGoogleLoading(false);
       setError(err?.message || "Google sign-in failed. Please try again.");

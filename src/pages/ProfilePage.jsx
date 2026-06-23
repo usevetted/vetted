@@ -36,6 +36,7 @@ export default function ProfilePage() {
   const [skillInput, setSkillInput] = useState('');
   const [profilePicture, setProfilePicture] = useState('');
   const [resumeUrl, setResumeUrl] = useState('');
+  const [saveError, setSaveError] = useState('');
 
   const isRecruiter = profile?.account_type === 'recruiter';
 
@@ -80,6 +81,7 @@ export default function ProfilePage() {
 
   const handleSave = async () => {
     setSaving(true);
+    setSaveError('');
     try {
       const updated = await base44.entities.Profile.update(profile.id, {
         full_name: fullName,
@@ -97,8 +99,8 @@ export default function ProfilePage() {
       });
       setProfile(updated);
       setEditing(false);
-    } catch {
-      // ignore
+    } catch (err) {
+      setSaveError(err?.message || 'Failed to save profile. Please try again.');
     } finally {
       setSaving(false);
     }
@@ -155,6 +157,12 @@ export default function ProfilePage() {
           </button>
         </div>
       </div>
+
+      {saveError && (
+        <div className="mx-5 mb-4 p-3 rounded-xl bg-destructive/10 text-destructive text-[13px]">
+          {saveError}
+        </div>
+      )}
 
       {/* Profile header */}
       <div className="flex flex-col items-center px-6 pb-6">
