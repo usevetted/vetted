@@ -104,27 +104,17 @@ export default function ProfilePage() {
     }
   };
 
-  const handleLogout = async () => {
-    // Attempt clean sign out via Base44
-    try {
-      await base44.auth.logout();
-    } catch {
-      // Fallback: clear everything and force redirect
-    }
+  const handleLogout = () => {
+    // Clear all local session data
+    localStorage.clear();
+    sessionStorage.clear();
     
-    // Emergency cleanup: wipe all session data and cookies
-    try {
-      localStorage.clear();
-      sessionStorage.clear();
-      // Clear all cookies
-      document.cookie.split(";").forEach((c) => {
-        document.cookie = c.replace(/^ +/, "").replace(/=.*/, `=;expires=${new Date().toUTCString()};path=/`);
-      });
-    } catch {
-      // ignore
-    }
+    // Clear all cookies
+    document.cookie.split(";").forEach((c) => {
+      document.cookie = c.replace(/^ +/, "").replace(/=.*/, `=;expires=${new Date().toUTCString()};path=/`);
+    });
     
-    // Hard redirect to restart app completely
+    // Hard redirect to login
     window.location.href = '/login';
   };
 
