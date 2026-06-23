@@ -37,6 +37,11 @@ Deno.serve(async (req) => {
       return Response.json({ error: 'Not a participant in this match' }, { status: 403 });
     }
 
+    // Don't allow messages in archived matches
+    if (match.status === 'archived') {
+      return Response.json({ error: 'This match is no longer active' }, { status: 403 });
+    }
+
     // Moderate content server-side (cannot be bypassed by client)
     try {
       const moderation = await base44.integrations.Core.InvokeLLM({

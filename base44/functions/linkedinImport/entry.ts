@@ -22,6 +22,10 @@ Deno.serve(async (req) => {
     });
 
     if (!userInfoResponse.ok) {
+      // 401/403 means the token is expired or invalid — prompt reconnect
+      if (userInfoResponse.status === 401 || userInfoResponse.status === 403) {
+        return Response.json({ error: 'not_connected' }, { status: 404 });
+      }
       return Response.json({ error: `LinkedIn API error: ${userInfoResponse.status}` }, { status: 502 });
     }
 
