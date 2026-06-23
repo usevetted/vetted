@@ -71,15 +71,12 @@ export default function AppLayout() {
     );
   }
 
-  const isCreatePostRoute = location.pathname === '/create-post';
-
   return (
     <div className="h-[100dvh] bg-white overflow-hidden">
       <div className="w-full h-[100dvh] relative flex flex-col overflow-hidden">
         <main className="flex-1 overflow-hidden flex flex-col pt-[env(safe-area-inset-top)] min-h-0">
           <Outlet context={{ profile, setProfile }} />
         </main>
-        {!isCreatePostRoute && (
         <nav className="sticky bottom-0 z-50 bg-white/90 glass border-t border-border/50 px-2 pb-[env(safe-area-inset-bottom)] flex-shrink-0">
           <div className="flex items-center justify-around max-w-[600px] mx-auto py-2">
             {navItems.map((item) => {
@@ -108,7 +105,6 @@ export default function AppLayout() {
             })}
           </div>
         </nav>
-        )}
       </div>
     </div>
   );

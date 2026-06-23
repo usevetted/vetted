@@ -17,10 +17,6 @@ Deno.serve(async (req) => {
       return Response.json({ error: 'Invalid action' }, { status: 400 });
     }
 
-    if (target_type && !['job', 'candidate'].includes(target_type)) {
-      return Response.json({ error: 'Invalid target type' }, { status: 400 });
-    }
-
     // Get user's profile
     const profiles = await base44.entities.Profile.filter({ created_by_id: user.id });
     if (profiles.length === 0) {
@@ -31,15 +27,6 @@ Deno.serve(async (req) => {
     // Prevent swiping on self
     if (target_profile_id === profile.id) {
       return Response.json({ error: 'Cannot swipe on yourself' }, { status: 400 });
-    }
-
-    // Prevent duplicate swipes — check if already swiped on this target
-    const existingSwipes = await base44.entities.Swipe.filter({
-      swiper_profile_id: profile.id,
-      target_profile_id,
-    });
-    if (existingSwipes.length > 0) {
-      return Response.json({ error: 'Already swiped on this profile' }, { status: 409 });
     }
 
     // Create the swipe record (user-scoped so created_by_id is set correctly)

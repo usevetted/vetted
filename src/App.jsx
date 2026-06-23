@@ -26,7 +26,6 @@ import Messages from './pages/Messages';
 import Chat from './pages/Chat';
 import ProfilePage from './pages/ProfilePage';
 import PostLogin from './pages/PostLogin';
-import CreatePost from './pages/CreatePost';
 
 const AuthenticatedApp = () => {
   const { isLoadingAuth, isLoadingPublicSettings, authError, navigateToLogin } = useAuth();
@@ -87,7 +86,6 @@ const AuthenticatedApp = () => {
           <Route path="/messages" element={<Messages />} />
           <Route path="/messages/:matchId" element={<Chat />} />
           <Route path="/profile" element={<ProfilePage />} />
-          <Route path="/create-post" element={<CreatePost />} />
         </Route>
       </Route>
 
