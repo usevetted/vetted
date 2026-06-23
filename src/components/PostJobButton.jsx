@@ -1,12 +1,11 @@
 import { useState } from 'react';
-import { Plus } from 'lucide-react';
+import { Plus, Check } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { createPortal } from 'react-dom';
 import { base44 } from '@/api/base44Client';
-import { useToast } from '@/components/ui/use-toast';
+import { toast } from 'sonner';
 
 export default function PostJobButton({ isRecruiter, profile, onJobPosted }) {
-  const { toast } = useToast();
   const [modalOpen, setModalOpen] = useState(false);
   const [formData, setFormData] = useState({
     title: '',
@@ -43,11 +42,18 @@ export default function PostJobButton({ isRecruiter, profile, onJobPosted }) {
       });
 
       if (result.data.success) {
-        toast({
-          title: 'Success!',
-          description: 'Job posted successfully.',
-          duration: 3000,
-        });
+        toast.custom(
+          (t) => (
+            <div className="flex items-center gap-3 px-4 py-3 bg-white rounded-lg shadow-lg border border-primary/20">
+              <Check size={20} className="text-primary flex-shrink-0" />
+              <div className="flex flex-col">
+                <span className="text-[13px] font-semibold text-primary">Success!</span>
+                <span className="text-[12px] text-primary/80">Job posted successfully.</span>
+              </div>
+            </div>
+          ),
+          { duration: 3000 }
+        );
         setFormData({ title: '', company: '', location: '', remote: false, description: '' });
         setModalOpen(false);
         onJobPosted();
