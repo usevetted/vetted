@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { Plus } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
+import { createPortal } from 'react-dom';
 import { base44 } from '@/api/base44Client';
 import { useToast } from '@/components/ui/use-toast';
 
@@ -58,34 +59,24 @@ export default function PostJobButton({ isRecruiter, profile, onJobPosted }) {
     }
   };
 
-  return (
-    <>
-      <motion.button
-        whileTap={{ scale: 0.92 }}
-        whileHover={{ scale: 1.05 }}
-        onClick={() => setModalOpen(true)}
-        className="w-11 h-11 rounded-full bg-primary text-white flex items-center justify-center shadow-sm hover:bg-primary/90 transition-colors cursor-pointer"
-      >
-        <Plus size={20} />
-      </motion.button>
-
-      <AnimatePresence>
-        {modalOpen && (
-          <>
-            <motion.div
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              exit={{ opacity: 0 }}
-              onClick={() => setModalOpen(false)}
-              className="fixed inset-0 bg-black/40 z-[95]"
-            />
-            <motion.div
-              initial={{ y: '100%', opacity: 0 }}
-              animate={{ y: 0, opacity: 1 }}
-              exit={{ y: '100%', opacity: 0 }}
-              transition={{ type: 'spring', damping: 25, stiffness: 300 }}
-              className="fixed bottom-0 left-0 right-0 z-[200] max-h-[90vh] rounded-t-2xl shadow-xl bg-card flex flex-col"
-            >
+  const modalElement = (
+    <AnimatePresence>
+      {modalOpen && (
+        <>
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            onClick={() => setModalOpen(false)}
+            className="fixed inset-0 bg-black/40 z-[95]"
+          />
+          <motion.div
+            initial={{ y: '100%', opacity: 0 }}
+            animate={{ y: 0, opacity: 1 }}
+            exit={{ y: '100%', opacity: 0 }}
+            transition={{ type: 'spring', damping: 25, stiffness: 300 }}
+            className="fixed bottom-0 left-0 right-0 z-[200] max-h-[90vh] rounded-t-2xl shadow-xl bg-card flex flex-col"
+          >
               <form onSubmit={handleSubmit} className="flex flex-col h-full">
                 {/* Header */}
                 <div className="flex items-center justify-between px-5 py-3 border-b border-border sticky top-0 bg-card z-20">
@@ -194,6 +185,19 @@ export default function PostJobButton({ isRecruiter, profile, onJobPosted }) {
           </>
         )}
       </AnimatePresence>
+    );
+
+  return (
+    <>
+      <motion.button
+        whileTap={{ scale: 0.92 }}
+        whileHover={{ scale: 1.05 }}
+        onClick={() => setModalOpen(true)}
+        className="w-11 h-11 rounded-full bg-primary text-white flex items-center justify-center shadow-sm hover:bg-primary/90 transition-colors cursor-pointer"
+      >
+        <Plus size={20} />
+      </motion.button>
+      {createPortal(modalElement, document.body)}
     </>
   );
 }
