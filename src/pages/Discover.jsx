@@ -148,68 +148,56 @@ export default function Discover() {
       {/* Header */}
       <div className="flex items-center justify-between px-5 pt-2 pb-3 relative z-10">
         <Logo size="sm" />
-        <div className="flex items-center gap-2">
-          <button
-            onClick={() => setFilterOpen(true)}
-            className="w-11 h-11 rounded-full bg-white border border-border/50 flex items-center justify-center shadow-sm hover:bg-muted transition-colors cursor-pointer"
-          >
-            <SlidersHorizontal size={18} className="text-muted-foreground" />
-          </button>
-          
-          {/* Profile dropdown */}
-          <div className="relative">
-            <button
-              ref={profileButtonRef}
-              onClick={() => setProfileDropdownOpen(!profileDropdownOpen)}
-              className="w-11 h-11 rounded-full bg-brand-green-light flex items-center justify-center text-[12px] font-semibold text-primary overflow-hidden border border-border/50 shadow-sm cursor-pointer hover:shadow-md transition-shadow"
-            >
-              {profile?.profile_picture ? (
-                <img src={profile.profile_picture} alt="" className="w-full h-full object-cover" />
-              ) : (
-                initials
-              )}
-            </button>
 
-            <AnimatePresence>
-              {profileDropdownOpen && (
-                <motion.div
-                  ref={profileDropdownRef}
-                  initial={{ opacity: 0, scale: 0.8, y: -12 }}
-                  animate={{ opacity: 1, scale: 1, y: 0 }}
-                  exit={{ opacity: 0, scale: 0.8, y: -12 }}
-                  transition={{ duration: 0.2, type: "spring", stiffness: 400, damping: 30 }}
-                  className="absolute top-full right-0 mt-3 bg-white dark:bg-card border border-border/50 rounded-3xl shadow-lg p-3 w-44 z-50"
-                >
-                  {isRecruiter && (
-                    <button
-                      onClick={() => {
-                        navigate('/post-job');
-                        setProfileDropdownOpen(false);
-                      }}
-                      className="w-full flex items-center gap-3 px-3 py-3 rounded-xl hover:bg-muted/50 transition-colors text-left"
-                    >
-                      <div className="w-8 h-8 rounded-lg bg-primary/10 flex items-center justify-center flex-shrink-0">
-                        <Plus size={16} className="text-primary" />
-                      </div>
-                      <span className="text-[13px] font-medium text-foreground">Post Job</span>
-                    </button>
-                  )}
+        {/* Profile dropdown */}
+        <div className="relative">
+          <button
+            ref={profileButtonRef}
+            onClick={() => setProfileDropdownOpen(!profileDropdownOpen)}
+            className="w-11 h-11 rounded-full bg-brand-green-light flex items-center justify-center text-[12px] font-semibold text-primary overflow-hidden border border-border/50 shadow-sm cursor-pointer hover:shadow-md transition-shadow"
+          >
+            {profile?.profile_picture ? (
+              <img src={profile.profile_picture} alt="" className="w-full h-full object-cover" />
+            ) : (
+              initials
+            )}
+          </button>
+
+          <AnimatePresence>
+            {profileDropdownOpen && (
+              <motion.div
+                ref={profileDropdownRef}
+                initial={{ opacity: 0, scale: 0.7, y: -10 }}
+                animate={{ opacity: 1, scale: 1, y: 0 }}
+                exit={{ opacity: 0, scale: 0.7, y: -10 }}
+                transition={{ duration: 0.2, type: "spring", stiffness: 400, damping: 30 }}
+                className="absolute top-full right-0 mt-2 bg-white dark:bg-card border border-border/50 rounded-full shadow-lg px-4 py-2 w-auto z-50 flex items-center gap-2"
+              >
+                {isRecruiter && (
                   <button
                     onClick={() => {
-                      navigate('/profile-settings');
+                      navigate('/post-job');
                       setProfileDropdownOpen(false);
                     }}
-                    className="w-full flex items-center gap-3 px-3 py-3 rounded-xl hover:bg-muted/50 transition-colors text-left"
+                    className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center hover:bg-primary/20 transition-colors"
+                    title="Post Job"
                   >
-                    <div className="w-8 h-8 rounded-lg bg-muted/50 flex items-center justify-center flex-shrink-0">
-                      <SlidersHorizontal size={16} className="text-muted-foreground" />
-                    </div>
-                    <span className="text-[13px] font-medium text-foreground">Settings</span>
+                    <Plus size={18} className="text-primary" />
                   </button>
-                </motion.div>
-              )}
-            </AnimatePresence>
-          </div>
+                )}
+                <button
+                  onClick={() => {
+                    navigate('/profile-settings');
+                    setProfileDropdownOpen(false);
+                  }}
+                  className="w-10 h-10 rounded-full bg-muted/50 flex items-center justify-center hover:bg-muted transition-colors"
+                  title="Settings"
+                >
+                  <SlidersHorizontal size={18} className="text-muted-foreground" />
+                </button>
+              </motion.div>
+            )}
+          </AnimatePresence>
         </div>
       </div>
 

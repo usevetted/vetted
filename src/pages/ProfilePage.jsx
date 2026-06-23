@@ -109,7 +109,6 @@ export default function ProfilePage() {
     } catch {
       // ignore
     }
-    sessionStorage.setItem('just_logged_out', 'true');
     window.location.href = '/landing';
   }, []);
 

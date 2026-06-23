@@ -94,7 +94,6 @@ export default function AccountSecurity() {
     setError('');
     try {
       await base44.auth.signOutAllDevices();
-      sessionStorage.setItem('just_logged_out', 'true');
       window.location.href = '/landing';
     } catch (err) {
       setError(err.message || 'Failed to sign out all devices');
@@ -136,7 +135,6 @@ export default function AccountSecurity() {
         });
       }
       await base44.auth.logout();
-      sessionStorage.setItem('just_logged_out', 'true');
       window.location.href = '/landing';
     } catch (err) {
       setError(err.message || 'Failed to deactivate account');
