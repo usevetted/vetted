@@ -135,7 +135,9 @@ export default function AccountSecurity() {
         });
       }
       await base44.auth.logout();
-      window.location.href = '/landing';
+      setTimeout(() => {
+        window.location.href = '/landing';
+      }, 500);
     } catch (err) {
       setError(err.message || 'Failed to deactivate account');
       setSaving(false);

@@ -167,34 +167,36 @@ export default function Discover() {
             {profileDropdownOpen && (
               <motion.div
                 ref={profileDropdownRef}
-                initial={{ opacity: 0, scale: 0.7, y: -10 }}
-                animate={{ opacity: 1, scale: 1, y: 0 }}
-                exit={{ opacity: 0, scale: 0.7, y: -10 }}
-                transition={{ duration: 0.2, type: "spring", stiffness: 400, damping: 30 }}
-                className="absolute top-full right-0 mt-2 bg-white dark:bg-card border border-border/50 rounded-full shadow-lg px-4 py-2 w-auto z-50 flex items-center gap-2"
+                initial={{ opacity: 0, y: -8 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: -8 }}
+                transition={{ duration: 0.15 }}
+                className="absolute top-full right-0 mt-1 bg-white dark:bg-card border border-border rounded-xl shadow-md z-50 overflow-hidden"
               >
-                {isRecruiter && (
+                <div className="flex flex-col gap-1 p-2">
+                  {isRecruiter && (
+                    <button
+                      onClick={() => {
+                        navigate('/post-job');
+                        setProfileDropdownOpen(false);
+                      }}
+                      className="w-44 flex items-center gap-3 px-3 py-3 rounded-lg hover:bg-muted/50 transition-colors text-left"
+                    >
+                      <Plus size={18} className="text-primary flex-shrink-0" />
+                      <span className="text-[13px] font-medium text-foreground">Post Job</span>
+                    </button>
+                  )}
                   <button
                     onClick={() => {
-                      navigate('/post-job');
+                      navigate('/profile-settings');
                       setProfileDropdownOpen(false);
                     }}
-                    className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center hover:bg-primary/20 transition-colors"
-                    title="Post Job"
+                    className="w-44 flex items-center gap-3 px-3 py-3 rounded-lg hover:bg-muted/50 transition-colors text-left"
                   >
-                    <Plus size={18} className="text-primary" />
+                    <SlidersHorizontal size={18} className="text-muted-foreground flex-shrink-0" />
+                    <span className="text-[13px] font-medium text-foreground">Settings</span>
                   </button>
-                )}
-                <button
-                  onClick={() => {
-                    navigate('/profile-settings');
-                    setProfileDropdownOpen(false);
-                  }}
-                  className="w-10 h-10 rounded-full bg-muted/50 flex items-center justify-center hover:bg-muted transition-colors"
-                  title="Settings"
-                >
-                  <SlidersHorizontal size={18} className="text-muted-foreground" />
-                </button>
+                </div>
               </motion.div>
             )}
           </AnimatePresence>
