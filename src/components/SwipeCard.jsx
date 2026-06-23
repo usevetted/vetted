@@ -1,4 +1,4 @@
-import { useState, useEffect, useMemo } from 'react';
+import { useState, useEffect } from 'react';
 import { motion, useMotionValue, useTransform } from 'framer-motion';
 import { MapPin, Linkedin, Building2 } from 'lucide-react';
 import ResumeLink from '@/components/ResumeLink';
@@ -105,11 +105,11 @@ function JobCardContent({ card }) {
           <p className="text-[13px] text-muted-foreground mt-0.5">{card.company}</p>
           <div className="flex items-center gap-1 mt-1">
             <MapPin size={12} className="text-muted-foreground/60" />
-            <span className="text-[12px] text-muted-foreground">{card.location}{card.remote ? ' · Remote' : ''}</span>
+            <span className="text-[11px] text-muted-foreground">{card.location}{card.remote ? ' · Remote' : ''}</span>
           </div>
         </div>
         {card.remote && (
-          <span className="text-[12px] font-medium px-2.5 py-1 rounded-full bg-brand-green-light text-primary">
+          <span className="text-[10px] font-medium px-2.5 py-1 rounded-full bg-brand-green-light text-primary">
             Remote
           </span>
         )}
@@ -122,12 +122,12 @@ function JobCardContent({ card }) {
       {card.tags && card.tags.length > 0 && (
         <div className="flex flex-wrap gap-1.5 mb-4">
           {card.tags.slice(0, 6).map((tag, i) => (
-            <span key={i} className="text-[12px] font-medium px-2.5 py-1 rounded-full bg-muted text-muted-foreground">
+            <span key={i} className="text-[10px] font-medium px-2.5 py-1 rounded-full bg-muted text-muted-foreground">
               {tag}
             </span>
           ))}
           {card.tags.length > 6 && (
-            <span className="text-[12px] font-medium px-2.5 py-1 rounded-full bg-muted text-muted-foreground">
+            <span className="text-[10px] font-medium px-2.5 py-1 rounded-full bg-muted text-muted-foreground">
               +{card.tags.length - 6}
             </span>
           )}
@@ -137,7 +137,7 @@ function JobCardContent({ card }) {
       <div className="flex items-end justify-between mb-4">
         <div>
           <div className="text-[15px] font-semibold text-primary">{card.salary_range}</div>
-          <div className="text-[12px] text-muted-foreground/70 mt-0.5">{card.company_size}</div>
+          <div className="text-[10px] text-muted-foreground/70 mt-0.5">{card.company_size}</div>
         </div>
       </div>
 
@@ -150,7 +150,7 @@ function JobCardContent({ card }) {
             <div className="text-[9px] text-muted-foreground/60 uppercase tracking-wider font-semibold">Posted by</div>
             <div className="text-[13px] font-semibold text-foreground truncate">{card.recruiter_name || 'Recruiter'}</div>
             {card.company && (
-              <div className="text-[12px] text-muted-foreground truncate">Recruiter at {card.company}</div>
+              <div className="text-[11px] text-muted-foreground truncate">Recruiter at {card.company}</div>
             )}
           </div>
           {card.recruiter_linkedin && (
@@ -160,7 +160,7 @@ function JobCardContent({ card }) {
               rel="noopener noreferrer"
               onClick={(e) => e.stopPropagation()}
               onPointerDown={(e) => e.stopPropagation()}
-              className="flex items-center gap-1.5 px-3 py-2 rounded-xl bg-linkedin text-white text-[12px] font-medium hover:opacity-90 transition-opacity flex-shrink-0"
+              className="flex items-center gap-1.5 px-3 py-2 rounded-xl bg-linkedin text-white text-[11px] font-medium hover:opacity-90 transition-opacity flex-shrink-0"
             >
               <Linkedin size={13} />
               Profile
@@ -193,12 +193,12 @@ function CandidateCardContent({ card }) {
           {card.current_company && (
             <div className="flex items-center gap-1 mt-1">
               <Building2 size={12} className="text-muted-foreground/60" />
-              <span className="text-[12px] text-muted-foreground">{card.current_company}</span>
+              <span className="text-[11px] text-muted-foreground">{card.current_company}</span>
             </div>
           )}
         </div>
         {card.open_to_work && (
-          <span className="text-[12px] font-medium px-2.5 py-1 rounded-full bg-brand-green-light text-primary">
+          <span className="text-[10px] font-medium px-2.5 py-1 rounded-full bg-brand-green-light text-primary">
             Open
           </span>
         )}
@@ -228,12 +228,12 @@ function CandidateCardContent({ card }) {
       {card.skills && card.skills.length > 0 && (
         <div className="flex flex-wrap gap-1.5 mb-4">
           {card.skills.slice(0, 6).map((skill, i) => (
-            <span key={i} className="text-[12px] font-medium px-2.5 py-1 rounded-full bg-muted text-muted-foreground">
+            <span key={i} className="text-[10px] font-medium px-2.5 py-1 rounded-full bg-muted text-muted-foreground">
               {skill}
             </span>
           ))}
           {card.skills.length > 6 && (
-            <span className="text-[12px] font-medium px-2.5 py-1 rounded-full bg-muted text-muted-foreground">
+            <span className="text-[10px] font-medium px-2.5 py-1 rounded-full bg-muted text-muted-foreground">
               +{card.skills.length - 6}
             </span>
           )}

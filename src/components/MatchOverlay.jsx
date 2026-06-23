@@ -71,7 +71,7 @@ export default function MatchOverlay({ match, onMessage, onKeepSwiping }) {
             You and <strong>{match.company_name || 'the team'}</strong> want to connect for <strong>{match.job_title}</strong>
           </p>
         )}
-        <p className="text-[12px] text-muted-foreground/70 mb-7">Reach out before this opportunity passes</p>
+        <p className="text-[11px] text-muted-foreground/70 mb-7">Reach out before this opportunity passes</p>
 
         <button
           onClick={onMessage}

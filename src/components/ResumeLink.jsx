@@ -16,8 +16,8 @@ export default function ResumeLink({ url, compact = false }) {
             <FileText size={16} className="text-primary" />
           </div>
           <div className="flex-1 min-w-0 text-left">
-            <div className="text-[12px] font-medium text-foreground">View Resume</div>
-            <div className="text-[12px] text-muted-foreground">PDF</div>
+            <div className="text-[11px] font-medium text-foreground">View Resume</div>
+            <div className="text-[10px] text-muted-foreground">PDF</div>
           </div>
         </button>
         <PdfViewer url={url} open={open} onClose={() => setOpen(false)} />
@@ -28,7 +28,7 @@ export default function ResumeLink({ url, compact = false }) {
   return (
     <>
       <div>
-        <h3 className="text-[12px] font-semibold text-muted-foreground uppercase tracking-wider mb-2">Resume</h3>
+        <h3 className="text-[11px] font-semibold text-muted-foreground uppercase tracking-wider mb-2">Resume</h3>
         <button
           onClick={() => setOpen(true)}
           className="flex items-center gap-2.5 w-full p-3.5 rounded-xl bg-muted/40 hover:bg-muted transition-colors"
@@ -38,7 +38,7 @@ export default function ResumeLink({ url, compact = false }) {
           </div>
           <div className="flex-1 min-w-0 text-left">
             <div className="text-[12px] font-medium text-foreground">View Resume</div>
-            <div className="text-[12px] text-muted-foreground">PDF</div>
+            <div className="text-[11px] text-muted-foreground">PDF</div>
           </div>
         </button>
       </div>

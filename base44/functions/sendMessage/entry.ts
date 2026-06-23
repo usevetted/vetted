@@ -38,7 +38,7 @@ Deno.serve(async (req) => {
     }
 
     // Don't allow messages in archived matches
-    if (match.status === 'archived' || match.status === 'blocked') {
+    if (match.status === 'archived') {
       return Response.json({ error: 'This match is no longer active' }, { status: 403 });
     }
 

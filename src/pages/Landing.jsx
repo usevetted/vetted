@@ -1,4 +1,4 @@
-import { useNavigate, Link } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import Logo from '@/components/Logo';
 
@@ -35,8 +35,8 @@ export default function Landing() {
           >
             Sign Up
           </button>
-          <p className="text-[12px] text-muted-foreground/50 mt-6">
-            By continuing you agree to our <Link to="/privacy-policy" className="underline hover:text-muted-foreground transition-colors">Privacy Policy</Link>
+          <p className="text-[11px] text-muted-foreground/50 mt-6">
+            By continuing you agree to our Terms
           </p>
         </motion.div>
       </div>

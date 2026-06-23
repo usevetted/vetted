@@ -1,10 +1,9 @@
 import { useState, useEffect, useRef } from 'react';
 import { useNavigate, useOutletContext, useParams } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
-import { ArrowLeft, Send, Info, Linkedin, ShieldAlert, Flag, X, HeartCrack } from 'lucide-react';
+import { ArrowLeft, Send, Info, Linkedin, ShieldAlert, Flag, X } from 'lucide-react';
 import { base44 } from '@/api/base44Client';
 import ReportUserSheet from '@/components/ReportUserSheet';
-import MatchActionsSheet from '@/components/MatchActionsSheet';
 import LoadingScreen from '@/components/LoadingScreen';
 
 export default function Chat() {
@@ -19,7 +18,6 @@ export default function Chat() {
   const [showInfo, setShowInfo] = useState(false);
   const [moderationWarning, setModerationWarning] = useState(null);
   const [reportOpen, setReportOpen] = useState(false);
-  const [actionsOpen, setActionsOpen] = useState(false);
   const messagesEndRef = useRef(null);
 
   useEffect(() => {
@@ -86,24 +84,6 @@ export default function Chat() {
     }
   };
 
-  const handleUnmatch = async () => {
-    try {
-      await base44.entities.Match.update(matchId, { status: 'archived' });
-      navigate('/messages');
-    } catch {
-      // ignore
-    }
-  };
-
-  const handleBlock = async () => {
-    try {
-      await base44.entities.Match.update(matchId, { status: 'blocked' });
-      navigate('/messages');
-    } catch {
-      // ignore
-    }
-  };
-
   if (loading) {
     return <LoadingScreen fullscreen={false} />;
   }
@@ -148,7 +128,7 @@ export default function Chat() {
         </button>
         <div className="flex-1 min-w-0">
           <div className="text-[14px] font-semibold text-foreground truncate">{otherName}</div>
-          <div className="text-[12px] text-primary flex items-center gap-1">
+          <div className="text-[11px] text-primary flex items-center gap-1">
             <span className="w-1.5 h-1.5 rounded-full bg-primary inline-block" />
             Online
           </div>
@@ -195,20 +175,13 @@ export default function Chat() {
                 </a>
               )}
             </div>
-            <div className="px-4 pb-4 space-y-3">
+            <div className="px-4 pb-4">
               <button
                 onClick={() => { setShowInfo(false); setReportOpen(true); }}
                 className="flex items-center gap-2 text-[13px] font-medium text-destructive"
               >
                 <Flag size={14} />
                 Report {otherName?.split(' ')[0]}
-              </button>
-              <button
-                onClick={() => { setShowInfo(false); setActionsOpen(true); }}
-                className="flex items-center gap-2 text-[13px] font-medium text-muted-foreground hover:text-foreground transition-colors"
-              >
-                <HeartCrack size={14} />
-                Unmatch / Block
               </button>
             </div>
           </motion.div>
@@ -217,7 +190,7 @@ export default function Chat() {
 
       {/* Messages */}
       <div className="flex-1 overflow-y-auto no-scrollbar px-4 py-4 flex flex-col gap-2.5 min-h-0">
-        <div className="text-[12px] text-muted-foreground/40 text-center mb-2">
+        <div className="text-[10px] text-muted-foreground/40 text-center mb-2">
           {new Date(match.created_date).toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' })}
         </div>
         {messages.length === 0 ? (
@@ -233,7 +206,7 @@ export default function Chat() {
             return (
               <div key={msg.id || i}>
                 {showTime && (
-                  <div className="text-[12px] text-muted-foreground/40 text-center my-3">
+                  <div className="text-[10px] text-muted-foreground/40 text-center my-3">
                     {new Date(msg.created_date).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}
                   </div>
                 )}
@@ -268,8 +241,8 @@ export default function Chat() {
               <ShieldAlert size={16} className="text-destructive flex-shrink-0 mt-0.5" />
               <div className="flex-1">
                 <p className="text-[12px] font-medium text-destructive">Message Blocked</p>
-                <p className="text-[12px] text-destructive/80 mt-0.5">{moderationWarning}</p>
-                <p className="text-[12px] text-muted-foreground mt-1">
+                <p className="text-[11px] text-destructive/80 mt-0.5">{moderationWarning}</p>
+                <p className="text-[10px] text-muted-foreground mt-1">
                   Repeated violations may result in account suspension. You can also report this conversation.
                 </p>
               </div>
@@ -317,13 +290,6 @@ export default function Chat() {
         reportedProfileName={otherName}
         matchId={matchId}
         reporterProfileId={profile.id}
-      />
-      <MatchActionsSheet
-        open={actionsOpen}
-        onClose={() => setActionsOpen(false)}
-        onUnmatch={handleUnmatch}
-        onBlock={handleBlock}
-        otherName={otherName}
       />
     </div>
   );

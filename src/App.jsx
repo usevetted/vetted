@@ -6,7 +6,6 @@ import { useEffect } from 'react';
 import { AnimatePresence, motion } from 'framer-motion';
 import PageNotFound from './lib/PageNotFound';
 import { AuthProvider, useAuth } from '@/lib/AuthContext';
-import { ThemeProvider } from '@/components/ThemeProvider';
 import UserNotRegisteredError from '@/components/UserNotRegisteredError';
 import ScrollToTop from './components/ScrollToTop';
 import LoadingScreen from './components/LoadingScreen';
@@ -27,8 +26,6 @@ import Messages from './pages/Messages';
 import Chat from './pages/Chat';
 import ProfilePage from './pages/ProfilePage';
 import PostLogin from './pages/PostLogin';
-import PrivacyPolicy from './pages/PrivacyPolicy';
-import PostJob from './pages/PostJob';
 
 const AuthenticatedApp = () => {
   const { isLoadingAuth, isLoadingPublicSettings, authError, navigateToLogin } = useAuth();
@@ -76,7 +73,6 @@ const AuthenticatedApp = () => {
       <Route path="/forgot-password" element={<ForgotPassword />} />
       <Route path="/reset-password" element={<ResetPassword />} />
       <Route path="/post-login" element={<PostLogin />} />
-      <Route path="/privacy-policy" element={<PrivacyPolicy />} />
 
       {/* Protected routes - onboarding (no layout) */}
       <Route element={<ProtectedRoute unauthenticatedElement={<Navigate to="/login" replace />} />}>
@@ -90,7 +86,6 @@ const AuthenticatedApp = () => {
           <Route path="/messages" element={<Messages />} />
           <Route path="/messages/:matchId" element={<Chat />} />
           <Route path="/profile" element={<ProfilePage />} />
-          <Route path="/post-job" element={<PostJob />} />
         </Route>
       </Route>
 
@@ -105,17 +100,15 @@ const AuthenticatedApp = () => {
 function App() {
 
   return (
-    <ThemeProvider>
-      <AuthProvider>
-        <QueryClientProvider client={queryClientInstance}>
-          <Router>
-            <ScrollToTop />
-            <AuthenticatedApp />
-          </Router>
-          <Toaster />
-        </QueryClientProvider>
-      </AuthProvider>
-    </ThemeProvider>
+    <AuthProvider>
+      <QueryClientProvider client={queryClientInstance}>
+        <Router>
+          <ScrollToTop />
+          <AuthenticatedApp />
+        </Router>
+        <Toaster />
+      </QueryClientProvider>
+    </AuthProvider>
   )
 }
 

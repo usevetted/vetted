@@ -1,10 +1,9 @@
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect } from 'react';
 import { useNavigate, useOutletContext } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { MessageCircle } from 'lucide-react';
 import { base44 } from '@/api/base44Client';
 import LoadingScreen from '@/components/LoadingScreen';
-import PullToRefresh from '@/components/PullToRefresh';
 
 export default function Messages() {
   const navigate = useNavigate();
@@ -12,9 +11,10 @@ export default function Messages() {
   const [conversations, setConversations] = useState([]);
   const [loading, setLoading] = useState(true);
 
-  const load = useCallback(async () => {
-    if (!profile) return;
-    try {
+  useEffect(() => {
+    const load = async () => {
+      if (!profile) return;
+      try {
         const m1 = await base44.entities.Match.filter({ profile1_id: profile.id, status: 'active' });
         const m2 = await base44.entities.Match.filter({ profile2_id: profile.id, status: 'active' });
         const allMatches = [...m1, ...m2].sort((a, b) => new Date(b.created_date) - new Date(a.created_date));
@@ -49,13 +49,11 @@ export default function Messages() {
       } finally {
         setLoading(false);
       }
+    };
+    load();
   }, [profile]);
 
-  useEffect(() => {
-    load();
-  }, [load]);
-
-  const formatTime = useCallback((dateStr) => {
+  const formatTime = (dateStr) => {
     if (!dateStr) return '';
     const date = new Date(dateStr);
     const now = new Date();
@@ -66,7 +64,7 @@ export default function Messages() {
       return date.toLocaleDateString('en-US', { weekday: 'short' });
     }
     return date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
-  }, []);
+  };
 
   return (
     <div className="flex-1 flex flex-col min-h-0">
@@ -77,7 +75,7 @@ export default function Messages() {
         </p>
       </div>
 
-      <PullToRefresh onRefresh={load} className="flex-1 overflow-y-auto no-scrollbar px-3 pb-6 min-h-0">
+      <div className="flex-1 overflow-y-auto no-scrollbar px-3 pb-6 min-h-0">
         {loading ? (
           <LoadingScreen fullscreen={false} />
         ) : conversations.length === 0 ? (
@@ -115,7 +113,7 @@ export default function Messages() {
                 <div className="flex-1 min-w-0">
                   <div className="flex items-center justify-between mb-0.5">
                     <span className="text-[14px] font-medium text-foreground truncate">{convo.otherName}</span>
-                    <span className="text-[12px] text-muted-foreground/60 flex-shrink-0 ml-2">{formatTime(convo.lastMessageTime)}</span>
+                    <span className="text-[10px] text-muted-foreground/60 flex-shrink-0 ml-2">{formatTime(convo.lastMessageTime)}</span>
                   </div>
                   <p className={`text-[12px] truncate ${convo.hasMessages ? 'text-muted-foreground' : 'text-muted-foreground/50 italic'}`}>
                     {convo.lastMessage}
@@ -125,7 +123,7 @@ export default function Messages() {
             ))}
           </div>
         )}
-      </PullToRefresh>
+      </div>
     </div>
   );
 }

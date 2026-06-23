@@ -86,7 +86,7 @@ export default function AppLayout() {
                 <button
                   key={item.path}
                   onClick={() => navigate(item.path)}
-                  className="flex flex-col items-center justify-center gap-1 min-w-[44px] min-h-[44px] px-3 py-2 transition-colors group"
+                  className="flex flex-col items-center gap-1 px-5 py-1.5 transition-colors group"
                 >
                   <Icon
                     size={22}
@@ -94,7 +94,7 @@ export default function AppLayout() {
                     className={`transition-colors ${active ? 'text-primary' : 'text-muted-foreground/60 group-hover:text-muted-foreground'}`}
                   />
                   <span
-                    className={`text-[12px] font-medium tracking-wide transition-colors ${
+                    className={`text-[10px] font-medium tracking-wide transition-colors ${
                       active ? 'text-primary' : 'text-muted-foreground/60 group-hover:text-muted-foreground'
                     }`}
                   >

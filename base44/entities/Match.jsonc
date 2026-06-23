@@ -51,8 +51,7 @@
       "type": "string",
       "enum": [
         "active",
-        "archived",
-        "blocked"
+        "archived"
       ],
       "default": "active"
     }

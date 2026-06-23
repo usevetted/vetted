@@ -89,7 +89,7 @@ export default function FilterSheet({ open, onClose, filters, setFilters, isRecr
                     onChange={(e) => setFilters({ ...filters, distance: parseInt(e.target.value) })}
                     className="w-full accent-primary"
                   />
-                  <div className="flex justify-between text-[12px] text-muted-foreground/50 mt-1">
+                  <div className="flex justify-between text-[10px] text-muted-foreground/50 mt-1">
                     <span>5 mi</span>
                     <span>100 mi</span>
                   </div>
@@ -109,7 +109,7 @@ export default function FilterSheet({ open, onClose, filters, setFilters, isRecr
                       className="w-full h-[44px] border border-input rounded-xl pl-10 pr-3.5 text-[14px] bg-muted/30 focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all"
                     />
                   </div>
-                  <p className="text-[12px] text-muted-foreground/60 mt-1.5">Filter candidates near this location</p>
+                  <p className="text-[11px] text-muted-foreground/60 mt-1.5">Filter candidates near this location</p>
                 </div>
               )}
 

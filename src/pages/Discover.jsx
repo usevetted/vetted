@@ -1,14 +1,13 @@
-import { useState, useEffect, useCallback, useMemo, useRef } from 'react';
+import { useState, useEffect, useCallback, useMemo } from 'react';
 import { useNavigate, useOutletContext } from 'react-router-dom';
 import { AnimatePresence, motion } from 'framer-motion';
-import { X, Heart, Star, SlidersHorizontal, Plus, Briefcase } from 'lucide-react';
+import { X, Heart, Star, SlidersHorizontal } from 'lucide-react';
 import Logo from '@/components/Logo';
 import SwipeCard from '@/components/SwipeCard';
 import MatchOverlay from '@/components/MatchOverlay';
 import FilterSheet from '@/components/FilterSheet';
 import { base44 } from '@/api/base44Client';
 import LoadingScreen from '@/components/LoadingScreen';
-import PullToRefresh from '@/components/PullToRefresh';
 
 export default function Discover() {
   const navigate = useNavigate();
@@ -19,11 +18,8 @@ export default function Discover() {
   const [triggerAction, setTriggerAction] = useState(null);
   const [filterOpen, setFilterOpen] = useState(false);
   const [filters, setFilters] = useState({ remoteOnly: false, inPersonOnly: false, openToWork: false, sortBy: 'newest', distance: 50, location: '' });
-  const [profileDropdownOpen, setProfileDropdownOpen] = useState(false);
-  const profileDropdownRef = useRef(null);
-  const profileButtonRef = useRef(null);
 
-  const isRecruiter = useMemo(() => profile?.account_type === 'recruiter', [profile?.account_type]);
+  const isRecruiter = profile?.account_type === 'recruiter';
 
   const cards = useMemo(() => {
     let filtered = [...allCards];
@@ -130,21 +126,10 @@ export default function Discover() {
     setTriggerAction(action);
   };
 
-  const initials = useMemo(() => profile?.full_name?.split(' ').map(n => n[0]).join('').slice(0, 2).toUpperCase() || 'U', [profile?.full_name]);
-
-  useEffect(() => {
-    if (!profileDropdownOpen) return;
-    const handleClickOutside = (e) => {
-      if (profileDropdownRef.current && !profileDropdownRef.current.contains(e.target) && !profileButtonRef.current?.contains(e.target)) {
-        setProfileDropdownOpen(false);
-      }
-    };
-    document.addEventListener('mousedown', handleClickOutside);
-    return () => document.removeEventListener('mousedown', handleClickOutside);
-  }, [profileDropdownOpen]);
+  const initials = profile?.full_name?.split(' ').map(n => n[0]).join('').slice(0, 2).toUpperCase() || 'U';
 
   return (
-    <PullToRefresh onRefresh={loadCards} className="flex-1 flex flex-col bg-secondary/30 min-h-0 relative">
+    <div className="flex-1 flex flex-col bg-secondary/30 min-h-0 relative">
       {/* Header */}
       <div className="flex items-center justify-between px-5 pt-2 pb-3 relative z-10">
         <Logo size="sm" />
@@ -155,61 +140,16 @@ export default function Discover() {
           >
             <SlidersHorizontal size={18} className="text-muted-foreground" />
           </button>
-          
-          {/* Profile dropdown */}
-          <div className="relative">
-            <button
-              ref={profileButtonRef}
-              onClick={() => setProfileDropdownOpen(!profileDropdownOpen)}
-              className="w-11 h-11 rounded-full bg-brand-green-light flex items-center justify-center text-[12px] font-semibold text-primary overflow-hidden border border-border/50 shadow-sm cursor-pointer hover:shadow-md transition-shadow"
-            >
-              {profile?.profile_picture ? (
-                <img src={profile.profile_picture} alt="" className="w-full h-full object-cover" />
-              ) : (
-                initials
-              )}
-            </button>
-
-            <AnimatePresence>
-              {profileDropdownOpen && (
-                <motion.div
-                  ref={profileDropdownRef}
-                  initial={{ opacity: 0, scale: 0.9, y: -8 }}
-                  animate={{ opacity: 1, scale: 1, y: 0 }}
-                  exit={{ opacity: 0, scale: 0.9, y: -8 }}
-                  transition={{ duration: 0.15 }}
-                  className="absolute top-full right-0 mt-2 bg-white dark:bg-card border border-border/50 rounded-2xl shadow-lg p-2 w-40 z-50"
-                >
-                  {isRecruiter && (
-                    <button
-                      onClick={() => {
-                        navigate('/post-job');
-                        setProfileDropdownOpen(false);
-                      }}
-                      className="w-full flex items-center gap-3 px-3 py-3 rounded-xl hover:bg-muted/50 transition-colors text-left"
-                    >
-                      <div className="w-8 h-8 rounded-lg bg-primary/10 flex items-center justify-center flex-shrink-0">
-                        <Plus size={16} className="text-primary" />
-                      </div>
-                      <span className="text-[13px] font-medium text-foreground">Post Job</span>
-                    </button>
-                  )}
-                  <button
-                    onClick={() => {
-                      setFilterOpen(true);
-                      setProfileDropdownOpen(false);
-                    }}
-                    className="w-full flex items-center gap-3 px-3 py-3 rounded-xl hover:bg-muted/50 transition-colors text-left"
-                  >
-                    <div className="w-8 h-8 rounded-lg bg-muted/50 flex items-center justify-center flex-shrink-0">
-                      <SlidersHorizontal size={16} className="text-muted-foreground" />
-                    </div>
-                    <span className="text-[13px] font-medium text-foreground">Filters</span>
-                  </button>
-                </motion.div>
-              )}
-            </AnimatePresence>
-          </div>
+          <button
+            onClick={() => navigate('/profile')}
+            className="w-11 h-11 rounded-full bg-brand-green-light flex items-center justify-center text-[11px] font-semibold text-primary overflow-hidden border border-border/50 shadow-sm cursor-pointer"
+          >
+            {profile?.profile_picture ? (
+              <img src={profile.profile_picture} alt="" className="w-full h-full object-cover" />
+            ) : (
+              initials
+            )}
+          </button>
         </div>
       </div>
 
@@ -290,7 +230,7 @@ export default function Discover() {
         setFilters={setFilters}
         isRecruiter={isRecruiter}
       />
-    </PullToRefresh>
+    </div>
   );
 }
 
