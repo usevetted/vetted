@@ -5,6 +5,7 @@ import { ArrowLeft, Send, Info, Linkedin, ShieldAlert, Flag, X } from 'lucide-re
 import { base44 } from '@/api/base44Client';
 import { moderateContent } from '@/lib/contentModeration';
 import ReportUserSheet from '@/components/ReportUserSheet';
+import LoadingScreen from '@/components/LoadingScreen';
 
 export default function Chat() {
   const { matchId } = useParams();
@@ -89,11 +90,7 @@ export default function Chat() {
   };
 
   if (loading) {
-    return (
-      <div className="flex-1 flex items-center justify-center">
-        <div className="w-7 h-7 border-2 border-secondary border-t-primary rounded-full animate-spin" />
-      </div>
-    );
+    return <LoadingScreen fullscreen={false} />;
   }
 
   if (!match) {

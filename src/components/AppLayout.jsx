@@ -3,6 +3,7 @@ import { LayoutGrid, Heart, MessageCircle, User } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import { base44 } from '@/api/base44Client';
 import { useAuth } from '@/lib/AuthContext';
+import LoadingScreen from '@/components/LoadingScreen';
 
 const navItems = [
   { icon: LayoutGrid, label: 'Discover', path: '/discover' },
@@ -47,11 +48,7 @@ export default function AppLayout() {
   }, [user, navigate, retryCount]);
 
   if (loading || (!profile && !error)) {
-    return (
-      <div className="fixed inset-0 flex items-center justify-center bg-white">
-        <div className="w-7 h-7 border-2 border-secondary border-t-primary rounded-full animate-spin"></div>
-      </div>
-    );
+    return <LoadingScreen />;
   }
 
   if (error) {

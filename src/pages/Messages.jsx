@@ -1,9 +1,10 @@
 import { useState, useEffect } from 'react';
 import { useNavigate, useOutletContext } from 'react-router-dom';
 import { motion } from 'framer-motion';
-import { MessageCircle, Linkedin } from 'lucide-react';
+import { MessageCircle } from 'lucide-react';
 import Logo from '@/components/Logo';
 import { base44 } from '@/api/base44Client';
+import LoadingScreen from '@/components/LoadingScreen';
 
 export default function Messages() {
   const navigate = useNavigate();
@@ -80,9 +81,7 @@ export default function Messages() {
 
       <div className="flex-1 overflow-y-auto no-scrollbar px-5 pb-6 min-h-0">
         {loading ? (
-          <div className="flex justify-center mt-8">
-            <div className="w-7 h-7 border-2 border-secondary border-t-primary rounded-full animate-spin" />
-          </div>
+          <LoadingScreen fullscreen={false} />
         ) : conversations.length === 0 ? (
           <div className="flex flex-col items-center text-center pt-16 px-6">
             <div className="w-16 h-16 rounded-full bg-brand-green-bg flex items-center justify-center mb-4">

@@ -7,6 +7,7 @@ import SwipeCard from '@/components/SwipeCard';
 import MatchOverlay from '@/components/MatchOverlay';
 import FilterSheet from '@/components/FilterSheet';
 import { base44 } from '@/api/base44Client';
+import LoadingScreen from '@/components/LoadingScreen';
 
 export default function Discover() {
   const navigate = useNavigate();
@@ -185,7 +186,7 @@ export default function Discover() {
       {/* Card area */}
       <div className="flex-1 flex flex-col items-center justify-center px-5 py-3 relative min-h-0">
         {loading ? (
-          <div className="w-7 h-7 border-2 border-secondary border-t-primary rounded-full animate-spin" />
+          <LoadingScreen fullscreen={false} />
         ) : cards.length === 0 ? (
           <EmptyState onRefresh={loadCards} />
         ) : (

@@ -8,6 +8,7 @@ import PickerSheet from '@/components/PickerSheet';
 import LocationAutocomplete from '@/components/LocationAutocomplete';
 import ResumeUpload from '@/components/ResumeUpload';
 import { base44 } from '@/api/base44Client';
+import LoadingScreen from '@/components/LoadingScreen';
 import { yearsOptions } from '@/lib/profileConstants';
 
 export default function ProfileSetup() {
@@ -175,11 +176,7 @@ Write only the bio text, no quotes, no preamble.`;
   };
 
   if (loading) {
-    return (
-      <div className="fixed inset-0 flex items-center justify-center bg-white">
-        <div className="w-7 h-7 border-2 border-secondary border-t-primary rounded-full animate-spin"></div>
-      </div>
-    );
+    return <LoadingScreen />;
   }
 
   const inputClass = "w-full h-[44px] border border-input rounded-xl px-3.5 text-[14px] text-foreground bg-muted/30 focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all";
