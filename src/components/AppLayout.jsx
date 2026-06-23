@@ -1,9 +1,10 @@
 import { Outlet, useNavigate, useLocation } from 'react-router-dom';
-import { LayoutGrid, Heart, MessageCircle, User } from 'lucide-react';
+import { LayoutGrid, Heart, MessageCircle, User, Menu } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import { base44 } from '@/api/base44Client';
 import { useAuth } from '@/lib/AuthContext';
 import LoadingScreen from '@/components/LoadingScreen';
+import MainMenu from '@/components/MainMenu';
 
 const navItems = [
   { icon: LayoutGrid, label: 'Discover', path: '/discover' },
@@ -20,6 +21,7 @@ export default function AppLayout() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(false);
   const [retryCount, setRetryCount] = useState(0);
+  const [menuOpen, setMenuOpen] = useState(false);
 
   useEffect(() => {
     const loadProfile = async (attempt = 0) => {
@@ -75,6 +77,15 @@ export default function AppLayout() {
     <div className="h-[100dvh] bg-white overflow-hidden">
       <div className="w-full h-[100dvh] relative flex flex-col overflow-hidden">
         <main className="flex-1 overflow-hidden flex flex-col pt-[env(safe-area-inset-top)] min-h-0">
+          {/* Header with hamburger */}
+          <div className="px-5 py-3 flex-shrink-0 flex items-center border-b border-border/50">
+            <button
+              onClick={() => setMenuOpen(true)}
+              className="flex items-center justify-center w-8 h-8 rounded-lg hover:bg-muted/50 transition-colors"
+            >
+              <Menu size={20} className="text-foreground" />
+            </button>
+          </div>
           <Outlet context={{ profile, setProfile }} />
         </main>
         <nav className="sticky bottom-0 z-50 bg-white/90 glass border-t border-border/50 px-2 pb-[env(safe-area-inset-bottom)] flex-shrink-0">
@@ -106,6 +117,7 @@ export default function AppLayout() {
           </div>
         </nav>
       </div>
+      <MainMenu open={menuOpen} onClose={() => setMenuOpen(false)} />
     </div>
   );
 }
