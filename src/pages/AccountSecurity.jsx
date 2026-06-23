@@ -1,5 +1,5 @@
 import { useState, useCallback } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useLocation } from 'react-router-dom';
 import { ArrowLeft, Mail, Lock, Smartphone, LogOut, AlertCircle } from 'lucide-react';
 import Logo from '@/components/Logo';
 import { base44 } from '@/api/base44Client';
@@ -206,7 +206,12 @@ export default function AccountSecurity() {
           {showChangePassword && (
             <div className="space-y-3 p-4 bg-muted/30 rounded-xl">
               <p className="text-[11px] text-muted-foreground/60">
-                <a href="/forgot-password" className="hover:text-muted-foreground transition-colors">Forgot password?</a>
+                <button 
+                  onClick={() => navigate('/forgot-password', { state: { fromProfile: true } })}
+                  className="text-primary hover:text-muted-foreground transition-colors"
+                >
+                  Forgot password?
+                </button>
               </p>
               <div>
                 <label className={labelClass}>Current Password</label>
