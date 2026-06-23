@@ -208,7 +208,6 @@ export default function MenuDrawer({ open, onClose, user, profile }) {
       id: 'settings',
       label: 'Account Settings',
       options: [
-        { label: 'Email address', action: 'changeEmail', value: user?.email || 'Not set' },
         { label: 'Notification preferences', toggle: true, value: notificationsEnabled, onChange: setNotificationsEnabled },
       ],
     },
@@ -217,7 +216,6 @@ export default function MenuDrawer({ open, onClose, user, profile }) {
       label: 'Account Security',
       options: [
         { label: 'Change password', action: 'changePassword' },
-        { label: '2FA Setup', action: '2fa' },
         { label: 'Active sessions', action: 'sessions' },
         { label: 'Deactivate Account', action: 'deactivate' },
         { label: 'Delete Account', action: 'delete' },
@@ -291,51 +289,50 @@ export default function MenuDrawer({ open, onClose, user, profile }) {
                           {/* Account Settings content */}
                           {section.id === 'settings' && (
                             <div className="space-y-3">
+                              <div className="space-y-2 pb-3 border-b border-border/30">
+                                <p className="text-[13px] text-foreground font-medium">Email address</p>
+                                <p className="text-[11px] text-muted-foreground">{user?.email || 'Not set'}</p>
+                                <button
+                                  onClick={() => setShowEmailChange(!showEmailChange)}
+                                  className="text-[11px] font-medium text-primary hover:underline transition-colors"
+                                >
+                                  {showEmailChange ? 'Cancel' : 'Change email'}
+                                </button>
+                                {showEmailChange && (
+                                  <div className="mt-2 p-3 bg-primary/5 rounded-lg space-y-2 border border-primary/20">
+                                    {!emailChangeSent ? (
+                                      <>
+                                        <input
+                                          type="email"
+                                          placeholder="New email address"
+                                          value={emailForm.new}
+                                          onChange={(e) => setEmailForm({ ...emailForm, new: e.target.value })}
+                                          className="w-full h-[36px] border border-input rounded-lg px-2.5 text-[12px] bg-card focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary"
+                                        />
+                                        <input
+                                          type="email"
+                                          placeholder="Confirm email address"
+                                          value={emailForm.confirm}
+                                          onChange={(e) => setEmailForm({ ...emailForm, confirm: e.target.value })}
+                                          className="w-full h-[36px] border border-input rounded-lg px-2.5 text-[12px] bg-card focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary"
+                                        />
+                                        {emailError && <p className="text-[11px] text-destructive">{emailError}</p>}
+                                        <button
+                                          onClick={handleChangeEmail}
+                                          disabled={emailLoading}
+                                          className="w-full h-[34px] bg-primary text-white text-[12px] font-medium rounded-lg hover:bg-primary/90 disabled:opacity-50 transition-colors"
+                                        >
+                                          {emailLoading ? 'Sending...' : 'Send Verification Email'}
+                                        </button>
+                                      </>
+                                    ) : (
+                                      <p className="text-[12px] text-green-600">Verification email sent to {emailForm.new}. Check your inbox to confirm the change.</p>
+                                    )}
+                                  </div>
+                                )}
+                              </div>
                               {section.options.map((opt, i) => (
                                 <div key={i}>
-                                  {opt.action === 'changeEmail' && (
-                                    <>
-                                      <button
-                                        onClick={() => setShowEmailChange(!showEmailChange)}
-                                        className="text-[13px] text-foreground py-2 hover:text-primary transition-colors text-left"
-                                      >
-                                        {opt.label}
-                                      </button>
-                                      <p className="text-[11px] text-muted-foreground mb-2">{opt.value}</p>
-                                      {showEmailChange && (
-                                        <div className="mt-2 p-3 bg-primary/5 rounded-lg space-y-2 border border-primary/20">
-                                          {!emailChangeSent ? (
-                                            <>
-                                              <input
-                                                type="email"
-                                                placeholder="New email address"
-                                                value={emailForm.new}
-                                                onChange={(e) => setEmailForm({ ...emailForm, new: e.target.value })}
-                                                className="w-full h-[36px] border border-input rounded-lg px-2.5 text-[12px] bg-card focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary"
-                                              />
-                                              <input
-                                                type="email"
-                                                placeholder="Confirm email address"
-                                                value={emailForm.confirm}
-                                                onChange={(e) => setEmailForm({ ...emailForm, confirm: e.target.value })}
-                                                className="w-full h-[36px] border border-input rounded-lg px-2.5 text-[12px] bg-card focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary"
-                                              />
-                                              {emailError && <p className="text-[11px] text-destructive">{emailError}</p>}
-                                              <button
-                                                onClick={handleChangeEmail}
-                                                disabled={emailLoading}
-                                                className="w-full h-[34px] bg-primary text-white text-[12px] font-medium rounded-lg hover:bg-primary/90 disabled:opacity-50 transition-colors"
-                                              >
-                                                {emailLoading ? 'Sending...' : 'Send Verification Email'}
-                                              </button>
-                                            </>
-                                          ) : (
-                                            <p className="text-[12px] text-green-600">Verification email sent to {emailForm.new}. Check your inbox to confirm the change.</p>
-                                          )}
-                                        </div>
-                                      )}
-                                    </>
-                                  )}
                                   {opt.toggle && (
                                     <div className="flex items-center justify-between py-2">
                                       <span className="text-[13px] text-foreground">{opt.label}</span>
@@ -359,29 +356,20 @@ export default function MenuDrawer({ open, onClose, user, profile }) {
                           {/* Account Security content */}
                           {section.id === 'security' && (
                             <div className="space-y-3">
-                              {section.options.map((opt, i) => (
-                                <div key={i}>
-                                  {opt.action === '2fa' && (
-                                    <>
-                                      <button
-                                        onClick={handleToggle2FA}
-                                        className="flex items-center justify-between py-2 w-full text-left"
-                                      >
-                                        <span className="text-[13px] text-foreground">Two-factor authentication</span>
-                                        <button
-                                          onClick={(e) => {
-                                            e.stopPropagation();
-                                            handleToggle2FA();
-                                          }}
-                                          className={`w-10 h-6 rounded-full relative flex-shrink-0 transition-colors duration-200 ${twoFaEnabled ? 'bg-primary' : 'bg-muted-foreground/30'}`}
-                                        >
-                                          <motion.div
-                                            layout
-                                            transition={{ type: 'spring', stiffness: 500, damping: 30 }}
-                                            className={`absolute top-0.5 w-5 h-5 rounded-full bg-white ${twoFaEnabled ? 'right-0.5' : 'left-0.5'}`}
-                                          />
-                                        </button>
-                                      </button>
+                              <div className="space-y-2 pb-3 border-b border-border/30">
+                                <div className="flex items-center justify-between">
+                                  <span className="text-[13px] font-medium text-foreground">Two-factor authentication</span>
+                                  <button
+                                    onClick={handleToggle2FA}
+                                    className={`w-10 h-6 rounded-full relative flex-shrink-0 transition-colors duration-200 ${twoFaEnabled ? 'bg-primary' : 'bg-muted-foreground/30'}`}
+                                  >
+                                    <motion.div
+                                      layout
+                                      transition={{ type: 'spring', stiffness: 500, damping: 30 }}
+                                      className={`absolute top-0.5 w-5 h-5 rounded-full bg-white ${twoFaEnabled ? 'right-0.5' : 'left-0.5'}`}
+                                    />
+                                  </button>
+                                </div>
                                       {twoFaSetup && !twoFaEnabled && (
                                         <div className="mt-2 p-3 bg-primary/5 rounded-lg space-y-2 border border-primary/20">
                                           <p className="text-[12px] text-foreground font-medium mb-2">Scan with Google Authenticator:</p>
@@ -441,10 +429,11 @@ export default function MenuDrawer({ open, onClose, user, profile }) {
                                               {twoFaLoading ? 'Disabling...' : 'Disable'}
                                             </button>
                                           </div>
-                                        </div>
-                                      )}
-                                    </>
-                                  )}
+                                          </div>
+                                          )}
+                                          </div>
+                                          {section.options.map((opt, i) => (
+                                <div key={i}>
                                   {opt.action === 'changePassword' && (
                                     <>
                                       <button
