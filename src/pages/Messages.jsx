@@ -69,7 +69,7 @@ export default function Messages() {
   }, []);
 
   return (
-    <div className="flex-1 flex flex-col min-h-0">
+    <div className="flex-1 flex flex-col min-h-0 bg-background">
       <div className="px-5 pt-3 pb-2 flex-shrink-0">
         <h1 className="text-[22px] font-semibold text-foreground">Messages</h1>
         <p className="text-[13px] text-muted-foreground mt-0.5">

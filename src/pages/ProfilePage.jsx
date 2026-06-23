@@ -134,7 +134,7 @@ export default function ProfilePage() {
   const labelClass = "text-[12px] font-medium text-foreground/70 mb-1.5 block";
 
   return (
-    <div className="flex-1 flex flex-col overflow-y-auto no-scrollbar min-h-0">
+    <div className="flex-1 flex flex-col overflow-y-auto no-scrollbar min-h-0 bg-background">
       {/* Header */}
       <div className="flex items-center justify-between px-5 pt-2 pb-3 relative z-10">
         <Logo size="sm" />

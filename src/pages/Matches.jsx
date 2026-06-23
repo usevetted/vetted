@@ -42,7 +42,7 @@ export default function Matches() {
   };
 
   return (
-    <div className="flex-1 flex flex-col min-h-0">
+    <div className="flex-1 flex flex-col min-h-0 bg-background">
       <div className="px-5 pt-3 pb-2 flex-shrink-0">
         <h1 className="text-[22px] font-semibold text-foreground">Matches</h1>
         <p className="text-[13px] text-muted-foreground mt-0.5">
@@ -79,7 +79,7 @@ export default function Matches() {
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ duration: 0.3, delay: i * 0.04 }}
                   onClick={() => navigate(`/messages/${match.id}`)}
-                  className="flex flex-col rounded-2xl bg-white border border-border/60 overflow-hidden hover:border-primary/20 hover:shadow-md transition-all text-left group"
+                  className="flex flex-col rounded-2xl bg-card border border-border/60 overflow-hidden hover:border-primary/20 hover:shadow-md transition-all text-left group"
                 >
                   {/* Square photo / initials */}
                   <div className="relative aspect-square w-full bg-gradient-to-br from-brand-green-bg to-secondary/40 flex items-center justify-center overflow-hidden">

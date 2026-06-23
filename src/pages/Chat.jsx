@@ -128,9 +128,9 @@ export default function Chat() {
   const initials = otherName?.split(' ').map(n => n[0]).join('').slice(0, 2).toUpperCase() || 'U';
 
   return (
-    <div className="flex-1 flex flex-col bg-white min-h-0">
+    <div className="flex-1 flex flex-col bg-background min-h-0">
       {/* Chat header */}
-      <div className="flex items-center gap-3 px-4 pt-2 pb-3 border-b border-border/50 bg-white relative z-10">
+      <div className="flex items-center gap-3 px-4 pt-2 pb-3 border-b border-border/50 bg-background relative z-10">
         <button onClick={() => navigate('/messages')} className="p-1 -ml-1">
           <ArrowLeft size={20} className="text-primary" />
         </button>
@@ -282,7 +282,7 @@ export default function Chat() {
       </AnimatePresence>
 
       {/* Input */}
-      <div className="px-4 pt-2 pb-6 border-t border-border/50 bg-white">
+      <div className="px-4 pt-2 pb-6 border-t border-border/50 bg-background">
         <div className="flex items-center gap-2.5">
           <input
             value={input}
