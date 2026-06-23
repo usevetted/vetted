@@ -90,7 +90,7 @@ export default function CreatePost() {
     setTimeout(() => {
       setSubmitting(false);
       navigate(-1);
-    }, 1200);
+    }, 2100);
   };
 
   const inputClass = "w-full h-[44px] border border-input rounded-xl px-3.5 text-[14px] text-foreground bg-muted/30 focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all";
@@ -255,7 +255,7 @@ export default function CreatePost() {
         </div>
 
         {/* Submit Button (Fixed at bottom) */}
-        <div className="px-6 py-5 bg-white border-t border-border/30 flex-shrink-0 shadow-lg pb-[calc(5rem+env(safe-area-inset-bottom))]">
+        <div className="px-6 py-5 bg-white border-t border-border/30 flex-shrink-0 shadow-lg" style={{ paddingBottom: 'calc(5rem + env(safe-area-inset-bottom))' }}>
           <button
             type="button"
             onClick={handleSubmit}
