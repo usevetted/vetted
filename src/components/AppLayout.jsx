@@ -1,8 +1,10 @@
 import { Outlet, useNavigate, useLocation } from 'react-router-dom';
-import { LayoutGrid, Heart, MessageCircle, User } from 'lucide-react';
+import { LayoutGrid, Heart, MessageCircle, User, ArrowLeft } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import { base44 } from '@/api/base44Client';
 import { useAuth } from '@/lib/AuthContext';
+import { useNavigation } from '@/lib/NavigationContext';
+import Logo from '@/components/Logo';
 import LoadingScreen from '@/components/LoadingScreen';
 
 const navItems = [
@@ -16,16 +18,11 @@ export default function AppLayout() {
   const navigate = useNavigate();
   const location = useLocation();
   const { user } = useAuth();
+  const { tabHistory, updateTabHistory, resetTabStack } = useNavigation();
   const [profile, setProfile] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(false);
   const [retryCount, setRetryCount] = useState(0);
-  const [tabHistory, setTabHistory] = useState({
-    '/discover': '/discover',
-    '/matches': '/matches',
-    '/messages': '/messages',
-    '/profile': '/profile',
-  });
 
   useEffect(() => {
     const loadProfile = async (attempt = 0) => {
@@ -62,9 +59,30 @@ export default function AppLayout() {
   useEffect(() => {
     const rootPath = navItems.find(item => location.pathname.startsWith(item.path))?.path;
     if (rootPath) {
-      setTabHistory(prev => ({ ...prev, [rootPath]: location.pathname }));
+      updateTabHistory(rootPath, location.pathname);
     }
-  }, [location.pathname]);
+  }, [location.pathname, updateTabHistory]);
+
+  // Determine if we're at a root tab screen
+  const isRootScreen = navItems.some(item => location.pathname === item.path);
+  const rootPath = navItems.find(item => location.pathname.startsWith(item.path))?.path;
+  const activeTab = navItems.find(item => item.path === rootPath);
+
+  const handleTabClick = (item) => {
+    const isCurrentTab = location.pathname.startsWith(item.path);
+    if (isCurrentTab && !isRootScreen) {
+      // Reset to root if clicking active tab from non-root screen
+      resetTabStack(item.path);
+      navigate(item.path);
+    } else if (!isCurrentTab) {
+      // Navigate to saved history for this tab
+      navigate(tabHistory[item.path]);
+    }
+  };
+
+  const handleBack = () => {
+    navigate(-1);
+  };
 
   if (loading || (!profile && !error)) {
     return <LoadingScreen />;
@@ -87,20 +105,52 @@ export default function AppLayout() {
   return (
     <div className="h-[100dvh] bg-background overflow-hidden">
       <div className="w-full h-[100dvh] relative flex flex-col overflow-hidden">
-        <main className="flex-1 overflow-hidden flex flex-col pt-[env(safe-area-inset-top)] min-h-0">
+        {/* Smart Header */}
+        <header className="sticky top-0 z-40 bg-background/95 glass border-b border-border/50 px-4 py-3 flex items-center justify-between pt-[env(safe-area-inset-top)]" role="banner">
+          <div className="flex items-center gap-3 flex-1">
+            {!isRootScreen && (
+              <button
+                onClick={handleBack}
+                className="p-2 -ml-2 hover:bg-muted/50 rounded-lg transition-colors flex-shrink-0"
+                aria-label="Go back"
+              >
+                <ArrowLeft size={20} className="text-primary" />
+              </button>
+            )}
+            {isRootScreen && activeTab ? (
+              <div className="flex items-center gap-2">
+                <Logo size="sm" />
+                <span className="text-[14px] font-semibold text-foreground hidden sm:inline">{activeTab.label}</span>
+              </div>
+            ) : (
+              <div className="flex-1" />
+            )}
+          </div>
+        </header>
+
+        {/* Main Content */}
+        <main className="flex-1 overflow-hidden flex flex-col min-h-0">
           <Outlet context={{ profile, setProfile }} />
         </main>
-        <nav className="sticky bottom-0 z-50 bg-background/90 glass border-t border-border/50 px-2 pb-[env(safe-area-inset-bottom)] flex-shrink-0">
+
+        {/* Bottom Navigation */}
+        <nav
+          className="sticky bottom-0 z-50 bg-background/90 glass border-t border-border/50 px-2 pb-[env(safe-area-inset-bottom)] flex-shrink-0"
+          role="navigation"
+          aria-label="Main navigation"
+        >
           <div className="flex items-center justify-around max-w-[600px] mx-auto py-2">
             {navItems.map((item) => {
-               const active = location.pathname.startsWith(item.path);
-               const Icon = item.icon;
-               return (
-                 <button
-                   key={item.path}
-                   onClick={() => navigate(tabHistory[item.path])}
-                   className="flex flex-col items-center justify-center gap-1 min-w-[44px] min-h-[44px] px-3 py-2 transition-colors group"
-                 >
+              const active = location.pathname.startsWith(item.path);
+              const Icon = item.icon;
+              return (
+                <button
+                  key={item.path}
+                  onClick={() => handleTabClick(item)}
+                  aria-current={active ? 'page' : undefined}
+                  aria-label={`${item.label} tab`}
+                  className="flex flex-col items-center justify-center gap-1 min-w-[44px] min-h-[44px] px-3 py-2 transition-colors group focus:outline-none focus:ring-2 focus:ring-primary/50 rounded-lg"
+                >
                   <Icon
                     size={22}
                     strokeWidth={active ? 2.5 : 1.8}

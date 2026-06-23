@@ -43,6 +43,8 @@ export default function SwipeCard({ card, type, onSwipe, isTop, index, triggerAc
       initial={{ scale: isTop ? 1 : 0.95, y: isTop ? 0 : 8 }}
       animate={{ scale: isTop ? 1 : 0.95, y: isTop ? 0 : 8 }}
       transition={{ type: 'spring', stiffness: 300, damping: 30 }}
+      role="region"
+      aria-label={type === 'job' ? `Job card: ${card?.title}` : `Candidate card: ${card?.full_name}`}
     >
       <motion.div
         drag={isTop && !exitDir}
@@ -53,7 +55,7 @@ export default function SwipeCard({ card, type, onSwipe, isTop, index, triggerAc
         animate={exitDir ? exitVariants[exitDir] : {}}
         transition={exitDir ? { duration: 0.4, ease: [0.32, 0, 0.67, 0] } : { type: 'spring', stiffness: 300, damping: 30 }}
         onAnimationComplete={() => { if (exitDir) onSwipe(exitDir); }}
-        className="relative w-full h-full bg-white rounded-[24px] border border-border/40 shadow-[0_12px_50px_rgba(0,0,0,0.12)] overflow-hidden cursor-grab active:cursor-grabbing flex flex-col"
+        className="relative w-full h-full bg-white dark:bg-card rounded-[24px] border border-border/40 shadow-[0_12px_50px_rgba(0,0,0,0.12)] overflow-hidden cursor-grab active:cursor-grabbing flex flex-col"
       >
         {isTop && (
           <>
@@ -160,9 +162,10 @@ function JobCardContent({ card }) {
               rel="noopener noreferrer"
               onClick={(e) => e.stopPropagation()}
               onPointerDown={(e) => e.stopPropagation()}
-              className="flex items-center gap-1.5 px-3 py-2 rounded-xl bg-linkedin text-white text-[12px] font-medium hover:opacity-90 transition-opacity flex-shrink-0"
+              className="flex items-center gap-1.5 px-3 py-2 rounded-xl bg-linkedin text-white text-[12px] font-medium hover:opacity-90 transition-opacity flex-shrink-0 focus:outline-none focus:ring-2 focus:ring-linkedin/50 focus:ring-offset-2"
+              aria-label={`View ${card.recruiter_name} profile on LinkedIn`}
             >
-              <Linkedin size={13} />
+              <Linkedin size={13} aria-hidden="true" />
               Profile
             </a>
           )}
@@ -247,9 +250,10 @@ function CandidateCardContent({ card }) {
           rel="noopener noreferrer"
           onClick={(e) => e.stopPropagation()}
           onPointerDown={(e) => e.stopPropagation()}
-          className="flex items-center gap-3 w-full p-3 rounded-2xl bg-muted/40 border border-border/30 hover:bg-muted/60 transition-colors"
+          className="flex items-center gap-3 w-full p-3 rounded-2xl bg-muted/40 border border-border/30 hover:bg-muted/60 transition-colors focus:outline-none focus:ring-2 focus:ring-linkedin/50 focus:ring-inset"
+          aria-label={`View ${card.full_name} profile on LinkedIn`}
         >
-          <div className="w-10 h-10 rounded-xl bg-linkedin flex items-center justify-center flex-shrink-0">
+          <div className="w-10 h-10 rounded-xl bg-linkedin flex items-center justify-center flex-shrink-0" aria-hidden="true">
             <Linkedin size={18} className="text-white" />
           </div>
           <div className="flex-1 min-w-0">
