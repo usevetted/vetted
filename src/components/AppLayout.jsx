@@ -1,6 +1,6 @@
 import { Outlet, useNavigate, useLocation } from 'react-router-dom';
 import { LayoutGrid, Heart, MessageCircle, User } from 'lucide-react';
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useRef } from 'react';
 import { base44 } from '@/api/base44Client';
 import { useAuth } from '@/lib/AuthContext';
 import LoadingScreen from '@/components/LoadingScreen';
@@ -20,11 +20,19 @@ export default function AppLayout() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(false);
   const [retryCount, setRetryCount] = useState(0);
+  // Cache profile per session so tab switches never show a loading screen
+  const cacheRef = useRef({ userId: null, profile: null });
 
   useEffect(() => {
     const loadProfile = async (attempt = 0) => {
       // If user is null (signed out), exit immediately and let ProtectedRoute handle redirect
       if (!user) {
+        setLoading(false);
+        return;
+      }
+      // Serve cached profile instantly on tab switches within the same session
+      if (cacheRef.current.userId === user.id && cacheRef.current.profile) {
+        setProfile(cacheRef.current.profile);
         setLoading(false);
         return;
       }
@@ -39,6 +47,7 @@ export default function AppLayout() {
           return;
         }
         setProfile(profiles[0]);
+        cacheRef.current = { userId: user.id, profile: profiles[0] };
         try {
           await base44.auth.updateMe({ profile_id: profiles[0].id });
         } catch {
