@@ -4,6 +4,8 @@ import { motion } from 'framer-motion';
 import { MessageCircle, Linkedin } from 'lucide-react';
 import { base44 } from '@/api/base44Client';
 import LoadingScreen from '@/components/LoadingScreen';
+import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs';
+import LikedYouTab from '@/components/LikedYouTab';
 
 export default function Matches() {
   const navigate = useNavigate();
@@ -47,83 +49,106 @@ export default function Matches() {
         </p>
       </div>
 
-      {loading && (
-        <div className="flex-1 flex items-center justify-center">
-          <LoadingScreen fullscreen={false} />
-        </div>
-      )}
-
-      {!loading && matches.length === 0 && (
-        <div className="flex-1 flex flex-col items-center justify-center text-center px-6">
-          <div className="w-16 h-16 rounded-full bg-brand-green-bg flex items-center justify-center mb-4">
-            <MessageCircle size={28} className="text-primary/40" />
-          </div>
-          <h3 className="text-[15px] font-semibold text-foreground mb-1">No matches yet</h3>
-          <p className="text-[13px] text-muted-foreground">Start swiping to find your next match</p>
-          <button
-            onClick={() => navigate('/discover')}
-            className="mt-5 px-5 py-2.5 rounded-xl bg-primary text-white text-[13px] font-medium"
+      <Tabs defaultValue="matches" className="flex-1 flex flex-col min-h-0">
+        <TabsList className="bg-transparent rounded-none p-0 px-5 h-auto border-b border-border/50 flex w-full justify-start gap-5 flex-shrink-0">
+          <TabsTrigger
+            value="matches"
+            className="bg-transparent rounded-none shadow-none text-[13px] font-medium py-2.5 px-0 data-[state=active]:text-primary data-[state=active]:shadow-none border-b-2 border-transparent data-[state=active]:border-primary text-muted-foreground"
           >
-            Start Swiping
-          </button>
-        </div>
-      )}
+            Matches
+          </TabsTrigger>
+          <TabsTrigger
+            value="liked-you"
+            className="bg-transparent rounded-none shadow-none text-[13px] font-medium py-2.5 px-0 data-[state=active]:text-primary data-[state=active]:shadow-none border-b-2 border-transparent data-[state=active]:border-primary text-muted-foreground"
+          >
+            Liked You
+          </TabsTrigger>
+        </TabsList>
 
-      {!loading && matches.length > 0 && (
-        <div className="flex-1 overflow-y-auto no-scrollbar px-4 pb-6 min-h-0">
-          <div className="grid grid-cols-2 gap-3">
-            {matches.map((match, i) => {
-              const { otherName, otherPicture, otherLinkedin, otherRole, initials } = getMatchDisplay(match);
-              const firstName = otherName?.split(' ')[0] || '';
-              return (
-                <motion.button
-                  key={match.id}
-                  initial={{ opacity: 0, y: 10 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ duration: 0.3, delay: i * 0.04 }}
-                  onClick={() => navigate(`/messages/${match.id}`)}
-                  className="flex flex-col rounded-2xl bg-white border border-border/60 overflow-hidden hover:border-primary/20 hover:shadow-md transition-all text-left group"
-                >
-                  {/* Square photo / initials */}
-                  <div className="relative aspect-square w-full bg-gradient-to-br from-brand-green-bg to-secondary/40 flex items-center justify-center overflow-hidden">
-                    {otherPicture ? (
-                      <img src={otherPicture} alt={otherName} className="w-full h-full object-cover" />
-                    ) : (
-                      <div className="text-[28px] font-semibold text-primary/70">
-                        {initials}
+        <TabsContent value="matches" className="flex-1 flex flex-col min-h-0 mt-0">
+          {loading && (
+            <div className="flex-1 flex items-center justify-center">
+              <LoadingScreen fullscreen={false} />
+            </div>
+          )}
+
+          {!loading && matches.length === 0 && (
+            <div className="flex-1 flex flex-col items-center justify-center text-center px-6">
+              <div className="w-16 h-16 rounded-full bg-brand-green-bg flex items-center justify-center mb-4">
+                <MessageCircle size={28} className="text-primary/40" />
+              </div>
+              <h3 className="text-[15px] font-semibold text-foreground mb-1">No matches yet</h3>
+              <p className="text-[13px] text-muted-foreground">Start swiping to find your next match</p>
+              <button
+                onClick={() => navigate('/discover')}
+                className="mt-5 px-5 py-2.5 rounded-xl bg-primary text-white text-[13px] font-medium"
+              >
+                Start Swiping
+              </button>
+            </div>
+          )}
+
+          {!loading && matches.length > 0 && (
+            <div className="flex-1 overflow-y-auto no-scrollbar px-4 pb-6 min-h-0">
+              <div className="grid grid-cols-2 gap-3">
+                {matches.map((match, i) => {
+                  const { otherName, otherPicture, otherLinkedin, otherRole, initials } = getMatchDisplay(match);
+                  const firstName = otherName?.split(' ')[0] || '';
+                  return (
+                    <motion.button
+                      key={match.id}
+                      initial={{ opacity: 0, y: 10 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      transition={{ duration: 0.3, delay: i * 0.04 }}
+                      onClick={() => navigate(`/messages/${match.id}`)}
+                      className="flex flex-col rounded-2xl bg-white border border-border/60 overflow-hidden hover:border-primary/20 hover:shadow-md transition-all text-left group"
+                    >
+                      {/* Square photo / initials */}
+                      <div className="relative aspect-square w-full bg-gradient-to-br from-brand-green-bg to-secondary/40 flex items-center justify-center overflow-hidden">
+                        {otherPicture ? (
+                          <img src={otherPicture} alt={otherName} className="w-full h-full object-cover" />
+                        ) : (
+                          <div className="text-[28px] font-semibold text-primary/70">
+                            {initials}
+                          </div>
+                        )}
+                        {/* LinkedIn badge */}
+                        {otherLinkedin && (
+                          <a
+                            href={otherLinkedin}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            onClick={(e) => e.stopPropagation()}
+                            className="absolute top-2 right-2 w-8 h-8 rounded-lg bg-white/90 glass flex items-center justify-center hover:bg-white transition-colors shadow-sm"
+                          >
+                            <Linkedin size={15} className="text-linkedin" />
+                          </a>
+                        )}
                       </div>
-                    )}
-                    {/* LinkedIn badge */}
-                    {otherLinkedin && (
-                      <a
-                        href={otherLinkedin}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        onClick={(e) => e.stopPropagation()}
-                        className="absolute top-2 right-2 w-8 h-8 rounded-lg bg-white/90 glass flex items-center justify-center hover:bg-white transition-colors shadow-sm"
-                      >
-                        <Linkedin size={15} className="text-linkedin" />
-                      </a>
-                    )}
-                  </div>
 
-                  {/* Info */}
-                  <div className="p-3">
-                    <div className="text-[14px] font-semibold text-foreground truncate">{firstName}</div>
-                    <div className="text-[11px] text-muted-foreground truncate mt-0.5">
-                      {match.job_title}{match.company_name ? ` · ${match.company_name}` : ''}
-                    </div>
-                    <div className="flex items-center gap-1 mt-2 text-[11px] text-primary font-medium">
-                      <MessageCircle size={12} />
-                      <span>Message</span>
-                    </div>
-                  </div>
-                </motion.button>
-              );
-            })}
-          </div>
-        </div>
-      )}
+                      {/* Info */}
+                      <div className="p-3">
+                        <div className="text-[14px] font-semibold text-foreground truncate">{firstName}</div>
+                        <div className="text-[11px] text-muted-foreground truncate mt-0.5">
+                          {match.job_title}{match.company_name ? ` · ${match.company_name}` : ''}
+                        </div>
+                        <div className="flex items-center gap-1 mt-2 text-[11px] text-primary font-medium">
+                          <MessageCircle size={12} />
+                          <span>Message</span>
+                        </div>
+                      </div>
+                    </motion.button>
+                  );
+                })}
+              </div>
+            </div>
+          )}
+        </TabsContent>
+
+        <TabsContent value="liked-you" className="flex-1 flex flex-col min-h-0 mt-0">
+          <LikedYouTab profile={profile} />
+        </TabsContent>
+      </Tabs>
     </div>
   );
 }
