@@ -49,8 +49,7 @@ export default function Matches() {
         </p>
       </div>
 
-      <div className="flex-1 overflow-hidden relative">
-        <Tabs defaultValue="matches" className="flex-1 flex flex-col min-h-0">
+      <Tabs defaultValue="matches" className="flex-1 flex flex-col min-h-0 overflow-hidden">
           <TabsList className="bg-transparent rounded-none p-0 px-5 h-auto border-b border-border/50 flex w-full justify-start gap-5 flex-shrink-0">
             <TabsTrigger
               value="matches"
@@ -66,7 +65,7 @@ export default function Matches() {
             </TabsTrigger>
           </TabsList>
 
-          <TabsContent value="matches" className="absolute inset-0 overflow-y-auto flex flex-col mt-0">
+          <TabsContent value="matches" className="flex-1 flex flex-col min-h-0 mt-0 overflow-hidden" style={{ display: 'flex', flexDirection: 'column' }}>
             {loading && (
               <div className="flex-1 flex items-center justify-center">
                 <LoadingScreen fullscreen={false} />
@@ -146,11 +145,10 @@ export default function Matches() {
             )}
           </TabsContent>
 
-          <TabsContent value="liked-you" className="absolute inset-0 overflow-y-auto flex flex-col mt-0">
+          <TabsContent value="liked-you" className="flex-1 flex flex-col min-h-0 mt-0 overflow-hidden" style={{ display: 'flex', flexDirection: 'column' }}>
             <LikedYouTab profile={profile} />
           </TabsContent>
         </Tabs>
-      </div>
     </div>
   );
 }
