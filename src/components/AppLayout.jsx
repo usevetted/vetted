@@ -110,7 +110,10 @@ export default function AppLayout() {
     <div className="h-[100dvh] bg-background overflow-hidden">
       <div className="w-full h-[100dvh] relative flex flex-col overflow-hidden">
         <main className="flex-1 overflow-hidden flex flex-col pt-[env(safe-area-inset-top)] min-h-0">
-          <Outlet context={{ profile, setProfile }} />
+          <Outlet context={{ profile, setProfile: (updated) => {
+            cacheRef.current = { userId: user.id, profile: updated };
+            setProfile(updated);
+          }}} />
         </main>
         <nav className="sticky bottom-0 z-50 bg-background/90 glass border-t border-border/50 px-2 pb-[env(safe-area-inset-bottom)] flex-shrink-0">
           <div className="flex items-center justify-around max-w-[600px] mx-auto py-2">
