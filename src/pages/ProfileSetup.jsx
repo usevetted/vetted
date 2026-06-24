@@ -9,7 +9,8 @@ import LocationAutocomplete from '@/components/LocationAutocomplete';
 import ResumeUpload from '@/components/ResumeUpload';
 import { base44 } from '@/api/base44Client';
 import LoadingScreen from '@/components/LoadingScreen';
-import { yearsOptions } from '@/lib/profileConstants';
+import { yearsOptions, SKILLS_LIST } from '@/lib/profileConstants';
+import SkillsPicker from '@/components/SkillsPicker';
 
 export default function ProfileSetup() {
   const navigate = useNavigate();
@@ -34,7 +35,6 @@ export default function ProfileSetup() {
   const [bio, setBio] = useState('');
   const [linkedinUrl, setLinkedinUrl] = useState('');
   const [skills, setSkills] = useState([]);
-  const [skillInput, setSkillInput] = useState('');
   const [generatingBio, setGeneratingBio] = useState(false);
   const [resumeUrl, setResumeUrl] = useState('');
 
@@ -83,14 +83,6 @@ export default function ProfileSetup() {
       // ignore
     } finally {
       setUploadingPic(false);
-    }
-  };
-
-  const handleAddSkill = () => {
-    const trimmed = skillInput.trim();
-    if (trimmed && !skills.includes(trimmed)) {
-      setSkills([...skills, trimmed]);
-      setSkillInput('');
     }
   };
 
@@ -386,35 +378,12 @@ Write only the bio text, no quotes, no preamble.`;
             {/* Skills */}
             <div>
               <label className={labelClass}>Top Skills *</label>
-              <div className="flex flex-wrap gap-2 mb-2">
-                {skills.map((skill, i) => (
-                  <span
-                    key={i}
-                    className="inline-flex items-center gap-1 text-[12px] font-medium px-3 py-1.5 rounded-full bg-brand-green-light text-primary"
-                  >
-                    {skill}
-                    <button onClick={() => setSkills(skills.filter((_, idx) => idx !== i))}>
-                      <X size={12} className="text-primary/60 hover:text-primary" />
-                    </button>
-                  </span>
-                ))}
-                <span className="inline-flex items-center gap-1 text-[12px] font-medium px-3 py-1.5 rounded-full bg-muted text-muted-foreground">
-                  <Plus size={12} />
-                  Add
-                </span>
+              <div className="p-3 rounded-xl bg-muted/20 border border-border/40">
+                <SkillsPicker selected={skills} onChange={setSkills} maxHeight="180px" />
               </div>
-              <input
-                value={skillInput}
-                onChange={(e) => setSkillInput(e.target.value)}
-                onKeyDown={(e) => {
-                  if (e.key === 'Enter') {
-                    e.preventDefault();
-                    handleAddSkill();
-                  }
-                }}
-                placeholder="Type a skill and press Enter"
-                className={inputClass}
-              />
+              {skills.length > 0 && (
+                <p className="text-[11px] text-muted-foreground mt-1.5">{skills.length} selected</p>
+              )}
               {errors.skills && <p className={errorClass}>{errors.skills}</p>}
             </div>
 

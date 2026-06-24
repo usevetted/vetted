@@ -10,6 +10,7 @@ import MenuDrawer from '@/components/MenuDrawer';
 import { base44 } from '@/api/base44Client';
 import { useAuth } from '@/lib/AuthContext';
 import { yearsOptions } from '@/lib/profileConstants';
+import SkillsPicker from '@/components/SkillsPicker';
 
 export default function ProfilePage() {
   const navigate = useNavigate();
@@ -33,7 +34,6 @@ export default function ProfilePage() {
   const [bio, setBio] = useState('');
   const [linkedinUrl, setLinkedinUrl] = useState('');
   const [skills, setSkills] = useState([]);
-  const [skillInput, setSkillInput] = useState('');
   const [profilePicture, setProfilePicture] = useState('');
   const [resumeUrl, setResumeUrl] = useState('');
   const [saveError, setSaveError] = useState('');
@@ -68,14 +68,6 @@ export default function ProfilePage() {
       // ignore
     } finally {
       setUploadingPic(false);
-    }
-  };
-
-  const handleAddSkill = () => {
-    const trimmed = skillInput.trim();
-    if (trimmed && !skills.includes(trimmed)) {
-      setSkills([...skills, trimmed]);
-      setSkillInput('');
     }
   };
 
@@ -278,26 +270,12 @@ export default function ProfilePage() {
           </div>
           <div>
             <label className={labelClass}>Skills</label>
-            <div className="flex flex-wrap gap-2 mb-2">
-              {skills.map((skill, i) => (
-                <span key={i} className="inline-flex items-center gap-1 text-[12px] font-medium px-3 py-1.5 rounded-full bg-brand-green-light text-primary">
-                  {skill}
-                  <button onClick={() => setSkills(skills.filter((_, idx) => idx !== i))}>
-                    <X size={12} className="text-primary/60" />
-                  </button>
-                </span>
-              ))}
-              <span className="inline-flex items-center gap-1 text-[12px] font-medium px-3 py-1.5 rounded-full bg-muted text-muted-foreground">
-                <Plus size={12} /> Add
-              </span>
+            <div className="p-3 rounded-xl bg-muted/20 border border-border/40">
+              <SkillsPicker selected={skills} onChange={setSkills} maxHeight="180px" />
             </div>
-            <input
-              value={skillInput}
-              onChange={(e) => setSkillInput(e.target.value)}
-              onKeyDown={(e) => { if (e.key === 'Enter') { e.preventDefault(); handleAddSkill(); } }}
-              className={inputClass}
-              placeholder="Type a skill and press Enter"
-            />
+            {skills.length > 0 && (
+              <p className="text-[11px] text-muted-foreground mt-1.5">{skills.length} selected</p>
+            )}
           </div>
           <div>
             <label className={labelClass}>LinkedIn Profile URL</label>
