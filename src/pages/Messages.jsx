@@ -75,26 +75,30 @@ export default function Messages() {
         </p>
       </div>
 
-      <div className="flex-1 overflow-y-auto no-scrollbar px-3 pb-6 min-h-0">
-        {loading ? (
-          <div className="flex-1 flex items-center justify-center">
-            <LoadingScreen fullscreen={false} />
+      {loading && (
+        <div className="flex-1 flex items-center justify-center">
+          <LoadingScreen fullscreen={false} />
+        </div>
+      )}
+
+      {!loading && conversations.length === 0 && (
+        <div className="flex-1 flex flex-col items-center justify-center text-center px-6">
+          <div className="w-16 h-16 rounded-full bg-brand-green-bg flex items-center justify-center mb-4">
+            <MessageCircle size={28} className="text-primary/40" />
           </div>
-        ) : conversations.length === 0 ? (
-          <div className="flex-1 flex flex-col items-center justify-center text-center px-6">
-            <div className="w-16 h-16 rounded-full bg-brand-green-bg flex items-center justify-center mb-4">
-              <MessageCircle size={28} className="text-primary/40" />
-            </div>
-            <h3 className="text-[15px] font-semibold text-foreground mb-1">No messages yet</h3>
-            <p className="text-[13px] text-muted-foreground">Match with someone to start chatting</p>
-            <button
-              onClick={() => navigate('/discover')}
-              className="mt-5 px-5 py-2.5 rounded-xl bg-primary text-white text-[13px] font-medium"
-            >
-              Find Matches
-            </button>
-          </div>
-        ) : (
+          <h3 className="text-[15px] font-semibold text-foreground mb-1">No messages yet</h3>
+          <p className="text-[13px] text-muted-foreground">Match with someone to start chatting</p>
+          <button
+            onClick={() => navigate('/discover')}
+            className="mt-5 px-5 py-2.5 rounded-xl bg-primary text-white text-[13px] font-medium"
+          >
+            Find Matches
+          </button>
+        </div>
+      )}
+
+      {!loading && conversations.length > 0 && (
+        <div className="flex-1 overflow-y-auto no-scrollbar px-3 pb-6 min-h-0">
           <div className="space-y-1">
             {conversations.map((convo, i) => (
               <motion.button
@@ -124,8 +128,8 @@ export default function Messages() {
               </motion.button>
             ))}
           </div>
-        )}
-      </div>
+        </div>
+      )}
     </div>
   );
 }
