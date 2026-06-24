@@ -151,6 +151,6 @@ export default function LikedYouTab({ profile }) {
           />
         )}
       </AnimatePresence>
-    </>
+    </div>
   );
 }
