@@ -265,7 +265,7 @@ export default function MenuDrawer({ open, onClose, user, profile }) {
                                         </button>
                                       </>
                                     ) : (
-                                      <p className="text-[12px] text-green-600">Verification email sent to {emailForm.new}. Check your inbox to confirm the change.</p>
+                                      <p className="text-[12px] text-green-600">Verification link sent to your current email. Check your inbox to confirm the change to {emailForm.new}.</p>
                                     )}
                                   </div>
                                 )}

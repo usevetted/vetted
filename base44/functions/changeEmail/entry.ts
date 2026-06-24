@@ -41,9 +41,9 @@ Deno.serve(async (req) => {
 
     try {
       await base44.integrations.Core.SendEmail({
-        to: newEmail,
-        subject: 'Verify your new email address',
-        body: `Hello,\n\nPlease confirm your new email address by clicking the link below:\n\n${verificationUrl}\n\nThis link will expire in 24 hours.\n\nIf you didn't request this change, please ignore this email.`,
+        to: user.email,
+        subject: 'Confirm your email change',
+        body: `Hello,\n\nWe received a request to change your email address to ${newEmail}.\n\nPlease confirm this change by clicking the link below:\n\n${verificationUrl}\n\nThis link will expire in 24 hours.\n\nIf you didn't request this change, please ignore this email and your email address will remain unchanged.`,
       });
     } catch (emailError) {
       // Clear the pending email if email fails to send
@@ -60,7 +60,7 @@ Deno.serve(async (req) => {
       return Response.json({ error: `Failed to send verification email: ${emailError.message}` }, { status: 500 });
     }
 
-    return Response.json({ success: true, message: 'Verification email sent to ' + newEmail });
+    return Response.json({ success: true, message: 'Verification link sent to your current email' });
   } catch (error) {
     return Response.json({ error: error.message }, { status: 500 });
   }
