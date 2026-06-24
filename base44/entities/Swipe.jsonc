@@ -37,7 +37,9 @@
       "created_by_id": "{{user.id}}"
     },
     "read": {
-      "created_by_id": "{{user.id}}"
+      "created_by_id": {
+        "$exists": true
+      }
     },
     "update": {
       "created_by_id": "{{user.id}}"
