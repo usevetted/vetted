@@ -49,7 +49,9 @@ export default function Matches() {
 
       <div className="flex-1 overflow-y-auto no-scrollbar px-4 pb-6 min-h-0">
         {loading ? (
-          <LoadingScreen fullscreen={false} />
+          <div className="flex-1 flex items-center justify-center">
+            <LoadingScreen fullscreen={false} />
+          </div>
         ) : matches.length === 0 ? (
           <div className="flex flex-col items-center text-center pt-16 px-6">
             <div className="w-16 h-16 rounded-full bg-brand-green-bg flex items-center justify-center mb-4">
