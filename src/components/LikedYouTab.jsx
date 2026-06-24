@@ -27,10 +27,16 @@ export default function LikedYouTab({ profile }) {
 
         const m1 = await base44.entities.Match.filter({ profile1_id: profile.id });
         const m2 = await base44.entities.Match.filter({ profile2_id: profile.id });
-        const matchedIds = new Set();
-        [...m1, ...m2].forEach(m => { matchedIds.add(m.profile1_id); matchedIds.add(m.profile2_id); });
+        const matchedCombos = new Set();
+        [...m1, ...m2].forEach(m => {
+          const otherId = m.profile1_id === profile.id ? m.profile2_id : m.profile1_id;
+          matchedCombos.add(`${otherId}__${m.job_id || ''}`);
+        });
 
-        const available = likedSwipes.filter(s => !swipedTargetIds.has(s.swiper_profile_id) && !matchedIds.has(s.swiper_profile_id));
+        const available = likedSwipes.filter(s => {
+          const comboKey = `${s.swiper_profile_id}__${s.context_job_id || ''}`;
+          return !swipedTargetIds.has(s.swiper_profile_id) && !matchedCombos.has(comboKey);
+        });
 
         if (isRecruiter) {
           const profiles = await Promise.all(available.map(s => base44.entities.Profile.get(s.swiper_profile_id).catch(() => null)));
@@ -79,6 +85,14 @@ export default function LikedYouTab({ profile }) {
       const mySkills = profile.skills || [];
       const theirSkills = (isRecruiter ? card.profile?.skills : card.recruiterProfile?.skills) || [];
       const sharedSkills = mySkills.filter(s => theirSkills.includes(s)).slice(0, 3);
+
+      await base44.entities.Swipe.create({
+        swiper_profile_id: profile.id,
+        target_profile_id: isRecruiter ? card.profile.id : card.swipe.swiper_profile_id,
+        target_type: isRecruiter ? 'candidate' : 'job',
+        action: 'like',
+        context_job_id: isRecruiter ? null : (card.job?.id || null),
+      }).catch(() => {});
 
       setMatchData({ ...match, sharedSkills });
       setLikedYou(prev => prev.filter(c => c.swipe.id !== card.swipe.id));

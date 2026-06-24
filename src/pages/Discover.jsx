@@ -59,7 +59,11 @@ export default function Discover() {
 
       if (isRecruiter) {
         const allProfiles = await base44.entities.Profile.filter({ account_type: 'job_seeker' }, '-created_date', 50);
-        const swipedProfileIds = new Set(swipes.map(s => s.target_profile_id));
+        const swipedProfileIds = new Set(
+          swipes
+            .filter(s => s.action === 'like' || s.action === 'super')
+            .map(s => s.target_profile_id)
+        );
         const filtered = allProfiles.filter(p => p.id !== profile.id && p.created_by_id !== profile.created_by_id && !swipedProfileIds.has(p.id));
         setAllCards(filtered);
       } else {
@@ -133,10 +137,12 @@ export default function Discover() {
       const existingAs1 = await base44.entities.Match.filter({
         profile1_id: profile.id,
         profile2_id: targetProfileId,
+        job_id: isRecruiter ? null : card.id,
       });
       const existingAs2 = await base44.entities.Match.filter({
         profile1_id: targetProfileId,
         profile2_id: profile.id,
+        job_id: isRecruiter ? null : card.id,
       });
 
       if (existingAs1.length > 0 || existingAs2.length > 0) return;
