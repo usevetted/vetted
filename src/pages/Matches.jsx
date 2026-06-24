@@ -28,6 +28,8 @@ export default function Matches() {
       }
     };
     load();
+    const interval = setInterval(load, 15000);
+    return () => clearInterval(interval);
   }, [profile]);
 
   const getMatchDisplay = (match) => {

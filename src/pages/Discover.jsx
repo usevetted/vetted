@@ -90,7 +90,7 @@ export default function Discover() {
       contextJobId = null;
       targetType = 'candidate';
     } else {
-      targetProfileId = currentCard.recruiter_profile_id || currentCard.id;
+      targetProfileId = currentCard.recruiter_profile_id;
       contextJobId = currentCard.id;
       targetType = 'job';
     }
@@ -109,7 +109,7 @@ export default function Discover() {
 
     setAllCards(prev => prev.filter(c => c.id !== currentCard.id));
 
-    if (action === 'like' || action === 'super') {
+    if ((action === 'like' || action === 'super') && targetProfileId) {
       await checkForMatch(targetProfileId, currentCard, action);
     }
   };
@@ -122,6 +122,7 @@ export default function Discover() {
         swiper_profile_id: targetProfileId,
         target_profile_id: profile.id,
       });
+      console.log('mutual swipes found:', mutualSwipes);
       const hasMutualLike = mutualSwipes.some(s => s.action === 'like' || s.action === 'super');
       if (!hasMutualLike) return;
 

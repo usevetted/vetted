@@ -91,9 +91,12 @@ export default function LikedYouTab({ profile }) {
     } else {
       const job = card.job;
       const rp = card.recruiterProfile;
-      const name = rp?.full_name || job?.recruiter_name || job?.company || 'Recruiter';
-      const initials = name?.split(' ').map(n => n[0]).join('').slice(0, 2).toUpperCase() || 'R';
-      return { name: job?.title || name, picture: rp?.profile_picture, subtitle: job?.company || '', initials };
+      return {
+        name: job?.title || rp?.current_role || rp?.full_name || 'Recruiter',
+        picture: rp?.profile_picture || null,
+        subtitle: rp?.current_company || rp?.full_name || '',
+        initials: (rp?.full_name || 'R').split(' ').map(n => n[0]).join('').slice(0, 2).toUpperCase()
+      };
     }
   };
 
