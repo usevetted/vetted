@@ -121,9 +121,9 @@ export default function MenuDrawer({ open, onClose, user, profile }) {
       onClose();
       window.location.href = '/landing';
     } catch {
+
       // ignore
-    }
-  };
+    }};
 
   const handleDelete = async () => {
     if (deleteConfirmText !== 'DELETE') return;
@@ -132,9 +132,9 @@ export default function MenuDrawer({ open, onClose, user, profile }) {
       onClose();
       window.location.href = '/landing';
     } catch {
+
       // ignore
-    }
-  };
+    }};
 
   const toggleSection = (section) => {
     setExpanded(expanded === section ? null : section);
@@ -143,362 +143,362 @@ export default function MenuDrawer({ open, onClose, user, profile }) {
 
 
   const menuItems = [
-    {
-      id: 'settings',
-      label: 'Account Settings',
-      options: [
-        { label: 'Notification preferences', toggle: true, value: notificationsEnabled, onChange: setNotificationsEnabled },
-      ],
-    },
-    {
-      id: 'security',
-      label: 'Account Security',
-      options: [
-        { label: 'Change password', action: 'changePassword' },
-        { label: 'Active sessions', action: 'sessions' },
-        { label: 'Deactivate Account', action: 'deactivate' },
-        { label: 'Delete Account', action: 'delete' },
-      ],
-    },
-    {
-      id: 'device',
-      label: 'Device Settings',
-      options: [
-        { label: 'Dark mode', toggle: true, value: darkMode, onChange: handleToggleDarkMode },
-      ],
-    },
-  ];
+  {
+    id: 'settings',
+    label: 'Account Settings',
+    options: [
+    { label: 'Notification preferences', toggle: true, value: notificationsEnabled, onChange: setNotificationsEnabled }]
+
+  },
+  {
+    id: 'security',
+    label: 'Account Security',
+    options: [
+    { label: 'Change password', action: 'changePassword' },
+    { label: 'Active sessions', action: 'sessions' },
+    { label: 'Deactivate Account', action: 'deactivate' },
+    { label: 'Delete Account', action: 'delete' }]
+
+  },
+  {
+    id: 'device',
+    label: 'Device Settings',
+    options: [
+    { label: 'Dark mode', toggle: true, value: darkMode, onChange: handleToggleDarkMode }]
+
+  }];
+
 
   return (
     <AnimatePresence>
-      {open && (
-        <>
+      {open &&
+      <>
           <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-            onClick={onClose}
-            className="fixed inset-0 bg-black/30 z-[90]"
-          />
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          exit={{ opacity: 0 }}
+          onClick={onClose}
+          className="fixed inset-0 bg-black/30 z-[90]" />
+        
           <motion.div
-            initial={{ x: '100%' }}
-            animate={{ x: 0 }}
-            exit={{ x: '100%' }}
-            transition={{ type: 'spring', damping: 25, stiffness: 300 }}
-            className="fixed right-0 top-0 bottom-0 w-[85vw] max-w-[340px] bg-card z-[100] flex flex-col rounded-l-2xl shadow-xl"
-          >
+          initial={{ x: '100%' }}
+          animate={{ x: 0 }}
+          exit={{ x: '100%' }}
+          transition={{ type: 'spring', damping: 25, stiffness: 300 }}
+          className="fixed right-0 top-0 bottom-0 w-[85vw] max-w-[340px] bg-card z-[100] flex flex-col rounded-l-2xl shadow-xl">
+          
             {/* Header */}
             <div className="flex items-center justify-between px-5 pt-3 pb-3 border-b border-border">
-              <h2 className="text-[16px] font-semibold text-foreground">Menu</h2>
+              <h2 className="text-[16px] font-semibold text-[hsl(var(--brand-green))]">Menu</h2>
               <button
-                onClick={onClose}
-                className="w-8 h-8 rounded-full hover:bg-primary/10 flex items-center justify-center transition-colors"
-              >
+              onClick={onClose}
+              className="w-8 h-8 rounded-full hover:bg-primary/10 flex items-center justify-center transition-colors">
+              
                 <X size={18} className="text-foreground" />
               </button>
             </div>
 
             {/* Menu sections */}
             <div className="flex-1 overflow-y-auto no-scrollbar">
-              {menuItems.map((section) => (
-                <div key={section.id} className="border-b border-border/20 last:border-b-0">
+              {menuItems.map((section) =>
+            <div key={section.id} className="border-b border-border/20 last:border-b-0">
                   <button
-                    onClick={() => toggleSection(section.id)}
-                    className="w-full flex items-center justify-between px-5 py-3 hover:bg-primary/5 transition-colors"
-                  >
-                    <span className="text-[14px] font-medium text-foreground">{section.label}</span>
+                onClick={() => toggleSection(section.id)}
+                className="w-full flex items-center justify-between px-5 py-3 hover:bg-primary/5 transition-colors">
+                
+                    <span className="text-[14px] font-medium text-[hsl(var(--brand-green))]">{section.label}</span>
                     <motion.div
-                        animate={{ rotate: expanded === section.id ? 180 : 0 }}
-                        transition={{ duration: 0.2 }}
-                      >
+                  animate={{ rotate: expanded === section.id ? 180 : 0 }}
+                  transition={{ duration: 0.2 }}>
+                  
                         <ChevronDown size={16} className="text-foreground/60" />
                       </motion.div>
                   </button>
 
                   <AnimatePresence>
-                    {expanded === section.id && (
-                      <motion.div
-                        initial={{ height: 0, opacity: 0 }}
-                        animate={{ height: 'auto', opacity: 1 }}
-                        exit={{ height: 0, opacity: 0 }}
-                        transition={{ duration: 0.2 }}
-                        className="overflow-hidden bg-primary/5 border-t border-primary/20"
-                      >
+                    {expanded === section.id &&
+                <motion.div
+                  initial={{ height: 0, opacity: 0 }}
+                  animate={{ height: 'auto', opacity: 1 }}
+                  exit={{ height: 0, opacity: 0 }}
+                  transition={{ duration: 0.2 }}
+                  className="overflow-hidden bg-primary/5 border-t border-primary/20">
+                  
                         <div className="px-5 py-2">
                           {/* Account Settings content */}
-                          {section.id === 'settings' && (
-                            <div className="space-y-3">
+                          {section.id === 'settings' &&
+                    <div className="space-y-3">
                               <div className="space-y-2 pb-3 border-b border-border/30">
                                 <p className="text-[13px] text-foreground font-medium">Email address</p>
                                 <p className="text-[11px] text-muted-foreground">{user?.email || 'Not set'}</p>
                                 <button
-                                  onClick={() => setShowEmailChange(!showEmailChange)}
-                                  className="text-[11px] font-medium text-primary hover:underline transition-colors"
-                                >
+                          onClick={() => setShowEmailChange(!showEmailChange)}
+                          className="text-[11px] font-medium text-primary hover:underline transition-colors">
+                          
                                   {showEmailChange ? 'Cancel' : 'Change email'}
                                 </button>
-                                {showEmailChange && (
-                                  <div className="mt-2 p-3 bg-primary/5 rounded-lg space-y-2 border border-primary/20">
-                                    {!emailChangeSent ? (
-                                      <>
+                                {showEmailChange &&
+                        <div className="mt-2 p-3 bg-primary/5 rounded-lg space-y-2 border border-primary/20">
+                                    {!emailChangeSent ?
+                          <>
                                         <input
-                                          type="email"
-                                          placeholder="New email address"
-                                          value={emailForm.new}
-                                          onChange={(e) => setEmailForm({ ...emailForm, new: e.target.value })}
-                                          className="w-full h-[36px] border border-input rounded-lg px-2.5 text-[12px] bg-card focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary"
-                                        />
+                              type="email"
+                              placeholder="New email address"
+                              value={emailForm.new}
+                              onChange={(e) => setEmailForm({ ...emailForm, new: e.target.value })}
+                              className="w-full h-[36px] border border-input rounded-lg px-2.5 text-[12px] bg-card focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary" />
+                            
                                         <input
-                                          type="email"
-                                          placeholder="Confirm email address"
-                                          value={emailForm.confirm}
-                                          onChange={(e) => setEmailForm({ ...emailForm, confirm: e.target.value })}
-                                          className="w-full h-[36px] border border-input rounded-lg px-2.5 text-[12px] bg-card focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary"
-                                        />
+                              type="email"
+                              placeholder="Confirm email address"
+                              value={emailForm.confirm}
+                              onChange={(e) => setEmailForm({ ...emailForm, confirm: e.target.value })}
+                              className="w-full h-[36px] border border-input rounded-lg px-2.5 text-[12px] bg-card focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary" />
+                            
                                         {emailError && <p className="text-[11px] text-destructive">{emailError}</p>}
                                         <button
-                                          onClick={handleChangeEmail}
-                                          disabled={emailLoading}
-                                          className="w-full h-[34px] bg-primary text-white text-[12px] font-medium rounded-lg hover:bg-primary/90 disabled:opacity-50 transition-colors"
-                                        >
+                              onClick={handleChangeEmail}
+                              disabled={emailLoading}
+                              className="w-full h-[34px] bg-primary text-white text-[12px] font-medium rounded-lg hover:bg-primary/90 disabled:opacity-50 transition-colors">
+                              
                                           {emailLoading ? 'Sending...' : 'Send Verification Email'}
                                         </button>
-                                      </>
-                                    ) : (
-                                      <p className="text-[12px] text-green-600">Verification link sent to your current email. Check your inbox to confirm the change to {emailForm.new}.</p>
-                                    )}
+                                      </> :
+
+                          <p className="text-[12px] text-green-600">Verification link sent to your current email. Check your inbox to confirm the change to {emailForm.new}.</p>
+                          }
                                   </div>
-                                )}
+                        }
                               </div>
-                              {section.options.map((opt, i) => (
-                                <div key={i}>
-                                  {opt.toggle && (
-                                    <div className="flex items-center justify-between py-2">
+                              {section.options.map((opt, i) =>
+                      <div key={i}>
+                                  {opt.toggle &&
+                        <div className="flex items-center justify-between py-2">
                                       <span className="text-[13px] text-foreground">{opt.label}</span>
                                       <button
-                                        onClick={() => opt.onChange(!opt.value)}
-                                        className={`w-10 h-6 rounded-full relative flex-shrink-0 transition-colors duration-200 ${opt.value ? 'bg-primary' : 'bg-muted-foreground/30'}`}
-                                      >
+                            onClick={() => opt.onChange(!opt.value)}
+                            className={`w-10 h-6 rounded-full relative flex-shrink-0 transition-colors duration-200 ${opt.value ? 'bg-primary' : 'bg-muted-foreground/30'}`}>
+                            
                                         <motion.div
-                                          layout
-                                          transition={{ type: 'spring', stiffness: 500, damping: 30 }}
-                                          className={`absolute top-0.5 w-5 h-5 rounded-full bg-white ${opt.value ? 'right-0.5' : 'left-0.5'}`}
-                                        />
+                              layout
+                              transition={{ type: 'spring', stiffness: 500, damping: 30 }}
+                              className={`absolute top-0.5 w-5 h-5 rounded-full bg-white ${opt.value ? 'right-0.5' : 'left-0.5'}`} />
+                            
                                       </button>
                                     </div>
-                                  )}
+                        }
                                 </div>
-                              ))}
+                      )}
                             </div>
-                          )}
+                    }
 
                           {/* Account Security content */}
-                          {section.id === 'security' && (
-                            <div className="space-y-3">
+                          {section.id === 'security' &&
+                    <div className="space-y-3">
                               <div className="space-y-2 pb-3 border-b border-border/30">
                                 <div className="flex items-center justify-between">
                                   <span className="text-[13px] font-medium text-foreground">Two-factor authentication</span>
                                   <button
-                                    className={`w-10 h-6 rounded-full relative flex-shrink-0 transition-colors duration-200 ${twoFaEnabled ? 'bg-primary' : 'bg-muted-foreground/30'}`}
-                                  >
+                            className={`w-10 h-6 rounded-full relative flex-shrink-0 transition-colors duration-200 ${twoFaEnabled ? 'bg-primary' : 'bg-muted-foreground/30'}`}>
+                            
                                     <motion.div
-                                      layout
-                                      transition={{ type: 'spring', stiffness: 500, damping: 30 }}
-                                      className={`absolute top-0.5 w-5 h-5 rounded-full bg-white ${twoFaEnabled ? 'right-0.5' : 'left-0.5'}`}
-                                    />
+                              layout
+                              transition={{ type: 'spring', stiffness: 500, damping: 30 }}
+                              className={`absolute top-0.5 w-5 h-5 rounded-full bg-white ${twoFaEnabled ? 'right-0.5' : 'left-0.5'}`} />
+                            
                                   </button>
                                 </div>
                               </div>
-                                          {section.options.map((opt, i) => (
-                                <div key={i}>
-                                  {opt.action === 'changePassword' && (
-                                    <>
+                                          {section.options.map((opt, i) =>
+                      <div key={i}>
+                                  {opt.action === 'changePassword' &&
+                        <>
                                       <button
-                                        onClick={() => setShowChangePassword(!showChangePassword)}
-                                        className="text-[13px] text-foreground py-2.5 hover:text-primary transition-colors text-left"
-                                      >
+                            onClick={() => setShowChangePassword(!showChangePassword)}
+                            className="text-[13px] text-foreground py-2.5 hover:text-primary transition-colors text-left">
+                            
                                         {opt.label}
                                       </button>
                                       <div className="mt-1 mb-3">
-                                        {!passwordResetSent && (
-                                          <button
-                                            onClick={handleForgotPassword}
-                                            disabled={passwordLoading}
-                                            className="text-[11px] text-primary hover:underline transition-colors disabled:opacity-50"
-                                          >
+                                        {!passwordResetSent &&
+                            <button
+                              onClick={handleForgotPassword}
+                              disabled={passwordLoading}
+                              className="text-[11px] text-primary hover:underline transition-colors disabled:opacity-50">
+                              
                                             {passwordLoading ? 'Sending...' : 'Forgot password?'}
                                           </button>
-                                        )}
-                                        {passwordResetSent && (
-                                          <p className="text-[11px] text-green-600">Reset link sent to your email</p>
-                                        )}
+                            }
+                                        {passwordResetSent &&
+                            <p className="text-[11px] text-green-600">Reset link sent to your email</p>
+                            }
                                       </div>
-                                      {showChangePassword && (
-                                        <div className="mt-2 p-3 bg-primary/5 rounded-lg space-y-2 border border-primary/20">
+                                      {showChangePassword &&
+                          <div className="mt-2 p-3 bg-primary/5 rounded-lg space-y-2 border border-primary/20">
                                           <input
-                                            type="password"
-                                            placeholder="Current password"
-                                            value={passwordForm.current}
-                                            onChange={(e) => setPasswordForm({ ...passwordForm, current: e.target.value })}
-                                            className="w-full h-[36px] border border-input rounded-lg px-2.5 text-[12px] bg-card focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary"
-                                          />
+                              type="password"
+                              placeholder="Current password"
+                              value={passwordForm.current}
+                              onChange={(e) => setPasswordForm({ ...passwordForm, current: e.target.value })}
+                              className="w-full h-[36px] border border-input rounded-lg px-2.5 text-[12px] bg-card focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary" />
+                            
                                           <input
-                                            type="password"
-                                            placeholder="New password"
-                                            value={passwordForm.new}
-                                            onChange={(e) => setPasswordForm({ ...passwordForm, new: e.target.value })}
-                                            className="w-full h-[36px] border border-input rounded-lg px-2.5 text-[12px] bg-card focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary"
-                                          />
+                              type="password"
+                              placeholder="New password"
+                              value={passwordForm.new}
+                              onChange={(e) => setPasswordForm({ ...passwordForm, new: e.target.value })}
+                              className="w-full h-[36px] border border-input rounded-lg px-2.5 text-[12px] bg-card focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary" />
+                            
                                           <input
-                                            type="password"
-                                            placeholder="Confirm new password"
-                                            value={passwordForm.confirm}
-                                            onChange={(e) => setPasswordForm({ ...passwordForm, confirm: e.target.value })}
-                                            className="w-full h-[36px] border border-input rounded-lg px-2.5 text-[12px] bg-card focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary"
-                                          />
+                              type="password"
+                              placeholder="Confirm new password"
+                              value={passwordForm.confirm}
+                              onChange={(e) => setPasswordForm({ ...passwordForm, confirm: e.target.value })}
+                              className="w-full h-[36px] border border-input rounded-lg px-2.5 text-[12px] bg-card focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary" />
+                            
                                           {passwordError && <p className="text-[11px] text-destructive">{passwordError}</p>}
                                           <button
-                                            onClick={handleChangePassword}
-                                            disabled={passwordLoading}
-                                            className="w-full h-[34px] bg-primary text-white text-[12px] font-medium rounded-lg hover:bg-primary/90 disabled:opacity-50 transition-colors"
-                                          >
+                              onClick={handleChangePassword}
+                              disabled={passwordLoading}
+                              className="w-full h-[34px] bg-primary text-white text-[12px] font-medium rounded-lg hover:bg-primary/90 disabled:opacity-50 transition-colors">
+                              
                                             {passwordLoading ? 'Updating...' : 'Update Password'}
                                           </button>
                                         </div>
-                                      )}
+                          }
                                     </>
-                                  )}
-                                  {opt.action === 'sessions' && (
-                                    <div>
+                        }
+                                  {opt.action === 'sessions' &&
+                        <div>
                                       <p className="text-[13px] text-foreground py-2">{opt.label}</p>
                                       <p className="text-[12px] text-muted-foreground">Current device</p>
                                     </div>
-                                  )}
-                                  {opt.action === 'deactivate' && (
-                                    <>
+                        }
+                                  {opt.action === 'deactivate' &&
+                        <>
                                       <button
-                                        onClick={() => setDeactivateConfirm(true)}
-                                        className="text-[13px] text-pass py-2 hover:text-pass/80 transition-colors text-left"
-                                      >
+                            onClick={() => setDeactivateConfirm(true)}
+                            className="text-[13px] text-pass py-2 hover:text-pass/80 transition-colors text-left">
+                            
                                         {opt.label}
                                       </button>
-                                      {deactivateConfirm && (
-                                        <div className="mt-2 p-3 bg-pass/5 rounded-lg border border-pass/20 space-y-2">
+                                      {deactivateConfirm &&
+                          <div className="mt-2 p-3 bg-pass/5 rounded-lg border border-pass/20 space-y-2">
                                           <p className="text-[12px] text-foreground/80">Your account will be deactivated immediately. You can reactivate it by logging back in.</p>
                                           <div className="flex gap-2">
                                             <button
-                                              onClick={() => setDeactivateConfirm(false)}
-                                              className="flex-1 h-[32px] text-[12px] font-medium border border-border rounded-lg hover:bg-muted/30 transition-colors"
-                                            >
+                                onClick={() => setDeactivateConfirm(false)}
+                                className="flex-1 h-[32px] text-[12px] font-medium border border-border rounded-lg hover:bg-muted/30 transition-colors">
+                                
                                               Cancel
                                             </button>
                                             <button
-                                              onClick={handleDeactivate}
-                                              className="flex-1 h-[32px] text-[12px] font-medium bg-pass text-white rounded-lg hover:bg-pass/90 transition-colors"
-                                            >
+                                onClick={handleDeactivate}
+                                className="flex-1 h-[32px] text-[12px] font-medium bg-pass text-white rounded-lg hover:bg-pass/90 transition-colors">
+                                
                                               Deactivate
                                             </button>
                                           </div>
                                         </div>
-                                      )}
+                          }
                                     </>
-                                  )}
-                                  {opt.action === 'delete' && (
-                                    <>
+                        }
+                                  {opt.action === 'delete' &&
+                        <>
                                       <button
-                                        onClick={() => setDeleteConfirm(true)}
-                                        className="text-[13px] text-destructive py-2 hover:text-destructive/80 transition-colors text-left"
-                                      >
+                            onClick={() => setDeleteConfirm(true)}
+                            className="text-[13px] text-destructive py-2 hover:text-destructive/80 transition-colors text-left">
+                            
                                         {opt.label}
                                       </button>
-                                      {deleteConfirm && (
-                                        <div className="mt-2 p-3 bg-destructive/5 rounded-lg border border-destructive/20 space-y-2">
+                                      {deleteConfirm &&
+                          <div className="mt-2 p-3 bg-destructive/5 rounded-lg border border-destructive/20 space-y-2">
                                           <p className="text-[12px] text-foreground/80"><strong>Warning:</strong> This action is permanent. You have a 14-day grace period to log back in and cancel the deletion. After 14 days, your account and all data will be permanently removed.</p>
                                           <p className="text-[11px] text-muted-foreground">Type "DELETE" to confirm:</p>
                                           <input
-                                            type="text"
-                                            placeholder='Type "DELETE" to confirm'
-                                            value={deleteConfirmText}
-                                            onChange={(e) => setDeleteConfirmText(e.target.value)}
-                                            className="w-full h-[32px] border border-input rounded-lg px-2.5 text-[12px] bg-card focus:outline-none focus:ring-2 focus:ring-destructive/20 focus:border-destructive"
-                                          />
+                              type="text"
+                              placeholder='Type "DELETE" to confirm'
+                              value={deleteConfirmText}
+                              onChange={(e) => setDeleteConfirmText(e.target.value)}
+                              className="w-full h-[32px] border border-input rounded-lg px-2.5 text-[12px] bg-card focus:outline-none focus:ring-2 focus:ring-destructive/20 focus:border-destructive" />
+                            
                                           <div className="flex gap-2">
                                             <button
-                                              onClick={() => {
-                                                setDeleteConfirm(false);
-                                                setDeleteConfirmText('');
-                                              }}
-                                              className="flex-1 h-[32px] text-[12px] font-medium border border-border rounded-lg hover:bg-muted/30 transition-colors"
-                                            >
+                                onClick={() => {
+                                  setDeleteConfirm(false);
+                                  setDeleteConfirmText('');
+                                }}
+                                className="flex-1 h-[32px] text-[12px] font-medium border border-border rounded-lg hover:bg-muted/30 transition-colors">
+                                
                                               Cancel
                                             </button>
                                             <button
-                                              onClick={handleDelete}
-                                              disabled={deleteConfirmText !== 'DELETE'}
-                                              className="flex-1 h-[32px] text-[12px] font-medium bg-destructive text-white rounded-lg hover:bg-destructive/90 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
-                                            >
+                                onClick={handleDelete}
+                                disabled={deleteConfirmText !== 'DELETE'}
+                                className="flex-1 h-[32px] text-[12px] font-medium bg-destructive text-white rounded-lg hover:bg-destructive/90 disabled:opacity-50 disabled:cursor-not-allowed transition-colors">
+                                
                                               Delete Forever
                                             </button>
                                           </div>
                                         </div>
-                                      )}
+                          }
                                     </>
-                                  )}
-                                  {opt.toggle && (
-                                    <div className="flex items-center justify-between py-2">
+                        }
+                                  {opt.toggle &&
+                        <div className="flex items-center justify-between py-2">
                                       <span className="text-[13px] text-foreground">{opt.label}</span>
                                       <button
-                                        onClick={() => opt.onChange(!opt.value)}
-                                        className={`w-10 h-6 rounded-full relative flex-shrink-0 transition-colors duration-200 ${opt.value ? 'bg-primary' : 'bg-muted-foreground/30'}`}
-                                      >
+                            onClick={() => opt.onChange(!opt.value)}
+                            className={`w-10 h-6 rounded-full relative flex-shrink-0 transition-colors duration-200 ${opt.value ? 'bg-primary' : 'bg-muted-foreground/30'}`}>
+                            
                                         <motion.div
-                                          layout
-                                          transition={{ type: 'spring', stiffness: 500, damping: 30 }}
-                                          className={`absolute top-0.5 w-5 h-5 rounded-full bg-white ${opt.value ? 'right-0.5' : 'left-0.5'}`}
-                                        />
+                              layout
+                              transition={{ type: 'spring', stiffness: 500, damping: 30 }}
+                              className={`absolute top-0.5 w-5 h-5 rounded-full bg-white ${opt.value ? 'right-0.5' : 'left-0.5'}`} />
+                            
                                       </button>
                                     </div>
-                                  )}
+                        }
                                 </div>
-                              ))}
+                      )}
                             </div>
-                          )}
+                    }
 
                           {/* Device Settings content */}
-                          {section.id === 'device' && (
-                            <div className="space-y-3">
+                          {section.id === 'device' &&
+                    <div className="space-y-3">
                               <div className="flex items-center justify-between py-2">
                                 <div className="flex items-center gap-2">
-                                  {darkMode ? (
-                                    <Moon size={14} className="text-foreground/60" />
-                                  ) : (
-                                    <Sun size={14} className="text-foreground/60" />
-                                  )}
+                                  {darkMode ?
+                          <Moon size={14} className="text-foreground/60" /> :
+
+                          <Sun size={14} className="text-foreground/60" />
+                          }
                                   <span className="text-[13px] text-foreground">Dark mode</span>
                                 </div>
                                 <button
-                                  onClick={handleToggleDarkMode}
-                                  className={`w-10 h-6 rounded-full relative flex-shrink-0 transition-colors duration-200 ${darkMode ? 'bg-primary' : 'bg-muted-foreground/30'}`}
-                                >
+                          onClick={handleToggleDarkMode}
+                          className={`w-10 h-6 rounded-full relative flex-shrink-0 transition-colors duration-200 ${darkMode ? 'bg-primary' : 'bg-muted-foreground/30'}`}>
+                          
                                   <motion.div
-                                    layout
-                                    transition={{ type: 'spring', stiffness: 500, damping: 30 }}
-                                    className={`absolute top-0.5 w-5 h-5 rounded-full bg-white ${darkMode ? 'right-0.5' : 'left-0.5'}`}
-                                  />
+                            layout
+                            transition={{ type: 'spring', stiffness: 500, damping: 30 }}
+                            className={`absolute top-0.5 w-5 h-5 rounded-full bg-white ${darkMode ? 'right-0.5' : 'left-0.5'}`} />
+                          
                                 </button>
                               </div>
                             </div>
-                          )}
+                    }
                         </div>
                       </motion.div>
-                    )}
+                }
                   </AnimatePresence>
                 </div>
-              ))}
+            )}
             </div>
           </motion.div>
         </>
-      )}
-    </AnimatePresence>
-  );
+      }
+    </AnimatePresence>);
+
 }
