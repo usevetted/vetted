@@ -30,7 +30,7 @@ export default function PostJobButton({ isRecruiter, profile, onJobPosted }) {
 
     setLoading(true);
     try {
-      const result = await base44.functions.invoke('createJob', {
+      await base44.entities.Job.create({
         title: formData.title,
         company: formData.company,
         location: formData.location,
@@ -39,22 +39,21 @@ export default function PostJobButton({ isRecruiter, profile, onJobPosted }) {
         recruiter_profile_id: profile.id,
         recruiter_name: profile.full_name,
         recruiter_linkedin: profile.linkedin_url || '',
+        profile_picture: profile.profile_picture || '',
       });
 
-      if (result.data.success) {
-        toast.success('Job posted successfully', {
-          duration: 3000,
-          icon: <Check size={18} className="text-primary" />,
-          style: {
-            background: 'white',
-            color: 'hsl(146, 48%, 19%)',
-            border: '1px solid hsl(146, 48%, 19%, 0.2)',
-          },
-        });
-        setFormData({ title: '', company: '', location: '', remote: false, description: '' });
-        setModalOpen(false);
-        onJobPosted();
-      }
+      toast.success('Job posted successfully', {
+        duration: 3000,
+        icon: <Check size={18} className="text-primary" />,
+        style: {
+          background: 'white',
+          color: 'hsl(146, 48%, 19%)',
+          border: '1px solid hsl(146, 48%, 19%, 0.2)',
+        },
+      });
+      setFormData({ title: '', company: '', location: '', remote: false, description: '' });
+      setModalOpen(false);
+      onJobPosted();
     } catch (err) {
       setError(err?.message || 'Failed to post job');
     } finally {

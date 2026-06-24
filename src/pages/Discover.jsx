@@ -90,7 +90,11 @@ export default function Discover() {
       contextJobId = null;
       targetType = 'candidate';
     } else {
-      targetProfileId = currentCard.recruiter_profile_id;
+      if (currentCard.recruiter_profile_id) {
+        targetProfileId = currentCard.recruiter_profile_id;
+      } else {
+        targetProfileId = null;
+      }
       contextJobId = currentCard.id;
       targetType = 'job';
     }

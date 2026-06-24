@@ -13,20 +13,21 @@ export default function Matches() {
   const [loading, setLoading] = useState(true);
   const [activeTab, setActiveTab] = useState('matches');
 
+  const load = async () => {
+    if (!profile) return;
+    try {
+      const m1 = await base44.entities.Match.filter({ profile1_id: profile.id, status: 'active' });
+      const m2 = await base44.entities.Match.filter({ profile2_id: profile.id, status: 'active' });
+      const all = [...m1, ...m2].sort((a, b) => new Date(b.created_date) - new Date(a.created_date));
+      setMatches(all);
+    } catch {
+      // ignore
+    } finally {
+      setLoading(false);
+    }
+  };
+
   useEffect(() => {
-    const load = async () => {
-      if (!profile) return;
-      try {
-        const m1 = await base44.entities.Match.filter({ profile1_id: profile.id, status: 'active' });
-        const m2 = await base44.entities.Match.filter({ profile2_id: profile.id, status: 'active' });
-        const all = [...m1, ...m2].sort((a, b) => new Date(b.created_date) - new Date(a.created_date));
-        setMatches(all);
-      } catch {
-        // ignore
-      } finally {
-        setLoading(false);
-      }
-    };
     load();
     const interval = setInterval(load, 15000);
     return () => clearInterval(interval);

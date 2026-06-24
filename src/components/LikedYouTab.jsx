@@ -40,7 +40,9 @@ export default function LikedYouTab({ profile }) {
           const recruiters = await Promise.all(available.map(s => base44.entities.Profile.get(s.swiper_profile_id).catch(() => null)));
           setLikedYou(available.map((swipe, i) => ({ swipe, job: jobs[i], recruiterProfile: recruiters[i] })).filter(c => c.job || c.recruiterProfile));
         }
-      } catch { /* ignore */ } finally { setLoading(false); }
+      } catch (err) {
+        console.error('LikedYouTab load error:', err);
+      } finally { setLoading(false); }
     };
     load();
   }, [profile, isRecruiter]);
