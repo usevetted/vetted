@@ -16,6 +16,10 @@
     },
     "content": {
       "type": "string"
+    },
+    "read": {
+      "type": "boolean",
+      "default": false
     }
   },
   "required": [
@@ -41,7 +45,14 @@
       ]
     },
     "update": {
-      "created_by_id": "{{user.id}}"
+      "$or": [
+        {
+          "created_by_id": "{{user.id}}"
+        },
+        {
+          "data.recipient_user_id": "{{user.id}}"
+        }
+      ]
     },
     "delete": {
       "created_by_id": "{{user.id}}"
