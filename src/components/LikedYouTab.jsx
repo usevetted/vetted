@@ -58,6 +58,9 @@ export default function LikedYouTab({ profile }) {
       let match;
       if (isRecruiter) {
         const p2 = card.profile;
+        const otherLikes = likedYou.filter(c => c.profile?.id === p2.id && c.swipe.id !== card.swipe.id);
+        const other_job_ids = otherLikes.map(c => c.swipe.context_job_id).filter(Boolean);
+        const other_job_titles = otherLikes.map(c => c.swipe.job_title || '').filter(Boolean);
         match = await base44.entities.Match.create({
           profile1_id: profile.id, profile2_id: p2.id,
           profile1_user_id: profile.created_by_id, profile2_user_id: p2.created_by_id,
@@ -66,6 +69,7 @@ export default function LikedYouTab({ profile }) {
           profile1_picture: profile.profile_picture || '', profile2_picture: p2.profile_picture || '',
           profile1_role: profile.current_role || '', profile2_role: p2.current_role || '',
           profile1_linkedin: profile.linkedin_url || '', profile2_linkedin: p2.linkedin_url || '',
+          other_job_ids, other_job_titles,
           status: 'active',
         });
       } else {
@@ -97,6 +101,19 @@ export default function LikedYouTab({ profile }) {
       setMatchData({ ...match, sharedSkills });
       setLikedYou(prev => prev.filter(c => c.swipe.id !== card.swipe.id));
     } catch { /* ignore */ }
+  };
+
+  const handlePass = async (card) => {
+    try {
+      await base44.entities.Swipe.create({
+        swiper_profile_id: profile.id,
+        target_profile_id: isRecruiter ? card.profile.id : card.swipe.swiper_profile_id,
+        target_type: isRecruiter ? 'candidate' : 'job',
+        action: 'pass',
+        context_job_id: isRecruiter ? null : (card.job?.id || null),
+      });
+    } catch { /* ignore */ }
+    setLikedYou(prev => prev.filter(c => c.swipe.id !== card.swipe.id));
   };
 
   const getCardDisplay = (card) => {
@@ -151,12 +168,20 @@ export default function LikedYouTab({ profile }) {
                   <div className="p-3 flex flex-col flex-1">
                     <div className="text-[14px] font-semibold text-foreground truncate">{name}</div>
                     {subtitle && <div className="text-[11px] text-muted-foreground truncate mt-0.5">{subtitle}</div>}
-                    <button
-                      onClick={() => handleLikeBack(card)}
-                      className="w-full bg-primary text-white rounded-xl text-[13px] font-medium py-2 mt-2 hover:bg-primary/90 transition-colors"
-                    >
-                      Like Back
-                    </button>
+                    <div className="flex gap-2 mt-2">
+                      <button
+                        onClick={() => handlePass(card)}
+                        className="flex-1 border border-border text-muted-foreground rounded-xl text-[12px] font-medium py-2 hover:bg-muted/40 transition-colors"
+                      >
+                        Pass
+                      </button>
+                      <button
+                        onClick={() => handleLikeBack(card)}
+                        className="flex-1 bg-primary text-white rounded-xl text-[12px] font-medium py-2 hover:bg-primary/90 transition-colors"
+                      >
+                        Like Back
+                      </button>
+                    </div>
                   </div>
                 </motion.div>
               );

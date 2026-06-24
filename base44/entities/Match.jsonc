@@ -47,6 +47,18 @@
     "profile2_linkedin": {
       "type": "string"
     },
+    "other_job_ids": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "other_job_titles": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
     "status": {
       "type": "string",
       "enum": [
