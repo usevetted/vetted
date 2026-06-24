@@ -53,7 +53,7 @@ export default function Matches() {
             <LoadingScreen fullscreen={false} />
           </div>
         ) : matches.length === 0 ? (
-          <div className="flex flex-col items-center text-center pt-16 px-6">
+          <div className="flex-1 flex flex-col items-center justify-center text-center px-6">
             <div className="w-16 h-16 rounded-full bg-brand-green-bg flex items-center justify-center mb-4">
               <MessageCircle size={28} className="text-primary/40" />
             </div>
