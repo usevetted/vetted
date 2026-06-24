@@ -1,4 +1,5 @@
 import { Outlet, useNavigate, useLocation } from 'react-router-dom';
+import { motion } from 'framer-motion';
 import { LayoutGrid, Heart, MessageCircle, User } from 'lucide-react';
 import { useEffect, useState, useRef } from 'react';
 import { base44 } from '@/api/base44Client';
@@ -20,6 +21,7 @@ export default function AppLayout() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(false);
   const [retryCount, setRetryCount] = useState(0);
+  const [unreadCount, setUnreadCount] = useState(0);
   // Cache profile per session so tab switches never show a loading screen
   const cacheRef = useRef({ userId: null, profile: null });
 
@@ -66,6 +68,25 @@ export default function AppLayout() {
     loadProfile();
   }, [user, navigate, retryCount]);
 
+  useEffect(() => {
+    if (!profile || !user) return;
+    const fetchUnread = async () => {
+      if (location.pathname.startsWith('/messages')) {
+        setUnreadCount(0);
+        return;
+      }
+      try {
+        const msgs = await base44.entities.Message.filter({ recipient_user_id: user.id, read: false });
+        setUnreadCount(msgs.length);
+      } catch {
+        // ignore
+      }
+    };
+    fetchUnread();
+    const interval = setInterval(fetchUnread, 30000);
+    return () => clearInterval(interval);
+  }, [profile, user, location.pathname]);
+
   if (loading || (!profile && !error)) {
     return <LoadingScreen />;
   }
@@ -101,11 +122,23 @@ export default function AppLayout() {
                   onClick={() => navigate(item.path)}
                   className="flex flex-col items-center gap-1 px-5 py-1.5 transition-colors group"
                 >
-                  <Icon
-                    size={22}
-                    strokeWidth={active ? 2.5 : 1.8}
-                    className={`transition-colors ${active ? 'text-primary' : 'text-muted-foreground/60 group-hover:text-muted-foreground'}`}
-                  />
+                  <div className="relative">
+                    <Icon
+                      size={22}
+                      strokeWidth={active ? 2.5 : 1.8}
+                      className={`transition-colors ${active ? 'text-primary' : 'text-muted-foreground/60 group-hover:text-muted-foreground'}`}
+                    />
+                    {item.path === '/messages' && unreadCount > 0 && (
+                      <motion.span
+                        initial={{ scale: 0 }}
+                        animate={{ scale: 1 }}
+                        transition={{ type: 'spring', stiffness: 500, damping: 25 }}
+                        className="absolute -top-1.5 -right-2 min-w-[16px] h-[16px] px-1 rounded-full bg-primary text-white text-[9px] font-bold flex items-center justify-center"
+                      >
+                        {unreadCount > 9 ? '9+' : unreadCount}
+                      </motion.span>
+                    )}
+                  </div>
                   <span
                     className={`text-[10px] font-medium tracking-wide transition-colors ${
                       active ? 'text-primary' : 'text-muted-foreground/60 group-hover:text-muted-foreground'

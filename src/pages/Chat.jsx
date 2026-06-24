@@ -56,6 +56,22 @@ export default function Chat() {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
   }, [messages]);
 
+  useEffect(() => {
+    const markAsRead = async () => {
+      if (!profile || !matchId) return;
+      const unread = messages.filter(m => m.sender_profile_id !== profile.id && m.read !== true);
+      if (unread.length === 0) return;
+      try {
+        await base44.entities.Message.bulkUpdate(
+          unread.map(m => ({ id: m.id, read: true }))
+        );
+      } catch {
+        // ignore
+      }
+    };
+    markAsRead();
+  }, [messages, profile, matchId]);
+
   const handleSend = async () => {
     if (!input.trim() || sending) return;
     setSending(true);

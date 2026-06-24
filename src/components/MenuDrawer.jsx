@@ -1,7 +1,8 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
-import { X, ChevronDown, Sun, Moon } from 'lucide-react';
+import { X, ChevronDown, Sun, Moon, LogOut } from 'lucide-react';
+import { Switch } from '@/components/ui/switch';
 import { base44 } from '@/api/base44Client';
 import { useTheme } from '@/lib/ThemeContext';
 
@@ -115,6 +116,16 @@ export default function MenuDrawer({ open, onClose, user, profile }) {
 
 
 
+  const handleLogout = async () => {
+    try {
+      await base44.auth.logout();
+      onClose();
+      window.location.href = '/login';
+    } catch {
+      // ignore
+    }
+  };
+
   const handleDeactivate = async () => {
     try {
       await base44.auth.logout();
@@ -158,13 +169,6 @@ export default function MenuDrawer({ open, onClose, user, profile }) {
     { label: 'Active sessions', action: 'sessions' },
     { label: 'Deactivate Account', action: 'deactivate' },
     { label: 'Delete Account', action: 'delete' }]
-
-  },
-  {
-    id: 'device',
-    label: 'Device Settings',
-    options: [
-    { label: 'Dark mode', toggle: true, value: darkMode, onChange: handleToggleDarkMode }]
 
   }];
 
@@ -495,6 +499,24 @@ export default function MenuDrawer({ open, onClose, user, profile }) {
                   </AnimatePresence>
                 </div>
             )}
+            </div>
+
+            {/* Footer */}
+            <div className="border-t border-border/20 px-5 py-3 space-y-1 flex-shrink-0">
+              <div className="flex items-center justify-between py-2">
+                <div className="flex items-center gap-2">
+                  {darkMode ? <Moon size={16} className="text-foreground/60" /> : <Sun size={16} className="text-foreground/60" />}
+                  <span className="text-[13px] text-foreground">Dark mode</span>
+                </div>
+                <Switch checked={darkMode} onCheckedChange={toggleDarkMode} />
+              </div>
+              <button
+                onClick={handleLogout}
+                className="flex items-center gap-2 py-2 w-full text-left hover:bg-primary/5 rounded-lg transition-colors"
+              >
+                <LogOut size={16} className="text-foreground/60" />
+                <span className="text-[13px] text-foreground">Log out</span>
+              </button>
             </div>
           </motion.div>
         </>

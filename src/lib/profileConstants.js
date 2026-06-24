@@ -51,6 +51,10 @@ export const SKILLS_LIST = [
 
   // Legal & Compliance
   "Legal", "Compliance", "Contract Negotiation", "Intellectual Property",
+
+  // Microsoft Office
+  "Microsoft Word", "Microsoft Excel", "Microsoft PowerPoint", "Microsoft Outlook",
+  "Microsoft Access", "Microsoft OneNote", "Microsoft Teams", "Microsoft Office",
 ];
 
 export const yearsOptions = [

@@ -115,8 +115,12 @@ export default function Discover() {
     try {
       if (targetProfileId === profile.id) return;
 
-      const shouldMatch = Math.random() < (action === 'super' ? 0.55 : 0.3);
-      if (!shouldMatch) return;
+      const mutualSwipes = await base44.entities.Swipe.filter({
+        swiper_profile_id: targetProfileId,
+        target_profile_id: profile.id,
+      });
+      const hasMutualLike = mutualSwipes.some(s => s.action === 'like' || s.action === 'super');
+      if (!hasMutualLike) return;
 
       const existingAs1 = await base44.entities.Match.filter({
         profile1_id: profile.id,

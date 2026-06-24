@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useRef, useMemo } from 'react';
 import { useNavigate, useOutletContext } from 'react-router-dom';
 import { Camera, Linkedin, Briefcase, MapPin, DollarSign, X, Plus, LogOut, Pencil, Check, Building2, ChevronDown, Menu } from 'lucide-react';
 import ResumeLink from '@/components/ResumeLink';
@@ -39,6 +39,20 @@ export default function ProfilePage() {
   const [saveError, setSaveError] = useState('');
 
   const isRecruiter = profile?.account_type === 'recruiter';
+
+  const completeness = useMemo(() => {
+    if (!profile) return 0;
+    const fields = isRecruiter
+      ? ['full_name', 'current_role', 'current_company', 'location', 'bio', 'profile_picture']
+      : ['full_name', 'current_role', 'location', 'bio', 'profile_picture', 'resume_url', 'years_experience'];
+    const total = isRecruiter ? 6 : 8;
+    let filled = 0;
+    fields.forEach(f => {
+      if (profile[f] && String(profile[f]).trim()) filled++;
+    });
+    if (!isRecruiter && profile.skills && profile.skills.length > 0) filled++;
+    return Math.round((filled / total) * 100);
+  }, [profile, isRecruiter]);
 
   useEffect(() => {
     if (profile) {
@@ -285,6 +299,21 @@ export default function ProfilePage() {
       ) : (
         /* View mode */
         <div className="px-6 pb-8 space-y-5">
+          {/* Profile completeness */}
+          <div>
+            <div className="flex items-center justify-between mb-1.5">
+              <span className={`text-[12px] ${completeness === 100 ? 'text-primary' : 'text-muted-foreground'}`}>
+                {completeness === 100 ? 'Profile complete ✓' : `Profile ${completeness}% complete`}
+              </span>
+            </div>
+            <div className="h-1.5 rounded-full bg-muted overflow-hidden">
+              <div
+                className="h-full rounded-full bg-primary transition-all duration-500"
+                style={{ width: `${completeness}%` }}
+              />
+            </div>
+          </div>
+
           {/* Account type badge */}
           <div className="flex items-center gap-2 p-3 bg-brand-green-bg rounded-xl">
             <div className="w-8 h-8 rounded-lg bg-brand-green-light flex items-center justify-center">
