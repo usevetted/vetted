@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef, useMemo } from 'react';
 import { useNavigate, useOutletContext } from 'react-router-dom';
-import { Camera, Linkedin, Briefcase, MapPin, DollarSign, X, Plus, LogOut, Pencil, Check, Building2, ChevronDown, Menu } from 'lucide-react';
+import { Camera, Linkedin, Briefcase, MapPin, DollarSign, X, Plus, Pencil, Check, Building2, ChevronDown, Menu } from 'lucide-react';
 import ResumeLink from '@/components/ResumeLink';
 import Logo from '@/components/Logo';
 import PickerSheet from '@/components/PickerSheet';
@@ -299,20 +299,21 @@ export default function ProfilePage() {
       ) : (
         /* View mode */
         <div className="px-6 pb-8 space-y-5">
-          {/* Profile completeness */}
-          <div>
-            <div className="flex items-center justify-between mb-1.5">
-              <span className={`text-[12px] ${completeness === 100 ? 'text-primary' : 'text-muted-foreground'}`}>
-                {completeness === 100 ? 'Profile complete ✓' : `Profile ${completeness}% complete`}
-              </span>
+          {completeness < 100 && (
+            <div>
+              <div className="flex items-center justify-between mb-1.5">
+                <span className="text-[12px] text-muted-foreground">
+                  Profile {completeness}% complete
+                </span>
+              </div>
+              <div className="h-1.5 rounded-full bg-muted overflow-hidden">
+                <div
+                  className="h-full rounded-full bg-primary transition-all duration-500"
+                  style={{ width: `${completeness}%` }}
+                />
+              </div>
             </div>
-            <div className="h-1.5 rounded-full bg-muted overflow-hidden">
-              <div
-                className="h-full rounded-full bg-primary transition-all duration-500"
-                style={{ width: `${completeness}%` }}
-              />
-            </div>
-          </div>
+          )}
 
           {/* Account type badge */}
           <div className="flex items-center gap-2 p-3 bg-brand-green-bg rounded-xl">
@@ -395,13 +396,7 @@ export default function ProfilePage() {
             <ResumeLink url={resumeUrl} />
           )}
 
-          <button
-            onClick={handleLogout}
-            className="w-full h-[48px] border border-border rounded-2xl text-[14px] font-medium text-muted-foreground hover:bg-muted/30 transition-colors flex items-center justify-center gap-2 mt-4"
-          >
-            <LogOut size={16} />
-            Sign Out
-          </button>
+
         </div>
       )}
 
