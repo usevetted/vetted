@@ -96,7 +96,7 @@ export default function LikedYouTab({ profile }) {
   if (loading) return <LoadingScreen fullscreen={false} />;
 
   return (
-    <div className="flex-1 flex flex-col min-h-0">
+    <div className="h-full flex flex-col">
       {likedYou.length === 0 ? (
         <div className="flex-1 flex flex-col items-center justify-center text-center px-6">
           <div className="w-16 h-16 rounded-full bg-brand-green-bg flex items-center justify-center mb-4">
