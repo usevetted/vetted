@@ -60,7 +60,7 @@ const AuthenticatedApp = () => {
   return (
     <AnimatePresence mode="wait">
     <motion.div
-      key={location.pathname}
+      key={isPublicRoute || location.pathname.startsWith('/onboarding') ? location.pathname : 'main-app'}
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
       exit={{ opacity: 0 }}
