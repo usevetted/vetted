@@ -381,9 +381,6 @@ Write only the bio text, no quotes, no preamble.`;
               <div className="p-3 rounded-xl bg-muted/20 border border-border/40">
                 <SkillsPicker selected={skills} onChange={setSkills} maxHeight="180px" />
               </div>
-              {skills.length > 0 && (
-                <p className="text-[11px] text-muted-foreground mt-1.5">{skills.length} selected</p>
-              )}
               {errors.skills && <p className={errorClass}>{errors.skills}</p>}
             </div>
 
