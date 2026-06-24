@@ -74,7 +74,11 @@ export default function LikedYouTab({ profile }) {
           status: 'active',
         });
       }
-      setMatchData(match);
+      const mySkills = profile.skills || [];
+      const theirSkills = (isRecruiter ? card.profile?.skills : card.recruiterProfile?.skills) || [];
+      const sharedSkills = mySkills.filter(s => theirSkills.includes(s)).slice(0, 3);
+
+      setMatchData({ ...match, sharedSkills });
       setLikedYou(prev => prev.filter(c => c.swipe.id !== card.swipe.id));
     } catch { /* ignore */ }
   };

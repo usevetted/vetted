@@ -1,7 +1,7 @@
 import { motion } from 'framer-motion';
 import { Heart, MessageCircle } from 'lucide-react';
 
-export default function MatchOverlay({ match, onMessage, onKeepSwiping }) {
+export default function MatchOverlay({ match, onMessage, onKeepSwiping, sharedSkills }) {
   if (!match) return null;
 
   const leftInitial = (match.profile1_name || 'Y').split(' ').map(n => n[0]).join('').slice(0, 2).toUpperCase();
@@ -70,6 +70,18 @@ export default function MatchOverlay({ match, onMessage, onKeepSwiping }) {
           <p className="text-[13px] text-foreground mb-1 max-w-[220px] leading-relaxed">
             You and <strong>{match.company_name || 'the team'}</strong> want to connect for <strong>{match.job_title}</strong>
           </p>
+        )}
+        {sharedSkills && sharedSkills.length > 0 && (
+          <div className="mb-4">
+            <p className="text-[11px] text-muted-foreground mb-2">Skills in common</p>
+            <div className="flex flex-wrap gap-1.5 justify-center">
+              {sharedSkills.map(skill => (
+                <span key={skill} className="px-2.5 py-1 bg-brand-green-bg text-primary text-[11px] font-medium rounded-full border border-primary/20">
+                  {skill}
+                </span>
+              ))}
+            </div>
+          </div>
         )}
         <p className="text-[11px] text-muted-foreground/70 mb-7">Reach out before this opportunity passes</p>
 

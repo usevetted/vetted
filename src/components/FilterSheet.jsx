@@ -1,5 +1,6 @@
 import { motion, AnimatePresence } from 'framer-motion';
 import { X, MapPin } from 'lucide-react';
+import { SKILLS_LIST } from '@/lib/profileConstants';
 
 export default function FilterSheet({ open, onClose, filters, setFilters, isRecruiter }) {
   const toggleWorkArrangement = (type) => {
@@ -127,6 +128,39 @@ export default function FilterSheet({ open, onClose, filters, setFilters, isRecr
                     className="w-5 h-5 rounded accent-primary"
                   />
                 </label>
+              )}
+
+              {/* Skills — recruiters */}
+              {isRecruiter && (
+                <div>
+                  <label className="text-[12px] font-medium text-foreground/70 mb-2.5 block">Skills</label>
+                  <div className="flex flex-wrap gap-2 max-h-[180px] overflow-y-auto no-scrollbar">
+                    {SKILLS_LIST.map(skill => {
+                      const selected = filters.skills?.includes(skill);
+                      return (
+                        <button
+                          key={skill}
+                          onClick={() => {
+                            const current = filters.skills || [];
+                            setFilters({
+                              ...filters,
+                              skills: selected
+                                ? current.filter(s => s !== skill)
+                                : [...current, skill],
+                            });
+                          }}
+                          className={`px-3 py-1.5 rounded-full text-[12px] font-medium border transition-colors ${
+                            selected
+                              ? 'bg-primary text-white border-primary'
+                              : 'bg-muted/50 text-muted-foreground border-border hover:bg-muted'
+                          }`}
+                        >
+                          {skill}
+                        </button>
+                      );
+                    })}
+                  </div>
+                </div>
               )}
 
               {/* Sort by — everyone */}

@@ -19,7 +19,7 @@ export default function Discover() {
   const [matchData, setMatchData] = useState(null);
   const [triggerAction, setTriggerAction] = useState(null);
   const [filterOpen, setFilterOpen] = useState(false);
-  const [filters, setFilters] = useState({ remoteOnly: false, inPersonOnly: false, openToWork: false, sortBy: 'newest', distance: 50, location: '' });
+  const [filters, setFilters] = useState({ remoteOnly: false, inPersonOnly: false, openToWork: false, sortBy: 'newest', distance: 50, location: '', skills: [] });
 
   const isRecruiter = profile?.account_type === 'recruiter';
 
@@ -39,6 +39,9 @@ export default function Discover() {
       if (filters.location.trim()) {
         const loc = filters.location.trim().toLowerCase();
         filtered = filtered.filter(c => c.location && c.location.toLowerCase().includes(loc));
+      }
+      if (filters.skills.length > 0) {
+        filtered = filtered.filter(c => c.skills && c.skills.some(s => filters.skills.includes(s)));
       }
     }
     if (filters.sortBy === 'oldest') {
@@ -152,7 +155,11 @@ export default function Discover() {
         status: 'active',
       });
 
-      setMatchData(match);
+      const mySkills = profile.skills || [];
+      const theirSkills = card.skills || [];
+      const sharedSkills = mySkills.filter(s => theirSkills.includes(s)).slice(0, 3);
+
+      setMatchData({ ...match, sharedSkills });
     } catch {
       // ignore match errors
     }
