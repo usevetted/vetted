@@ -58,18 +58,28 @@ export default function LikedYouTab({ profile }) {
       let match;
       if (isRecruiter) {
         const p2 = card.profile;
-        const otherLikes = likedYou.filter(c => c.profile?.id === p2.id && c.swipe.id !== card.swipe.id);
-        const other_job_ids = otherLikes.map(c => c.swipe.context_job_id).filter(Boolean);
-        const other_job_titles = otherLikes.map(c => c.swipe.job_title || '').filter(Boolean);
+        const allSwipesFromSeeker = await base44.entities.Swipe.filter({ swiper_profile_id: p2.id }).catch(() => []);
+        const otherJobSwipes = allSwipesFromSeeker.filter(s =>
+          s.target_profile_id === profile.id &&
+          (s.action === 'like' || s.action === 'super') &&
+          s.context_job_id &&
+          s.context_job_id !== card.swipe.context_job_id
+        );
+        const otherJobs = await Promise.all(otherJobSwipes.map(s => base44.entities.Job.get(s.context_job_id).catch(() => null)));
+        const otherJobIds = otherJobs.filter(Boolean).map(j => j.id);
+        const otherJobTitles = otherJobs.filter(Boolean).map(j => j.title);
+
         match = await base44.entities.Match.create({
           profile1_id: profile.id, profile2_id: p2.id,
           profile1_user_id: profile.created_by_id, profile2_user_id: p2.created_by_id,
-          job_id: null, job_title: p2.current_role || 'New Role', company_name: p2.current_company || '',
+          job_id: card.swipe.context_job_id || null,
+          job_title: p2.current_role || 'New Role', company_name: p2.current_company || '',
           profile1_name: profile.full_name, profile2_name: p2.full_name,
           profile1_picture: profile.profile_picture || '', profile2_picture: p2.profile_picture || '',
           profile1_role: profile.current_role || '', profile2_role: p2.current_role || '',
           profile1_linkedin: profile.linkedin_url || '', profile2_linkedin: p2.linkedin_url || '',
-          other_job_ids, other_job_titles,
+          other_job_ids: otherJobIds,
+          other_job_titles: otherJobTitles,
           status: 'active',
         });
       } else {
@@ -111,9 +121,9 @@ export default function LikedYouTab({ profile }) {
         target_type: isRecruiter ? 'candidate' : 'job',
         action: 'pass',
         context_job_id: isRecruiter ? null : (card.job?.id || null),
-      });
+      }).catch(() => {});
+      setLikedYou(prev => prev.filter(c => c.swipe.id !== card.swipe.id));
     } catch { /* ignore */ }
-    setLikedYou(prev => prev.filter(c => c.swipe.id !== card.swipe.id));
   };
 
   const getCardDisplay = (card) => {

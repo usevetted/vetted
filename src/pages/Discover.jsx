@@ -126,6 +126,12 @@ export default function Discover() {
     try {
       if (targetProfileId === profile.id) return;
 
+      if (isRecruiter) {
+        const existingMatches1 = await base44.entities.Match.filter({ profile1_id: profile.id, profile2_id: targetProfileId }).catch(() => []);
+        const existingMatches2 = await base44.entities.Match.filter({ profile1_id: targetProfileId, profile2_id: profile.id }).catch(() => []);
+        if (existingMatches1.length > 0 || existingMatches2.length > 0) return;
+      }
+
       const mutualSwipes = await base44.entities.Swipe.filter({
         swiper_profile_id: targetProfileId,
         target_profile_id: profile.id,
@@ -146,12 +152,6 @@ export default function Discover() {
       });
 
       if (existingAs1.length > 0 || existingAs2.length > 0) return;
-
-      if (isRecruiter) {
-        const broadCheck1 = await base44.entities.Match.filter({ profile1_id: profile.id, profile2_id: targetProfileId });
-        const broadCheck2 = await base44.entities.Match.filter({ profile1_id: targetProfileId, profile2_id: profile.id });
-        if (broadCheck1.length > 0 || broadCheck2.length > 0) return;
-      }
 
       const match = await base44.entities.Match.create({
         profile1_id: profile.id,

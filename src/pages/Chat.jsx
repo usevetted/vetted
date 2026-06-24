@@ -184,7 +184,7 @@ export default function Chat() {
                   </div>
                 )}
                 {match.other_job_titles?.length > 0 && (
-                  <div className="mt-3 p-3 bg-brand-green-bg rounded-xl border border-primary/10">
+                  <div className="mt-2 p-3 bg-brand-green-bg rounded-xl border border-primary/10">
                     <p className="text-[11px] font-semibold text-primary/70 uppercase tracking-wider mb-1.5">Also interested in</p>
                     {match.other_job_titles.map((title, i) => (
                       <p key={i} className="text-[13px] text-foreground">• {title}</p>
