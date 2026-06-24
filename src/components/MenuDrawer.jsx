@@ -468,31 +468,6 @@ export default function MenuDrawer({ open, onClose, user, profile }) {
                             </div>
                     }
 
-                          {/* Device Settings content */}
-                          {section.id === 'device' &&
-                    <div className="space-y-3">
-                              <div className="flex items-center justify-between py-2">
-                                <div className="flex items-center gap-2">
-                                  {darkMode ?
-                          <Moon size={14} className="text-foreground/60" /> :
-
-                          <Sun size={14} className="text-foreground/60" />
-                          }
-                                  <span className="text-[13px] text-foreground">Dark mode</span>
-                                </div>
-                                <button
-                          onClick={handleToggleDarkMode}
-                          className={`w-10 h-6 rounded-full relative flex-shrink-0 transition-colors duration-200 ${darkMode ? 'bg-primary' : 'bg-muted-foreground/30'}`}>
-                          
-                                  <motion.div
-                            layout
-                            transition={{ type: 'spring', stiffness: 500, damping: 30 }}
-                            className={`absolute top-0.5 w-5 h-5 rounded-full bg-white ${darkMode ? 'right-0.5' : 'left-0.5'}`} />
-                          
-                                </button>
-                              </div>
-                            </div>
-                    }
                         </div>
                       </motion.div>
                 }
