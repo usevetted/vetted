@@ -302,23 +302,39 @@ export default function LikedYouTab({ profile }) {
                 transition={{ duration: 0.25, delay: i * 0.04 }}
                 className="rounded-2xl bg-card border border-border/60 overflow-hidden">
                 
-                  <div className="flex items-center gap-3 p-3 pb-2">
-                    <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-brand-green-bg to-secondary/40 flex items-center justify-center overflow-hidden flex-shrink-0">
-                      {p.profile_picture ?
-                    <img src={p.profile_picture} alt={p.full_name} className="w-full h-full object-cover" /> :
-
-                    <div className="text-[18px] font-semibold text-primary/70">{initials}</div>
-                    }
-                    </div>
-                    <div className="flex-1 min-w-0">
-                      <div className="text-[14px] font-semibold text-foreground truncate">{p.full_name}</div>
-                      {p.current_role && <div className="text-[12px] text-muted-foreground truncate">{p.current_role}</div>}
-                    </div>
-                    {card.jobEntries.length > 1 &&
-                  <div className="text-[11px] text-primary font-medium flex-shrink-0">
-                        {card.jobEntries.length} roles
+                  <div className="p-3 pb-2">
+                    <div className="flex items-center gap-3 mb-2">
+                      <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-brand-green-bg to-secondary/40 flex items-center justify-center overflow-hidden flex-shrink-0">
+                        {p.profile_picture ? (
+                          <img src={p.profile_picture} alt={p.full_name} className="w-full h-full object-cover" />
+                        ) : (
+                          <div className="text-[18px] font-semibold text-primary/70">{initials}</div>
+                        )}
                       </div>
-                  }
+                      <div className="flex-1 min-w-0">
+                        <div className="flex items-center gap-1.5 flex-wrap">
+                          <div className="text-[14px] font-semibold text-foreground truncate">{p.full_name}</div>
+                          {p.open_to_work && (
+                            <span className="text-[9px] font-semibold px-1.5 py-0.5 rounded-full bg-green-100 text-green-700 flex-shrink-0">#OpenToWork</span>
+                          )}
+                        </div>
+                        {p.current_role && <div className="text-[12px] text-muted-foreground truncate">{p.current_role}{p.current_company ? ` · ${p.current_company}` : ''}</div>}
+                        {p.location && <div className="text-[11px] text-muted-foreground/70 truncate">{p.location}</div>}
+                      </div>
+                      {card.jobEntries.length > 1 && (
+                        <div className="text-[11px] text-primary font-medium flex-shrink-0">{card.jobEntries.length} roles</div>
+                      )}
+                    </div>
+                    {p.skills && p.skills.length > 0 && (
+                      <div className="flex flex-wrap gap-1">
+                        {p.skills.slice(0, 4).map((skill, si) => (
+                          <span key={si} className="text-[10px] px-2 py-0.5 rounded-full bg-secondary text-secondary-foreground">{skill}</span>
+                        ))}
+                        {p.skills.length > 4 && (
+                          <span className="text-[10px] px-2 py-0.5 rounded-full bg-secondary text-secondary-foreground">+{p.skills.length - 4}</span>
+                        )}
+                      </div>
+                    )}
                   </div>
 
                   <div className="px-3 pb-3 flex flex-col gap-2">

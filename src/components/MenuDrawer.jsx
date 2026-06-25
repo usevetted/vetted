@@ -480,15 +480,13 @@ export default function MenuDrawer({ open, onClose, user, profile }) {
                         </div>
 
                         {section.id === 'support' && (
-                          <div className="py-2 space-y-3">
-                            <div>
-                              <p className="text-[12px] text-muted-foreground leading-relaxed">
-                                Help us improve Vetted by sharing what's working and what isn't.
-                              </p>
-                            </div>
+                          <div className="py-2 space-y-2">
+                            <p className="text-[11px] text-muted-foreground leading-relaxed">
+                              Help us improve Vetted — share what's working, what's broken, or any ideas.
+                            </p>
                             <button
                               onClick={() => setFeedbackOpen(true)}
-                              className="w-full h-[38px] bg-primary text-white text-[13px] font-medium rounded-xl hover:bg-primary/90 transition-colors"
+                              className="w-full h-[36px] bg-primary text-white text-[12px] font-medium rounded-xl hover:bg-primary/90 transition-colors"
                             >
                               Send Feedback
                             </button>

@@ -17,6 +17,9 @@
     "company_initial_color": {
       "type": "string"
     },
+    "company_picture": {
+      "type": "string"
+    },
     "location": {
       "type": "string"
     },

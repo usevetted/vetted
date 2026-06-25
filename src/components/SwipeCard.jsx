@@ -91,13 +91,17 @@ function JobCardContent({ card }) {
     <div className="p-5">
       <div className="flex items-start gap-3 mb-4">
         <div
-          className="w-12 h-12 rounded-xl flex items-center justify-center text-sm font-bold flex-shrink-0"
-          style={{
+          className="w-12 h-12 rounded-xl flex items-center justify-center text-sm font-bold flex-shrink-0 overflow-hidden"
+          style={!card.company_picture ? {
             backgroundColor: card.company_initial_bg || '#e8f0fc',
             color: card.company_initial_color || '#2a55a0'
-          }}
+          } : {}}
         >
-          {card.company_initial || card.company?.[0] || 'C'}
+          {card.company_picture ? (
+            <img src={card.company_picture} alt={card.company} className="w-full h-full object-cover" />
+          ) : (
+            card.company_initial || card.company?.[0] || 'C'
+          )}
         </div>
         <div className="flex-1 min-w-0">
           <div className="text-[9px] text-muted-foreground/60 uppercase tracking-wider font-semibold mb-0.5">Open Role</div>
@@ -143,8 +147,14 @@ function JobCardContent({ card }) {
 
       {(card.recruiter_name || card.recruiter_linkedin) && (
         <div className="rounded-2xl bg-muted/40 border border-border/30 p-3 flex items-center gap-3">
-          <div className="w-10 h-10 rounded-full bg-brand-green-light flex items-center justify-center text-[12px] font-bold text-primary flex-shrink-0">
-            {(card.recruiter_name || 'R').split(' ').map(n => n[0]).join('').slice(0, 2).toUpperCase()}
+          <div className="w-10 h-10 rounded-full overflow-hidden flex-shrink-0 bg-brand-green-light flex items-center justify-center">
+            {card.company_picture ? (
+              <img src={card.company_picture} alt={card.recruiter_name} className="w-full h-full object-cover" />
+            ) : (
+              <span className="text-[12px] font-bold text-primary">
+                {(card.recruiter_name || 'R').split(' ').map(n => n[0]).join('').slice(0, 2).toUpperCase()}
+              </span>
+            )}
           </div>
           <div className="flex-1 min-w-0">
             <div className="text-[9px] text-muted-foreground/60 uppercase tracking-wider font-semibold">Posted by</div>

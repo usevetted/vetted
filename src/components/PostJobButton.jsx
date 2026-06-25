@@ -16,6 +16,8 @@ export default function PostJobButton({ isRecruiter, profile, onJobPosted }) {
   });
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
+  const [companyPicture, setCompanyPicture] = useState('');
+  const [useCompanyPicture, setUseCompanyPicture] = useState(true);
 
   if (!isRecruiter) return null;
 
@@ -39,7 +41,7 @@ export default function PostJobButton({ isRecruiter, profile, onJobPosted }) {
         recruiter_profile_id: profile.id,
         recruiter_name: profile.full_name,
         recruiter_linkedin: profile.linkedin_url || '',
-        profile_picture: profile.profile_picture || '',
+        company_picture: useCompanyPicture ? (companyPicture || profile.profile_picture || '') : '',
       });
 
       toast.success('Job posted successfully', {
@@ -52,6 +54,8 @@ export default function PostJobButton({ isRecruiter, profile, onJobPosted }) {
         },
       });
       setFormData({ title: '', company: '', location: '', remote: false, description: '' });
+      setCompanyPicture('');
+      setUseCompanyPicture(true);
       setModalOpen(false);
       onJobPosted();
     } catch (err) {
@@ -120,6 +124,46 @@ export default function PostJobButton({ isRecruiter, profile, onJobPosted }) {
                       className="w-full h-[40px] border border-input rounded-lg px-3 text-[13px] bg-card focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary"
                       placeholder="e.g., Acme Corp"
                     />
+                  </div>
+
+                  <div>
+                    <label className="text-[12px] font-medium text-foreground/70 mb-1.5 block">Company Picture</label>
+                    <div className="flex items-center gap-3 p-3 bg-muted/30 rounded-lg mb-2">
+                      <input
+                        type="checkbox"
+                        id="useCompanyPicture"
+                        checked={useCompanyPicture}
+                        onChange={(e) => setUseCompanyPicture(e.target.checked)}
+                        className="w-4 h-4 rounded"
+                      />
+                      <label htmlFor="useCompanyPicture" className="text-[13px] text-foreground cursor-pointer">
+                        Include a company picture on this posting
+                      </label>
+                    </div>
+                    {useCompanyPicture && (
+                      <div className="space-y-2">
+                        <input
+                          type="text"
+                          value={companyPicture}
+                          onChange={(e) => setCompanyPicture(e.target.value)}
+                          className="w-full h-[40px] border border-input rounded-lg px-3 text-[13px] bg-card focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary"
+                          placeholder="Paste image URL (or leave blank to use your profile picture)"
+                        />
+                        {(companyPicture || profile.profile_picture) && (
+                          <div className="flex items-center gap-2">
+                            <img
+                              src={companyPicture || profile.profile_picture}
+                              alt="Preview"
+                              className="w-10 h-10 rounded-lg object-cover border border-border"
+                              onError={(e) => { e.target.style.display = 'none'; }}
+                            />
+                            <span className="text-[11px] text-muted-foreground">
+                              {companyPicture ? 'Custom image' : 'Using your profile picture'}
+                            </span>
+                          </div>
+                        )}
+                      </div>
+                    )}
                   </div>
 
                   <div>
