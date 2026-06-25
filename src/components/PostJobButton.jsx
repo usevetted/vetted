@@ -57,7 +57,7 @@ export default function PostJobButton({ isRecruiter, profile, onJobPosted }) {
         recruiter_profile_id: profile.id,
         recruiter_name: profile.full_name,
         recruiter_linkedin: profile.linkedin_url || '',
-        company_picture: useCompanyPicture ? companyPicture : '',
+        company_picture: companyPicture || '',
       });
 
       toast.success('Job posted successfully', {
