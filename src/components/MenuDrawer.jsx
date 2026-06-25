@@ -124,9 +124,9 @@ export default function MenuDrawer({ open, onClose, user, profile }) {
       onClose();
       window.location.href = '/login';
     } catch {
+
       // ignore
-    }
-  };
+    }};
 
   const handleDeactivate = async () => {
     try {
@@ -135,9 +135,9 @@ export default function MenuDrawer({ open, onClose, user, profile }) {
       window.location.href = '/landing';
     } catch {
 
+
       // ignore
     }};
-
   const handleDelete = async () => {
     if (deleteConfirmText !== 'DELETE') return;
     try {
@@ -146,9 +146,9 @@ export default function MenuDrawer({ open, onClose, user, profile }) {
       window.location.href = '/landing';
     } catch {
 
+
       // ignore
     }};
-
   const toggleSection = (section) => {
     setExpanded(expanded === section ? null : section);
   };
@@ -177,8 +177,8 @@ export default function MenuDrawer({ open, onClose, user, profile }) {
     id: 'support',
     label: 'Support',
     options: [
-      { label: 'Send Feedback', action: 'feedback' },
-    ]
+    { label: 'Send Feedback', action: 'feedback' }]
+
   }];
 
 
@@ -479,17 +479,17 @@ export default function MenuDrawer({ open, onClose, user, profile }) {
 
                         </div>
 
-                        {section.id === 'support' && (
-                          <div className="space-y-1 py-1">
+                        {section.id === 'support' &&
+                  <div className="space-y-1 py-1">
                             <button
-                              onClick={() => { setFeedbackOpen(true); }}
-                              className="text-[13px] text-foreground py-2 hover:text-primary transition-colors text-left w-full"
-                            >
+                      onClick={() => {setFeedbackOpen(true);}}
+                      className="text-[13px] py-2 hover:text-primary transition-colors text-left w-full text-[hsl(var(--brand-green))]">
+                      
                               Send Feedback
                             </button>
                             <p className="text-[11px] text-muted-foreground">Help us improve Vetted by sharing what's working and what isn't.</p>
                           </div>
-                        )}
+                  }
 
                       </motion.div>
                 }
@@ -508,9 +508,9 @@ export default function MenuDrawer({ open, onClose, user, profile }) {
                 <Switch checked={darkMode} onCheckedChange={toggleDarkMode} />
               </div>
               <button
-                onClick={handleLogout}
-                className="flex items-center gap-2 py-2 w-full text-left hover:bg-primary/5 rounded-lg transition-colors"
-              >
+              onClick={handleLogout}
+              className="flex items-center gap-2 py-2 w-full text-left hover:bg-primary/5 rounded-lg transition-colors">
+              
                 <LogOut size={16} className="text-foreground/60" />
                 <span className="text-[13px] text-foreground">Log out</span>
               </button>
