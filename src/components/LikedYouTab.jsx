@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Heart, ChevronLeft, ChevronRight } from 'lucide-react';
+import { Heart, Star, Zap } from 'lucide-react';
 import { base44 } from '@/api/base44Client';
 import LoadingScreen from '@/components/LoadingScreen';
 import MatchOverlay from '@/components/MatchOverlay';
@@ -11,7 +11,7 @@ export default function LikedYouTab({ profile }) {
   const [cards, setCards] = useState([]);
   const [loading, setLoading] = useState(true);
   const [matchData, setMatchData] = useState(null);
-  const [jobIndexMap, setJobIndexMap] = useState({});
+  const [acting, setActing] = useState({});
 
   const isRecruiter = profile?.account_type === 'recruiter';
 
@@ -24,29 +24,21 @@ export default function LikedYouTab({ profile }) {
         if (likedSwipes.length === 0) { setCards([]); return; }
 
         const mySwipes = await base44.entities.Swipe.filter({ swiper_profile_id: profile.id });
-        const swipedTargetIds = new Set(mySwipes.map(s => s.target_profile_id));
 
         const m1 = await base44.entities.Match.filter({ profile1_id: profile.id });
         const m2 = await base44.entities.Match.filter({ profile2_id: profile.id });
-        const matchedCombos = new Set();
-        [...m1, ...m2].forEach(m => {
-          const otherId = m.profile1_id === profile.id ? m.profile2_id : m.profile1_id;
-          matchedCombos.add(`${otherId}__${m.job_id || ''}`);
-        });
+        const allMyMatches = [...m1, ...m2].filter(m => m.status === 'active');
 
         if (isRecruiter) {
-          const passedSeekerIds = new Set(mySwipes.filter(s => s.action === 'pass').map(s => s.target_profile_id));
-          const available = likedSwipes.filter(s => {
-            const comboKey = `${s.swiper_profile_id}__${s.context_job_id || ''}`;
-            return !passedSeekerIds.has(s.swiper_profile_id) && !matchedCombos.has(comboKey);
-          });
-
-          if (available.length === 0) { setCards([]); return; }
+          const myPassCombos = new Set(
+            mySwipes.filter(s => s.action === 'pass').map(s => `${s.target_profile_id}__${s.context_job_id || ''}`)
+          );
 
           const grouped = {};
-          available.forEach(swipe => {
-            if (!grouped[swipe.swiper_profile_id]) grouped[swipe.swiper_profile_id] = [];
-            grouped[swipe.swiper_profile_id].push(swipe);
+          likedSwipes.forEach(swipe => {
+            const seekerId = swipe.swiper_profile_id;
+            if (!grouped[seekerId]) grouped[seekerId] = [];
+            grouped[seekerId].push(swipe);
           });
 
           const seekerIds = Object.keys(grouped);
@@ -57,127 +49,196 @@ export default function LikedYouTab({ profile }) {
             const seekerId = seekerIds[i];
             const seekerProfile = seekerProfiles[i];
             if (!seekerProfile) continue;
+
             const swipes = grouped[seekerId];
             const jobs = await Promise.all(swipes.map(s => s.context_job_id ? base44.entities.Job.get(s.context_job_id).catch(() => null) : Promise.resolve(null)));
-            const jobEntries = swipes.map((swipe, j) => ({ swipe, job: jobs[j], interest_level: swipe.interest_level || 'medium' })).filter(e => e.job);
-            result.push({ seekerProfile, swipes, jobEntries, groupKey: seekerId });
+
+            const existingMatchJobIds = new Set(
+              allMyMatches
+                .filter(m => m.profile1_id === seekerId || m.profile2_id === seekerId)
+                .flatMap(m => [m.job_id, ...(m.additional_job_ids || [])].filter(Boolean))
+            );
+
+            const jobEntries = swipes.map((swipe, j) => {
+              const job = jobs[j];
+              if (!job) return null;
+              const comboKey = `${seekerId}__${job.id}`;
+              if (myPassCombos.has(comboKey)) return null;
+              if (existingMatchJobIds.has(job.id)) return null;
+              return { swipe, job, isSuper: swipe.action === 'super' };
+            }).filter(Boolean);
+
+            if (jobEntries.length === 0) continue;
+            result.push({ seekerProfile, jobEntries, seekerId });
           }
           setCards(result);
         } else {
-          const available = likedSwipes.filter(s => {
-            const comboKey = `${s.swiper_profile_id}__${s.context_job_id || ''}`;
-            return !swipedTargetIds.has(s.swiper_profile_id) && !matchedCombos.has(comboKey);
-          });
-          if (available.length === 0) { setCards([]); return; }
-          const jobs = await Promise.all(available.map(s => s.context_job_id ? base44.entities.Job.get(s.context_job_id).catch(() => null) : Promise.resolve(null)));
+          const alreadyActedRecruiterIds = new Set(mySwipes.map(s => s.target_profile_id));
+          const matchedRecruiterIds = new Set(
+            allMyMatches.map(m => m.profile1_id === profile.id ? m.profile2_id : m.profile1_id)
+          );
+
+          const available = likedSwipes.filter(s =>
+            !alreadyActedRecruiterIds.has(s.swiper_profile_id) &&
+            !matchedRecruiterIds.has(s.swiper_profile_id)
+          );
+
           const recruiters = await Promise.all(available.map(s => base44.entities.Profile.get(s.swiper_profile_id).catch(() => null)));
-          setCards(available.map((swipe, i) => ({ swipe, job: jobs[i], recruiterProfile: recruiters[i] })).filter(c => c.job || c.recruiterProfile));
+          const jobs = await Promise.all(available.map(s => s.context_job_id ? base44.entities.Job.get(s.context_job_id).catch(() => null) : Promise.resolve(null)));
+
+          setCards(available.map((swipe, i) => ({
+            swipe,
+            recruiterProfile: recruiters[i],
+            job: jobs[i],
+          })).filter(c => c.recruiterProfile));
         }
       } catch (err) {
-        console.error('LikedYouTab load error:', err);
-      } finally { setLoading(false); }
+        console.error('LikedYouTab error:', err);
+      } finally {
+        setLoading(false);
+      }
     };
     load();
   }, [profile, isRecruiter]);
 
-  const handleLikeBack = async (card) => {
-    try {
-      let match;
-      if (isRecruiter) {
-        const p2 = card.seekerProfile;
-        const primaryEntry = card.jobEntries[0];
-        const otherEntries = card.jobEntries.slice(1);
-        const otherJobIds = otherEntries.map(e => e.job?.id).filter(Boolean);
-        const otherJobTitles = otherEntries.map(e => e.job?.title).filter(Boolean);
+  const ensureMatch = async ({ seekerId, recruiterId, seekerProfile, recruiterProfile, job }) => {
+    const seekerUserId = seekerProfile?.created_by_id || '';
+    const recruiterUserId = recruiterProfile?.created_by_id || '';
 
-        match = await base44.entities.Match.create({
-          profile1_id: profile.id, profile2_id: p2.id,
-          profile1_user_id: profile.created_by_id, profile2_user_id: p2.created_by_id,
-          job_id: primaryEntry?.job?.id || null,
-          job_title: primaryEntry?.job?.title || p2.current_role || '',
-          company_name: primaryEntry?.job?.company || profile.current_company || '',
-          profile1_name: profile.full_name, profile2_name: p2.full_name,
-          profile1_picture: profile.profile_picture || '', profile2_picture: p2.profile_picture || '',
-          profile1_role: profile.current_role || '', profile2_role: p2.current_role || '',
-          profile1_linkedin: profile.linkedin_url || '', profile2_linkedin: p2.linkedin_url || '',
-          other_job_ids: otherJobIds,
-          other_job_titles: otherJobTitles,
-          status: 'active',
+    const [ex1, ex2] = await Promise.all([
+      base44.entities.Match.filter({ profile1_id: seekerId, profile2_id: recruiterId }),
+      base44.entities.Match.filter({ profile1_id: recruiterId, profile2_id: seekerId }),
+    ]);
+    const existing = [...ex1, ...ex2].find(m => m.status === 'active');
+
+    if (existing) {
+      const currentJobIds = [existing.job_id, ...(existing.additional_job_ids || [])].filter(Boolean);
+      if (job?.id && !currentJobIds.includes(job.id)) {
+        const updated = await base44.entities.Match.update(existing.id, {
+          additional_job_ids: [...(existing.additional_job_ids || []), job.id],
+          additional_job_titles: [...(existing.additional_job_titles || []), job.title || ''],
         });
-
-        await base44.entities.Swipe.create({
-          swiper_profile_id: profile.id,
-          target_profile_id: p2.id,
-          target_type: 'candidate',
-          action: 'like',
-          context_job_id: null,
-        }).catch(() => {});
-      } else {
-        const job = card.job;
-        const rp = card.recruiterProfile;
-        match = await base44.entities.Match.create({
-          profile1_id: profile.id, profile2_id: card.swipe.swiper_profile_id,
-          profile1_user_id: profile.created_by_id, profile2_user_id: rp?.created_by_id || '',
-          job_id: job?.id || null, job_title: job?.title || '', company_name: job?.company || '',
-          profile1_name: profile.full_name, profile2_name: rp?.full_name || job?.company || '',
-          profile1_picture: profile.profile_picture || '', profile2_picture: rp?.profile_picture || '',
-          profile1_role: profile.current_role || '', profile2_role: job?.recruiter_name || '',
-          profile1_linkedin: profile.linkedin_url || '', profile2_linkedin: rp?.linkedin_url || job?.recruiter_linkedin || '',
-          other_job_ids: [], other_job_titles: [],
-          status: 'active',
-        });
-
-        await base44.entities.Swipe.create({
-          swiper_profile_id: profile.id,
-          target_profile_id: card.swipe.swiper_profile_id,
-          target_type: 'job',
-          action: 'like',
-          context_job_id: job?.id || null,
-        }).catch(() => {});
+        return updated || existing;
       }
+      return existing;
+    }
+
+    return await base44.entities.Match.create({
+      profile1_id: seekerId,
+      profile2_id: recruiterId,
+      profile1_user_id: seekerUserId,
+      profile2_user_id: recruiterUserId,
+      job_id: job?.id || null,
+      job_title: job?.title || '',
+      company_name: job?.company || recruiterProfile?.current_company || '',
+      profile1_name: seekerProfile?.full_name || '',
+      profile2_name: recruiterProfile?.full_name || '',
+      profile1_picture: seekerProfile?.profile_picture || '',
+      profile2_picture: recruiterProfile?.profile_picture || '',
+      profile1_role: seekerProfile?.current_role || '',
+      profile2_role: recruiterProfile?.current_role || '',
+      profile1_linkedin: seekerProfile?.linkedin_url || '',
+      profile2_linkedin: recruiterProfile?.linkedin_url || '',
+      additional_job_ids: [],
+      additional_job_titles: [],
+      status: 'active',
+    });
+  };
+
+  const handleRecruiterLikeJob = async (card, jobEntry) => {
+    const key = `${card.seekerId}__${jobEntry.job.id}`;
+    setActing(prev => ({ ...prev, [key]: 'liking' }));
+    try {
+      const match = await ensureMatch({
+        seekerId: card.seekerId,
+        recruiterId: profile.id,
+        seekerProfile: card.seekerProfile,
+        recruiterProfile: profile,
+        job: jobEntry.job,
+      });
+
+      await base44.entities.Swipe.create({
+        swiper_profile_id: profile.id,
+        target_profile_id: card.seekerId,
+        target_type: 'candidate',
+        action: 'like',
+        context_job_id: jobEntry.job.id,
+      }).catch(() => {});
 
       const mySkills = profile.skills || [];
-      const theirSkills = (isRecruiter ? card.seekerProfile?.skills : card.recruiterProfile?.skills) || [];
+      const theirSkills = card.seekerProfile?.skills || [];
       const sharedSkills = mySkills.filter(s => theirSkills.includes(s)).slice(0, 3);
-
       setMatchData({ ...match, sharedSkills });
-      setCards(prev => prev.filter(c => (c.groupKey || c.swipe?.id) !== (card.groupKey || card.swipe?.id)));
-    } catch { /* ignore */ }
+
+      setCards(prev => prev.map(c => {
+        if (c.seekerId !== card.seekerId) return c;
+        const remaining = c.jobEntries.filter(e => e.job.id !== jobEntry.job.id);
+        return remaining.length > 0 ? { ...c, jobEntries: remaining } : null;
+      }).filter(Boolean));
+    } catch { /* ignore */ } finally {
+      setActing(prev => { const n = { ...prev }; delete n[key]; return n; });
+    }
   };
 
-  const handlePass = async (card) => {
+  const handleRecruiterPassJob = async (card, jobEntry) => {
+    const key = `${card.seekerId}__${jobEntry.job.id}`;
+    setActing(prev => ({ ...prev, [key]: 'passing' }));
     try {
-      if (isRecruiter) {
-        await base44.entities.Swipe.create({
-          swiper_profile_id: profile.id,
-          target_profile_id: card.seekerProfile.id,
-          target_type: 'candidate',
-          action: 'pass',
-          context_job_id: null,
-        }).catch(() => {});
-      } else {
-        await base44.entities.Swipe.create({
-          swiper_profile_id: profile.id,
-          target_profile_id: card.swipe.swiper_profile_id,
-          target_type: 'job',
-          action: 'pass',
-          context_job_id: card.job?.id || null,
-        }).catch(() => {});
-      }
-      setCards(prev => prev.filter(c => (c.groupKey || c.swipe?.id) !== (card.groupKey || card.swipe?.id)));
+      await base44.entities.Swipe.create({
+        swiper_profile_id: profile.id,
+        target_profile_id: card.seekerId,
+        target_type: 'candidate',
+        action: 'pass',
+        context_job_id: jobEntry.job.id,
+      }).catch(() => {});
+
+      setCards(prev => prev.map(c => {
+        if (c.seekerId !== card.seekerId) return c;
+        const remaining = c.jobEntries.filter(e => e.job.id !== jobEntry.job.id);
+        return remaining.length > 0 ? { ...c, jobEntries: remaining } : null;
+      }).filter(Boolean));
+    } catch { /* ignore */ } finally {
+      setActing(prev => { const n = { ...prev }; delete n[key]; return n; });
+    }
+  };
+
+  const handleSeekerLikeBack = async (card) => {
+    try {
+      const match = await ensureMatch({
+        seekerId: profile.id,
+        recruiterId: card.swipe.swiper_profile_id,
+        seekerProfile: profile,
+        recruiterProfile: card.recruiterProfile,
+        job: card.job,
+      });
+
+      await base44.entities.Swipe.create({
+        swiper_profile_id: profile.id,
+        target_profile_id: card.swipe.swiper_profile_id,
+        target_type: 'job',
+        action: 'like',
+        context_job_id: card.job?.id || null,
+      }).catch(() => {});
+
+      const mySkills = profile.skills || [];
+      const theirSkills = card.recruiterProfile?.skills || [];
+      const sharedSkills = mySkills.filter(s => theirSkills.includes(s)).slice(0, 3);
+      setMatchData({ ...match, sharedSkills });
+      setCards(prev => prev.filter(c => c.swipe.id !== card.swipe.id));
     } catch { /* ignore */ }
   };
 
-  const interestColor = (level) => {
-    if (level === 'high') return 'text-green-600 bg-green-50';
-    if (level === 'low') return 'text-orange-500 bg-orange-50';
-    return 'text-blue-500 bg-blue-50';
-  };
-
-  const interestLabel = (level) => {
-    if (level === 'high') return 'High Interest';
-    if (level === 'low') return 'Low Interest';
-    return 'Interested';
+  const handleSeekerPass = async (card) => {
+    try {
+      await base44.entities.Swipe.create({
+        swiper_profile_id: profile.id,
+        target_profile_id: card.swipe.swiper_profile_id,
+        target_type: 'job',
+        action: 'pass',
+        context_job_id: card.job?.id || null,
+      }).catch(() => {});
+      setCards(prev => prev.filter(c => c.swipe.id !== card.swipe.id));
+    } catch { /* ignore */ }
   };
 
   if (loading) return <LoadingScreen fullscreen={false} />;
@@ -190,7 +251,7 @@ export default function LikedYouTab({ profile }) {
         </div>
         <h3 className="text-[15px] font-semibold text-foreground mb-1">No likes yet</h3>
         <p className="text-[13px] text-muted-foreground">
-          {isRecruiter ? "When candidates like your jobs, they'll appear here" : "When recruiters are interested, they'll appear here"}
+          {isRecruiter ? "When candidates apply to your jobs, they'll appear here" : "When recruiters are interested in you, they'll appear here"}
         </p>
       </div>
     );
@@ -198,111 +259,84 @@ export default function LikedYouTab({ profile }) {
 
   return (
     <div className="flex-1 flex flex-col min-h-0">
-      <div className="flex-1 overflow-y-auto no-scrollbar px-4 pb-6 min-h-0">
+      <div className="flex-1 overflow-y-auto no-scrollbar px-4 pb-6 pt-3 min-h-0">
         {isRecruiter ? (
-          <div className="flex flex-col gap-3 pt-3">
+          <div className="flex flex-col gap-3">
             {cards.map((card, i) => {
               const p = card.seekerProfile;
               const initials = p.full_name?.split(' ').map(n => n[0]).join('').slice(0, 2).toUpperCase() || 'U';
-              const jobIdx = jobIndexMap[card.groupKey] || 0;
-              const currentJobEntry = card.jobEntries[jobIdx] || card.jobEntries[0];
-              const hasMultipleJobs = card.jobEntries.length > 1;
-
               return (
                 <motion.div
-                  key={card.groupKey}
-                  initial={{ opacity: 0, y: 10 }}
+                  key={card.seekerId}
+                  initial={{ opacity: 0, y: 8 }}
                   animate={{ opacity: 1, y: 0 }}
-                  transition={{ duration: 0.3, delay: i * 0.04 }}
+                  transition={{ duration: 0.25, delay: i * 0.04 }}
                   className="rounded-2xl bg-card border border-border/60 overflow-hidden"
                 >
-                  <div className="flex gap-3 p-3">
-                    <div className="w-14 h-14 rounded-xl bg-gradient-to-br from-brand-green-bg to-secondary/40 flex items-center justify-center overflow-hidden flex-shrink-0">
+                  <div className="flex items-center gap-3 p-3 pb-2">
+                    <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-brand-green-bg to-secondary/40 flex items-center justify-center overflow-hidden flex-shrink-0">
                       {p.profile_picture ? (
                         <img src={p.profile_picture} alt={p.full_name} className="w-full h-full object-cover" />
                       ) : (
-                        <div className="text-[20px] font-semibold text-primary/70">{initials}</div>
+                        <div className="text-[18px] font-semibold text-primary/70">{initials}</div>
                       )}
                     </div>
                     <div className="flex-1 min-w-0">
                       <div className="text-[14px] font-semibold text-foreground truncate">{p.full_name}</div>
                       {p.current_role && <div className="text-[12px] text-muted-foreground truncate">{p.current_role}</div>}
-                      {card.jobEntries.length > 1 && (
-                        <div className="text-[11px] text-primary font-medium mt-0.5">Liked {card.jobEntries.length} of your jobs</div>
-                      )}
                     </div>
+                    {card.jobEntries.length > 1 && (
+                      <div className="text-[11px] text-primary font-medium flex-shrink-0">
+                        {card.jobEntries.length} roles
+                      </div>
+                    )}
                   </div>
 
-                  {card.jobEntries.length > 0 && (
-                    <div className="px-3 pb-2">
-                      <div className="bg-muted/40 rounded-xl p-2.5">
-                        <div className="flex items-center justify-between gap-2">
-                          {hasMultipleJobs && (
-                            <button
-                              onClick={() => setJobIndexMap(prev => ({ ...prev, [card.groupKey]: Math.max(0, (prev[card.groupKey] || 0) - 1) }))}
-                              disabled={jobIdx === 0}
-                              className="p-1 rounded-lg hover:bg-muted disabled:opacity-30 flex-shrink-0"
-                            >
-                              <ChevronLeft size={14} />
-                            </button>
-                          )}
+                  <div className="px-3 pb-3 flex flex-col gap-2">
+                    {card.jobEntries.map(entry => {
+                      const key = `${card.seekerId}__${entry.job.id}`;
+                      const isActing = acting[key];
+                      return (
+                        <div key={entry.job.id} className="bg-muted/40 rounded-xl p-2.5 flex items-center gap-2">
                           <div className="flex-1 min-w-0">
-                            <div className="text-[13px] font-medium text-foreground truncate">{currentJobEntry?.job?.title || 'Unknown Role'}</div>
-                            {currentJobEntry?.job?.company && (
-                              <div className="text-[11px] text-muted-foreground truncate">{currentJobEntry.job.company}</div>
-                            )}
+                            <div className="flex items-center gap-1.5">
+                              {entry.isSuper && <Zap size={12} className="text-amber-500 flex-shrink-0" fill="currentColor" />}
+                              <span className="text-[13px] font-medium text-foreground truncate">{entry.job.title}</span>
+                            </div>
+                            {entry.job.company && <div className="text-[11px] text-muted-foreground truncate">{entry.job.company}</div>}
                           </div>
-                          <span className={`text-[10px] font-semibold px-2 py-0.5 rounded-full flex-shrink-0 ${interestColor(currentJobEntry?.interest_level)}`}>
-                            {interestLabel(currentJobEntry?.interest_level)}
-                          </span>
-                          {hasMultipleJobs && (
+                          <div className="flex gap-1.5 flex-shrink-0">
                             <button
-                              onClick={() => setJobIndexMap(prev => ({ ...prev, [card.groupKey]: Math.min(card.jobEntries.length - 1, (prev[card.groupKey] || 0) + 1) }))}
-                              disabled={jobIdx >= card.jobEntries.length - 1}
-                              className="p-1 rounded-lg hover:bg-muted disabled:opacity-30 flex-shrink-0"
+                              onClick={() => handleRecruiterPassJob(card, entry)}
+                              disabled={!!isActing}
+                              className="!rounded-button px-3 py-1.5 rounded-lg border border-border text-[12px] text-muted-foreground font-medium hover:bg-muted/60 transition-colors disabled:opacity-40"
                             >
-                              <ChevronRight size={14} />
+                              Pass
                             </button>
-                          )}
-                        </div>
-                        {hasMultipleJobs && (
-                          <div className="flex justify-center gap-1 mt-2">
-                            {card.jobEntries.map((_, di) => (
-                              <div key={di} className={`w-1.5 h-1.5 rounded-full transition-colors ${di === jobIdx ? 'bg-primary' : 'bg-border'}`} />
-                            ))}
+                            <button
+                              onClick={() => handleRecruiterLikeJob(card, entry)}
+                              disabled={!!isActing}
+                              className="!rounded-button px-3 py-1.5 rounded-lg bg-primary text-white text-[12px] font-medium hover:bg-primary/90 transition-colors disabled:opacity-40"
+                            >
+                              Like
+                            </button>
                           </div>
-                        )}
-                      </div>
-                    </div>
-                  )}
-
-                  <div className="flex gap-2 px-3 pb-3">
-                    <button
-                      onClick={() => handlePass(card)}
-                      className="flex-1 border border-border text-muted-foreground rounded-xl text-[13px] font-medium py-2 hover:bg-muted/40 transition-colors"
-                    >
-                      Pass
-                    </button>
-                    <button
-                      onClick={() => handleLikeBack(card)}
-                      className="flex-1 bg-primary text-white rounded-xl text-[13px] font-medium py-2 hover:bg-primary/90 transition-colors"
-                    >
-                      Like Back
-                    </button>
+                        </div>
+                      );
+                    })}
                   </div>
                 </motion.div>
               );
             })}
           </div>
         ) : (
-          <div className="grid grid-cols-2 gap-3 pt-3">
+          <div className="grid grid-cols-2 gap-3">
             {cards.map((card, i) => {
-              const job = card.job;
               const rp = card.recruiterProfile;
-              const name = job?.title || rp?.current_role || 'Recruiter';
-              const subtitle = job?.company || rp?.full_name || '';
-              const picture = rp?.profile_picture || null;
-              const initials = (rp?.full_name || 'R').split(' ').map(n => n[0]).join('').slice(0, 2).toUpperCase();
+              const job = card.job;
+              const name = rp?.full_name || 'Recruiter';
+              const initials = name.split(' ').map(n => n[0]).join('').slice(0, 2).toUpperCase();
+              const isSuper = card.swipe.action === 'super';
               return (
                 <motion.div
                   key={card.swipe.id}
@@ -312,26 +346,31 @@ export default function LikedYouTab({ profile }) {
                   className="flex flex-col rounded-2xl bg-card border border-border/60 overflow-hidden"
                 >
                   <div className="relative aspect-square w-full bg-gradient-to-br from-brand-green-bg to-secondary/40 flex items-center justify-center overflow-hidden">
-                    {picture ? (
-                      <img src={picture} alt={name} className="w-full h-full object-cover" />
+                    {rp?.profile_picture ? (
+                      <img src={rp.profile_picture} alt={name} className="w-full h-full object-cover" />
                     ) : (
                       <div className="text-[28px] font-semibold text-primary/70">{initials}</div>
                     )}
+                    {isSuper && (
+                      <div className="absolute top-2 left-2 bg-amber-500 text-white text-[10px] font-bold px-2 py-0.5 rounded-full flex items-center gap-1">
+                        <Star size={9} fill="white" /> Super
+                      </div>
+                    )}
                   </div>
                   <div className="p-3 flex flex-col flex-1">
-                    <div className="text-[14px] font-semibold text-foreground truncate">{name}</div>
-                    {subtitle && <div className="text-[11px] text-muted-foreground truncate mt-0.5">{subtitle}</div>}
-                    <div className="flex gap-2 mt-2">
-                      <button
-                        onClick={() => handlePass(card)}
-                        className="flex-1 border border-border text-muted-foreground rounded-xl text-[12px] font-medium py-2 hover:bg-muted/40 transition-colors"
-                      >
+                    <div className="text-[13px] font-semibold text-foreground truncate">{name}</div>
+                    {job ? (
+                      <div className="text-[11px] text-primary font-medium truncate mt-0.5">Re: {job.title}</div>
+                    ) : (
+                      rp?.current_company && <div className="text-[11px] text-muted-foreground truncate mt-0.5">{rp.current_company}</div>
+                    )}
+                    <div className="flex gap-1.5 mt-2">
+                      <button onClick={() => handleSeekerPass(card)}
+                        className="!rounded-button flex-1 border border-border text-muted-foreground rounded-xl text-[11px] font-medium py-1.5 hover:bg-muted/40 transition-colors">
                         Pass
                       </button>
-                      <button
-                        onClick={() => handleLikeBack(card)}
-                        className="flex-1 bg-primary text-white rounded-xl text-[12px] font-medium py-2 hover:bg-primary/90 transition-colors"
-                      >
+                      <button onClick={() => handleSeekerLikeBack(card)}
+                        className="!rounded-button flex-1 bg-primary text-white rounded-xl text-[11px] font-medium py-1.5 hover:bg-primary/90 transition-colors">
                         Like Back
                       </button>
                     </div>

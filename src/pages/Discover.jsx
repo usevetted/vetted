@@ -19,35 +19,27 @@ export default function Discover() {
   const [matchData, setMatchData] = useState(null);
   const [triggerAction, setTriggerAction] = useState(null);
   const [filterOpen, setFilterOpen] = useState(false);
-  const [pendingLike, setPendingLike] = useState(null);
   const [filters, setFilters] = useState({ remoteOnly: false, inPersonOnly: false, openToWork: false, sortBy: 'newest', distance: 50, location: '', skills: [] });
+  const [pendingSwipe, setPendingSwipe] = useState(null);
+  const [myJobs, setMyJobs] = useState([]);
 
   const isRecruiter = profile?.account_type === 'recruiter';
 
   const cards = useMemo(() => {
     let filtered = [...allCards];
     if (!isRecruiter) {
-      if (filters.remoteOnly && !filters.inPersonOnly) {
-        filtered = filtered.filter(c => c.remote);
-      } else if (filters.inPersonOnly && !filters.remoteOnly) {
-        filtered = filtered.filter(c => !c.remote);
-      }
+      if (filters.remoteOnly && !filters.inPersonOnly) filtered = filtered.filter(c => c.remote);
+      else if (filters.inPersonOnly && !filters.remoteOnly) filtered = filtered.filter(c => !c.remote);
     }
     if (isRecruiter) {
-      if (filters.openToWork) {
-        filtered = filtered.filter(c => c.open_to_work);
-      }
+      if (filters.openToWork) filtered = filtered.filter(c => c.open_to_work);
       if (filters.location.trim()) {
         const loc = filters.location.trim().toLowerCase();
         filtered = filtered.filter(c => c.location && c.location.toLowerCase().includes(loc));
       }
-      if (filters.skills.length > 0) {
-        filtered = filtered.filter(c => c.skills && c.skills.some(s => filters.skills.includes(s)));
-      }
+      if (filters.skills.length > 0) filtered = filtered.filter(c => c.skills && c.skills.some(s => filters.skills.includes(s)));
     }
-    if (filters.sortBy === 'oldest') {
-      filtered.reverse();
-    }
+    if (filters.sortBy === 'oldest') filtered.reverse();
     return filtered;
   }, [allCards, filters, isRecruiter]);
 
@@ -59,13 +51,18 @@ export default function Discover() {
       const swipes = await base44.entities.Swipe.filter({ swiper_profile_id: profile.id });
 
       if (isRecruiter) {
+        const jobs = await base44.entities.Job.filter({ recruiter_profile_id: profile.id });
+        setMyJobs(jobs);
+
         const allProfiles = await base44.entities.Profile.filter({ account_type: 'job_seeker' }, '-created_date', 50);
-        const swipedProfileIds = new Set(
-          swipes
-            .filter(s => s.action === 'like' || s.action === 'super')
-            .map(s => s.target_profile_id)
+        const swipedSeekerIds = new Set(
+          swipes.filter(s => s.action === 'like' || s.action === 'super' || s.action === 'pass').map(s => s.target_profile_id)
         );
-        const filtered = allProfiles.filter(p => p.id !== profile.id && p.created_by_id !== profile.created_by_id && !swipedProfileIds.has(p.id));
+        const filtered = allProfiles.filter(p =>
+          p.id !== profile.id &&
+          p.created_by_id !== profile.created_by_id &&
+          !swipedSeekerIds.has(p.id)
+        );
         setAllCards(filtered);
       } else {
         const allJobs = await base44.entities.Job.list('-created_date', 50);
@@ -80,34 +77,29 @@ export default function Discover() {
     }
   }, [profile, isRecruiter]);
 
-  useEffect(() => {
-    loadCards();
-  }, [loadCards]);
+  useEffect(() => { loadCards(); }, [loadCards]);
 
   const handleSwipe = async (action) => {
     setTriggerAction(null);
     if (cards.length === 0) return;
     const currentCard = cards[0];
 
-    // Job seeker liking a job — show interest picker first
-    if (!isRecruiter && action === 'like') {
-      setPendingLike({ card: currentCard });
+    if (isRecruiter && (action === 'like' || action === 'super')) {
+      setPendingSwipe({ card: currentCard, action });
       setAllCards(prev => prev.filter(c => c.id !== currentCard.id));
       return;
     }
 
-    let targetProfileId, contextJobId, targetType;
+    await recordSwipe(currentCard, action, null);
+  };
+
+  const recordSwipe = async (card, action, contextJobId) => {
+    let targetProfileId, targetType;
     if (isRecruiter) {
-      targetProfileId = currentCard.id;
-      contextJobId = null;
+      targetProfileId = card.id;
       targetType = 'candidate';
     } else {
-      if (currentCard.recruiter_profile_id) {
-        targetProfileId = currentCard.recruiter_profile_id;
-      } else {
-        targetProfileId = null;
-      }
-      contextJobId = currentCard.id;
+      targetProfileId = card.recruiter_profile_id || null;
       targetType = 'job';
     }
 
@@ -117,103 +109,111 @@ export default function Discover() {
         target_profile_id: targetProfileId,
         target_type: targetType,
         action,
-        context_job_id: contextJobId,
+        context_job_id: contextJobId || (isRecruiter ? null : card.id),
       });
-    } catch {
-      // continue even if error
-    }
+    } catch { /* continue even if error */ }
 
-    setAllCards(prev => prev.filter(c => c.id !== currentCard.id));
+    setAllCards(prev => prev.filter(c => c.id !== card.id));
 
     if ((action === 'like' || action === 'super') && targetProfileId) {
-      await checkForMatch(targetProfileId, currentCard, action);
+      await checkForMatch(targetProfileId, card, contextJobId);
     }
   };
 
-  const confirmLike = async (level) => {
-    const card = pendingLike?.card;
-    setPendingLike(null);
-    if (!card) return;
-
-    const targetProfileId = card.recruiter_profile_id || null;
-    const contextJobId = card.id;
-
-    try {
-      await base44.entities.Swipe.create({
-        swiper_profile_id: profile.id,
-        target_profile_id: targetProfileId,
-        target_type: 'job',
-        action: 'like',
-        context_job_id: contextJobId,
-        interest_level: level,
-      });
-    } catch {
-      // continue even if error
-    }
-
-    if (targetProfileId) {
-      await checkForMatch(targetProfileId, card, 'like');
-    }
+  const handleJobPicked = async (job) => {
+    if (!pendingSwipe) return;
+    const { card, action } = pendingSwipe;
+    setPendingSwipe(null);
+    await recordSwipe(card, action, job.id);
   };
 
-  const checkForMatch = async (targetProfileId, card, action) => {
+  const handleJobPickerCancel = () => {
+    if (pendingSwipe) {
+      setAllCards(prev => [pendingSwipe.card, ...prev]);
+    }
+    setPendingSwipe(null);
+  };
+
+  const checkForMatch = async (targetProfileId, card, contextJobId) => {
     try {
       if (targetProfileId === profile.id) return;
 
-      if (isRecruiter) {
-        const existingMatches1 = await base44.entities.Match.filter({ profile1_id: profile.id, profile2_id: targetProfileId }).catch(() => []);
-        const existingMatches2 = await base44.entities.Match.filter({ profile1_id: targetProfileId, profile2_id: profile.id }).catch(() => []);
-        if (existingMatches1.length > 0 || existingMatches2.length > 0) return;
-      }
+      const seekerId = isRecruiter ? targetProfileId : profile.id;
+      const recruiterId = isRecruiter ? profile.id : targetProfileId;
+      const jobId = isRecruiter ? contextJobId : card.id;
+      const jobTitle = isRecruiter
+        ? (myJobs.find(j => j.id === contextJobId)?.title || '')
+        : card.title;
+      const companyName = isRecruiter
+        ? (myJobs.find(j => j.id === contextJobId)?.company || '')
+        : card.company;
 
       const mutualSwipes = await base44.entities.Swipe.filter({
         swiper_profile_id: targetProfileId,
         target_profile_id: profile.id,
       });
-      console.log('mutual swipes found:', mutualSwipes);
       const hasMutualLike = mutualSwipes.some(s => s.action === 'like' || s.action === 'super');
       if (!hasMutualLike) return;
 
-      const existingAs1 = await base44.entities.Match.filter({
-        profile1_id: profile.id,
-        profile2_id: targetProfileId,
-        job_id: isRecruiter ? null : card.id,
-      });
-      const existingAs2 = await base44.entities.Match.filter({
-        profile1_id: targetProfileId,
-        profile2_id: profile.id,
-        job_id: isRecruiter ? null : card.id,
-      });
+      if (!isRecruiter) {
+        const recruiterLikedUs = mutualSwipes.some(s =>
+          s.target_profile_id === profile.id && (s.action === 'like' || s.action === 'super')
+        );
+        if (!recruiterLikedUs) return;
+      } else {
+        const seekerLikedJob = mutualSwipes.some(s =>
+          s.context_job_id === contextJobId && (s.action === 'like' || s.action === 'super')
+        );
+        if (!seekerLikedJob) return;
+      }
 
-      if (existingAs1.length > 0 || existingAs2.length > 0) return;
+      const existingAs1 = await base44.entities.Match.filter({ profile1_id: seekerId, profile2_id: recruiterId });
+      const existingAs2 = await base44.entities.Match.filter({ profile1_id: recruiterId, profile2_id: seekerId });
+      const existing = [...existingAs1, ...existingAs2].find(m => m.status === 'active');
+
+      if (existing) {
+        const currentJobIds = [existing.job_id, ...(existing.additional_job_ids || [])].filter(Boolean);
+        if (jobId && !currentJobIds.includes(jobId)) {
+          const newAdditionalIds = [...(existing.additional_job_ids || []), jobId];
+          const newAdditionalTitles = [...(existing.additional_job_titles || []), jobTitle];
+          await base44.entities.Match.update(existing.id, {
+            additional_job_ids: newAdditionalIds,
+            additional_job_titles: newAdditionalTitles,
+          });
+          setMatchData({ ...existing, additional_job_ids: newAdditionalIds, additional_job_titles: newAdditionalTitles, sharedSkills: [] });
+        }
+        return;
+      }
+
+      const seekerProfile = isRecruiter ? card : profile;
+      const recruiterData = isRecruiter ? profile : card;
 
       const match = await base44.entities.Match.create({
-        profile1_id: profile.id,
-        profile2_id: targetProfileId,
-        profile1_user_id: profile.created_by_id,
-        profile2_user_id: card.created_by_id,
-        job_id: isRecruiter ? null : card.id,
-        job_title: isRecruiter ? (card.current_role || 'New Role') : card.title,
-        company_name: isRecruiter ? (card.current_company || '') : card.company,
-        profile1_name: profile.full_name,
-        profile2_name: isRecruiter ? card.full_name : (card.recruiter_name || card.company),
-        profile1_picture: profile.profile_picture || '',
-        profile2_picture: card.profile_picture || '',
-        profile1_role: profile.current_role || '',
-        profile2_role: isRecruiter ? (card.current_role || '') : (card.recruiter_name || ''),
-        profile1_linkedin: profile.linkedin_url || '',
-        profile2_linkedin: isRecruiter ? (card.linkedin_url || '') : (card.recruiter_linkedin || ''),
+        profile1_id: seekerId,
+        profile2_id: recruiterId,
+        profile1_user_id: seekerProfile.created_by_id || '',
+        profile2_user_id: isRecruiter ? profile.created_by_id : (card.created_by_id || ''),
+        job_id: jobId || null,
+        job_title: jobTitle,
+        company_name: companyName,
+        profile1_name: isRecruiter ? card.full_name : profile.full_name,
+        profile2_name: isRecruiter ? profile.full_name : (card.recruiter_name || card.company || ''),
+        profile1_picture: isRecruiter ? (card.profile_picture || '') : (profile.profile_picture || ''),
+        profile2_picture: isRecruiter ? (profile.profile_picture || '') : '',
+        profile1_role: isRecruiter ? (card.current_role || '') : (profile.current_role || ''),
+        profile2_role: isRecruiter ? (profile.current_role || '') : (card.recruiter_name || ''),
+        profile1_linkedin: isRecruiter ? (card.linkedin_url || '') : (profile.linkedin_url || ''),
+        profile2_linkedin: isRecruiter ? (profile.linkedin_url || '') : (card.recruiter_linkedin || ''),
+        additional_job_ids: [],
+        additional_job_titles: [],
         status: 'active',
       });
 
       const mySkills = profile.skills || [];
       const theirSkills = card.skills || [];
       const sharedSkills = mySkills.filter(s => theirSkills.includes(s)).slice(0, 3);
-
       setMatchData({ ...match, sharedSkills });
-    } catch {
-      // ignore match errors
-    }
+    } catch { /* ignore match errors */ }
   };
 
   const handleButtonClick = (action) => {
@@ -232,19 +232,17 @@ export default function Discover() {
           <PostJobButton isRecruiter={isRecruiter} profile={profile} onJobPosted={loadCards} />
           <button
             onClick={() => setFilterOpen(true)}
-            className="w-11 h-11 rounded-full bg-card border border-border/50 flex items-center justify-center shadow-sm hover:bg-muted transition-colors cursor-pointer"
+            className="!rounded-button w-11 h-11 rounded-full bg-card border border-border/50 flex items-center justify-center shadow-sm hover:bg-muted transition-colors cursor-pointer"
           >
             <SlidersHorizontal size={18} className="text-muted-foreground" />
           </button>
           <button
             onClick={() => navigate('/profile')}
-            className="w-11 h-11 rounded-full bg-brand-green-light flex items-center justify-center text-[11px] font-semibold text-primary overflow-hidden border border-border/50 shadow-sm cursor-pointer"
+            className="!rounded-button w-11 h-11 rounded-full bg-brand-green-light flex items-center justify-center text-[11px] font-semibold text-primary overflow-hidden border border-border/50 shadow-sm cursor-pointer"
           >
             {profile?.profile_picture ? (
               <img src={profile.profile_picture} alt="" className="w-full h-full object-cover" />
-            ) : (
-              initials
-            )}
+            ) : initials}
           </button>
         </div>
       </div>
@@ -279,84 +277,61 @@ export default function Discover() {
       {/* Action buttons */}
       {!loading && cards.length > 0 && (
         <div className="flex items-center justify-center gap-6 pb-4 pt-2">
-          <motion.button
-            whileTap={{ scale: 0.82 }}
-            whileHover={{ scale: 1.08 }}
-            onClick={() => handleButtonClick('pass')}
-            className="w-[58px] h-[58px] rounded-full bg-card border border-destructive/20 flex items-center justify-center shadow-[0_8px_24px_rgba(239,68,68,0.12)]"
-          >
+          <motion.button whileTap={{ scale: 0.82 }} whileHover={{ scale: 1.08 }} onClick={() => handleButtonClick('pass')}
+            className="!rounded-button w-[58px] h-[58px] rounded-full bg-card border border-destructive/20 flex items-center justify-center shadow-[0_8px_24px_rgba(239,68,68,0.12)]">
             <X size={26} className="text-red-500" strokeWidth={2.5} />
           </motion.button>
-          <motion.button
-            whileTap={{ scale: 0.82, y: -4 }}
-            whileHover={{ scale: 1.12, y: -2 }}
-            onClick={() => handleButtonClick('super')}
-            className="w-[50px] h-[50px] rounded-full bg-gold flex items-center justify-center shadow-[0_8px_24px_rgba(245,158,11,0.3)]"
-          >
+          <motion.button whileTap={{ scale: 0.82, y: -4 }} whileHover={{ scale: 1.12, y: -2 }} onClick={() => handleButtonClick('super')}
+            className="!rounded-button w-[50px] h-[50px] rounded-full bg-gold flex items-center justify-center shadow-[0_8px_24px_rgba(245,158,11,0.3)]">
             <Star size={22} className="text-white" fill="white" />
           </motion.button>
-          <motion.button
-            whileTap={{ scale: 0.82 }}
-            whileHover={{ scale: 1.08 }}
-            onClick={() => handleButtonClick('like')}
-            className="w-[58px] h-[58px] rounded-full bg-gradient-to-br from-primary to-primary/80 flex items-center justify-center shadow-[0_8px_24px_rgba(22,101,52,0.2)]"
-          >
+          <motion.button whileTap={{ scale: 0.82 }} whileHover={{ scale: 1.08 }} onClick={() => handleButtonClick('like')}
+            className="!rounded-button w-[58px] h-[58px] rounded-full bg-gradient-to-br from-primary to-primary/80 flex items-center justify-center shadow-[0_8px_24px_rgba(22,101,52,0.2)]">
             <Heart size={26} className="text-white" fill="white" />
           </motion.button>
         </div>
       )}
 
-      {/* Match overlay */}
+      {/* Recruiter job picker sheet */}
       <AnimatePresence>
-        {matchData && (
-          <MatchOverlay
-            match={matchData}
-            onMessage={() => {
-              setMatchData(null);
-              navigate(`/messages/${matchData.id}`);
-            }}
-            onKeepSwiping={() => setMatchData(null)}
-          />
-        )}
-      </AnimatePresence>
-
-      {/* Interest level picker */}
-      <AnimatePresence>
-        {pendingLike && (
+        {pendingSwipe && (
           <motion.div
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
-            className="absolute inset-0 z-50 flex flex-col justify-end bg-black/30"
+            className="absolute inset-0 z-50 flex flex-col justify-end bg-black/40"
+            onClick={handleJobPickerCancel}
           >
             <motion.div
-              initial={{ y: 80 }}
+              initial={{ y: '100%' }}
               animate={{ y: 0 }}
-              exit={{ y: 80 }}
-              className="bg-card rounded-t-3xl p-6 pb-8"
+              exit={{ y: '100%' }}
+              transition={{ type: 'spring', damping: 30, stiffness: 300 }}
+              onClick={(e) => e.stopPropagation()}
+              className="bg-card rounded-t-3xl p-5 pb-8"
             >
-              <h3 className="text-[16px] font-semibold text-foreground text-center mb-1">How interested are you?</h3>
-              <p className="text-[13px] text-muted-foreground text-center mb-5">Let the recruiter know your level of interest</p>
-              <div className="flex flex-col gap-2.5">
-                {[
-                  { level: 'high', label: 'High Interest', desc: 'This is a top choice for me', color: 'border-green-500 text-green-700 bg-green-50' },
-                  { level: 'medium', label: 'Interested', desc: "I'd like to learn more", color: 'border-blue-400 text-blue-700 bg-blue-50' },
-                  { level: 'low', label: 'Slightly Interested', desc: 'Open to it, but not a priority', color: 'border-orange-400 text-orange-700 bg-orange-50' },
-                ].map(({ level, label, desc, color }) => (
-                  <button
-                    key={level}
-                    onClick={() => confirmLike(level)}
-                    className={`w-full border-2 rounded-2xl px-4 py-3 text-left transition-all hover:opacity-90 ${color}`}
-                  >
-                    <div className="text-[14px] font-semibold">{label}</div>
-                    <div className="text-[12px] opacity-70">{desc}</div>
-                  </button>
-                ))}
-              </div>
-              <button
-                onClick={() => setPendingLike(null)}
-                className="w-full mt-3 text-[13px] text-muted-foreground py-2"
-              >
+              <div className="w-10 h-1 bg-border rounded-full mx-auto mb-4" />
+              <h3 className="text-[16px] font-semibold text-foreground mb-1">
+                Which role is {pendingSwipe.card.full_name?.split(' ')[0]} a fit for?
+              </h3>
+              <p className="text-[13px] text-muted-foreground mb-4">Select the position you're considering them for</p>
+              {myJobs.length === 0 ? (
+                <p className="text-[13px] text-muted-foreground text-center py-4">You haven't posted any jobs yet.</p>
+              ) : (
+                <div className="flex flex-col gap-2 max-h-60 overflow-y-auto no-scrollbar">
+                  {myJobs.map(job => (
+                    <button
+                      key={job.id}
+                      onClick={() => handleJobPicked(job)}
+                      className="!rounded-button w-full text-left px-4 py-3 rounded-2xl border border-border bg-background hover:border-primary/40 hover:bg-brand-green-bg transition-all"
+                    >
+                      <div className="text-[14px] font-medium text-foreground">{job.title}</div>
+                      {job.company && <div className="text-[12px] text-muted-foreground">{job.company}</div>}
+                    </button>
+                  ))}
+                </div>
+              )}
+              <button onClick={handleJobPickerCancel} className="w-full mt-3 py-2 text-[13px] text-muted-foreground">
                 Cancel
               </button>
             </motion.div>
@@ -364,14 +339,18 @@ export default function Discover() {
         )}
       </AnimatePresence>
 
-      {/* Filter sheet */}
-      <FilterSheet
-        open={filterOpen}
-        onClose={() => setFilterOpen(false)}
-        filters={filters}
-        setFilters={setFilters}
-        isRecruiter={isRecruiter}
-      />
+      {/* Match overlay */}
+      <AnimatePresence>
+        {matchData && (
+          <MatchOverlay
+            match={matchData}
+            onMessage={() => { setMatchData(null); navigate(`/messages/${matchData.id}`); }}
+            onKeepSwiping={() => setMatchData(null)}
+          />
+        )}
+      </AnimatePresence>
+
+      <FilterSheet open={filterOpen} onClose={() => setFilterOpen(false)} filters={filters} setFilters={setFilters} isRecruiter={isRecruiter} />
     </div>
   );
 }
@@ -384,12 +363,7 @@ function ErrorState({ onRetry }) {
       </div>
       <h3 className="text-[16px] font-semibold text-foreground mb-1">Something went wrong</h3>
       <p className="text-[13px] text-muted-foreground mb-5">Couldn't load cards. Please check your connection and try again.</p>
-      <button
-        onClick={onRetry}
-        className="px-5 py-2.5 rounded-xl bg-primary text-white text-[13px] font-medium hover:bg-primary/90 transition-colors"
-      >
-        Retry
-      </button>
+      <button onClick={onRetry} className="!rounded-button px-5 py-2.5 rounded-xl bg-primary text-white text-[13px] font-medium hover:bg-primary/90 transition-colors">Retry</button>
     </div>
   );
 }
@@ -402,12 +376,7 @@ function EmptyState({ onRefresh }) {
       </div>
       <h3 className="text-[16px] font-semibold text-foreground mb-1">You're all caught up</h3>
       <p className="text-[13px] text-muted-foreground mb-5">Check back later for new opportunities</p>
-      <button
-        onClick={onRefresh}
-        className="px-5 py-2.5 rounded-xl bg-primary text-white text-[13px] font-medium hover:bg-primary/90 transition-colors"
-      >
-        Refresh
-      </button>
+      <button onClick={onRefresh} className="!rounded-button px-5 py-2.5 rounded-xl bg-primary text-white text-[13px] font-medium hover:bg-primary/90 transition-colors">Refresh</button>
     </div>
   );
 }

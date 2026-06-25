@@ -25,15 +25,6 @@
     },
     "context_job_id": {
       "type": "string"
-    },
-    "interest_level": {
-      "type": "string",
-      "enum": [
-        "high",
-        "medium",
-        "low"
-      ],
-      "default": "medium"
     }
   },
   "required": [

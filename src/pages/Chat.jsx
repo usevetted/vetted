@@ -178,16 +178,18 @@ export default function Chat() {
               <div className="flex-1">
                 <div className="text-[13px] font-medium text-foreground">{otherName}</div>
                 {otherRole && <div className="text-[12px] text-muted-foreground">{otherRole}</div>}
-                {match.job_title && (
-                  <div className="text-[12px] text-muted-foreground mt-1">
-                    {match.job_title}{match.company_name ? ` · ${match.company_name}` : ''}
-                  </div>
-                )}
-                {match.other_job_titles?.length > 0 && (
-                  <div className="mt-2 p-3 bg-brand-green-bg rounded-xl border border-primary/10">
-                    <p className="text-[11px] font-semibold text-primary/70 uppercase tracking-wider mb-1.5">Also interested in</p>
-                    {match.other_job_titles.map((title, i) => (
-                      <p key={i} className="text-[13px] text-foreground">• {title}</p>
+                {(match.job_title || (match.additional_job_titles?.length > 0)) && (
+                  <div className="mt-1">
+                    <div className="text-[11px] font-semibold text-primary/60 uppercase tracking-wider mb-1">
+                      Matched on
+                    </div>
+                    {match.job_title && (
+                      <div className="text-[12px] text-muted-foreground">
+                        • {match.job_title}{match.company_name ? ` · ${match.company_name}` : ''}
+                      </div>
+                    )}
+                    {match.additional_job_titles?.map((title, i) => (
+                      <div key={i} className="text-[12px] text-muted-foreground">• {title}</div>
                     ))}
                   </div>
                 )}

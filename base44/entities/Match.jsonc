@@ -23,6 +23,20 @@
     "company_name": {
       "type": "string"
     },
+    "additional_job_ids": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "default": []
+    },
+    "additional_job_titles": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "default": []
+    },
     "profile1_name": {
       "type": "string"
     },
