@@ -5,6 +5,7 @@ import { MessageCircle, Linkedin } from 'lucide-react';
 import { base44 } from '@/api/base44Client';
 import LoadingScreen from '@/components/LoadingScreen';
 import LikedYouTab from '@/components/LikedYouTab';
+import ActivityTab from '@/components/ActivityTab';
 
 export default function Matches() {
   const navigate = useNavigate();
@@ -12,6 +13,7 @@ export default function Matches() {
   const [matches, setMatches] = useState([]);
   const [loading, setLoading] = useState(true);
   const [activeTab, setActiveTab] = useState('matches');
+  const isRecruiter = profile?.account_type === 'recruiter';
 
   const load = async () => {
     if (!profile) return;
@@ -55,17 +57,21 @@ export default function Matches() {
       <div className="flex-1 flex flex-col min-h-0">
         {/* Tab bar */}
         <div className="flex px-5 border-b border-border/50 flex-shrink-0 gap-5">
-          {['matches', 'liked-you'].map(tab => (
+          {[
+            { key: 'matches', label: 'Matches' },
+            { key: 'liked-you', label: isRecruiter ? 'Applied to Jobs' : 'Interested In You' },
+            { key: 'activity', label: isRecruiter ? 'Jobs You Posted' : 'Jobs You Liked' },
+          ].map(tab => (
             <button
-              key={tab}
-              onClick={() => setActiveTab(tab)}
-              className={`text-[13px] font-medium py-2.5 px-0 border-b-2 transition-colors ${
-                activeTab === tab
+              key={tab.key}
+              onClick={() => setActiveTab(tab.key)}
+              className={`text-[13px] font-medium py-2.5 px-0 border-b-2 transition-colors whitespace-nowrap ${
+                activeTab === tab.key
                   ? 'text-primary border-primary'
                   : 'text-muted-foreground border-transparent'
               }`}
             >
-              {tab === 'matches' ? 'Matches' : 'Liked You'}
+              {tab.label}
             </button>
           ))}
         </div>
@@ -156,6 +162,11 @@ export default function Matches() {
           {activeTab === 'liked-you' && (
             <div className="flex-1 flex flex-col min-h-0">
               <LikedYouTab profile={profile} />
+            </div>
+          )}
+          {activeTab === 'activity' && (
+            <div className="flex-1 flex flex-col min-h-0">
+              <ActivityTab profile={profile} isRecruiter={isRecruiter} />
             </div>
           )}
         </div>

@@ -19,6 +19,7 @@ export default function Discover() {
   const [matchData, setMatchData] = useState(null);
   const [triggerAction, setTriggerAction] = useState(null);
   const [filterOpen, setFilterOpen] = useState(false);
+  const [pendingLike, setPendingLike] = useState(null);
   const [filters, setFilters] = useState({ remoteOnly: false, inPersonOnly: false, openToWork: false, sortBy: 'newest', distance: 50, location: '', skills: [] });
 
   const isRecruiter = profile?.account_type === 'recruiter';
@@ -88,6 +89,13 @@ export default function Discover() {
     if (cards.length === 0) return;
     const currentCard = cards[0];
 
+    // Job seeker liking a job — show interest picker first
+    if (!isRecruiter && action === 'like') {
+      setPendingLike({ card: currentCard });
+      setAllCards(prev => prev.filter(c => c.id !== currentCard.id));
+      return;
+    }
+
     let targetProfileId, contextJobId, targetType;
     if (isRecruiter) {
       targetProfileId = currentCard.id;
@@ -119,6 +127,32 @@ export default function Discover() {
 
     if ((action === 'like' || action === 'super') && targetProfileId) {
       await checkForMatch(targetProfileId, currentCard, action);
+    }
+  };
+
+  const confirmLike = async (level) => {
+    const card = pendingLike?.card;
+    setPendingLike(null);
+    if (!card) return;
+
+    const targetProfileId = card.recruiter_profile_id || null;
+    const contextJobId = card.id;
+
+    try {
+      await base44.entities.Swipe.create({
+        swiper_profile_id: profile.id,
+        target_profile_id: targetProfileId,
+        target_type: 'job',
+        action: 'like',
+        context_job_id: contextJobId,
+        interest_level: level,
+      });
+    } catch {
+      // continue even if error
+    }
+
+    if (targetProfileId) {
+      await checkForMatch(targetProfileId, card, 'like');
     }
   };
 
@@ -283,6 +317,50 @@ export default function Discover() {
             }}
             onKeepSwiping={() => setMatchData(null)}
           />
+        )}
+      </AnimatePresence>
+
+      {/* Interest level picker */}
+      <AnimatePresence>
+        {pendingLike && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="absolute inset-0 z-50 flex flex-col justify-end bg-black/30"
+          >
+            <motion.div
+              initial={{ y: 80 }}
+              animate={{ y: 0 }}
+              exit={{ y: 80 }}
+              className="bg-card rounded-t-3xl p-6 pb-8"
+            >
+              <h3 className="text-[16px] font-semibold text-foreground text-center mb-1">How interested are you?</h3>
+              <p className="text-[13px] text-muted-foreground text-center mb-5">Let the recruiter know your level of interest</p>
+              <div className="flex flex-col gap-2.5">
+                {[
+                  { level: 'high', label: 'High Interest', desc: 'This is a top choice for me', color: 'border-green-500 text-green-700 bg-green-50' },
+                  { level: 'medium', label: 'Interested', desc: "I'd like to learn more", color: 'border-blue-400 text-blue-700 bg-blue-50' },
+                  { level: 'low', label: 'Slightly Interested', desc: 'Open to it, but not a priority', color: 'border-orange-400 text-orange-700 bg-orange-50' },
+                ].map(({ level, label, desc, color }) => (
+                  <button
+                    key={level}
+                    onClick={() => confirmLike(level)}
+                    className={`w-full border-2 rounded-2xl px-4 py-3 text-left transition-all hover:opacity-90 ${color}`}
+                  >
+                    <div className="text-[14px] font-semibold">{label}</div>
+                    <div className="text-[12px] opacity-70">{desc}</div>
+                  </button>
+                ))}
+              </div>
+              <button
+                onClick={() => setPendingLike(null)}
+                className="w-full mt-3 text-[13px] text-muted-foreground py-2"
+              >
+                Cancel
+              </button>
+            </motion.div>
+          </motion.div>
         )}
       </AnimatePresence>
 
