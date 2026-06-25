@@ -5,7 +5,6 @@ import { useEffect, useState, useRef } from 'react';
 import { base44 } from '@/api/base44Client';
 import { useAuth } from '@/lib/AuthContext';
 import LoadingScreen from '@/components/LoadingScreen';
-import FeedbackButton from '@/components/FeedbackButton';
 
 const navItems = [
   { icon: LayoutGrid, label: 'Discover', path: '/discover' },
@@ -155,7 +154,6 @@ export default function AppLayout() {
             })}
           </div>
         </nav>
-        <FeedbackButton profile={profile} />
         </div>
         </div>
   );

@@ -62,7 +62,7 @@ export default function Matches() {
 
   const tabs = [
     { key: 'matches', label: 'Matches' },
-    { key: 'liked-you', label: isRecruiter ? 'Applied to Jobs' : 'Interested In You' },
+    { key: 'liked-you', label: isRecruiter ? 'Liked Your Jobs' : 'Interested In You' },
     { key: 'activity', label: isRecruiter ? 'Jobs You Posted' : 'Jobs You Liked' },
   ];
 

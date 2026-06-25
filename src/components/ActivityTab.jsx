@@ -16,7 +16,10 @@ export default function ActivityTab({ profile, isRecruiter }) {
           const jobs = await base44.entities.Job.filter({ recruiter_profile_id: profile.id });
           const withCounts = await Promise.all(jobs.map(async (job) => {
             const swipes = await base44.entities.Swipe.filter({ context_job_id: job.id }).catch(() => []);
-            const likeCount = swipes.filter(s => s.action === 'like' || s.action === 'super').length;
+            const likeCount = swipes.filter(s =>
+              (s.action === 'like' || s.action === 'super') &&
+              s.swiper_profile_id !== profile.id
+            ).length;
             return { job, likeCount };
           }));
           setItems(withCounts.sort((a, b) => new Date(b.job.created_date) - new Date(a.job.created_date)));

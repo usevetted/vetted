@@ -5,6 +5,7 @@ import { X, ChevronDown, Sun, Moon, LogOut } from 'lucide-react';
 import { Switch } from '@/components/ui/switch';
 import { base44 } from '@/api/base44Client';
 import { useTheme } from '@/lib/ThemeContext';
+import FeedbackSheet from '@/components/FeedbackButton';
 
 export default function MenuDrawer({ open, onClose, user, profile }) {
   const navigate = useNavigate();
@@ -25,6 +26,7 @@ export default function MenuDrawer({ open, onClose, user, profile }) {
   const [passwordResetSent, setPasswordResetSent] = useState(false);
   const [emailChangeSent, setEmailChangeSent] = useState(false);
   const [twoFaEnabled, setTwoFaEnabled] = useState(false);
+  const [feedbackOpen, setFeedbackOpen] = useState(false);
 
   useEffect(() => {
     if (!open) return;
@@ -170,6 +172,13 @@ export default function MenuDrawer({ open, onClose, user, profile }) {
     { label: 'Deactivate Account', action: 'deactivate' },
     { label: 'Delete Account', action: 'delete' }]
 
+  },
+  {
+    id: 'support',
+    label: 'Support',
+    options: [
+      { label: 'Send Feedback', action: 'feedback' },
+    ]
   }];
 
 
@@ -469,6 +478,19 @@ export default function MenuDrawer({ open, onClose, user, profile }) {
                     }
 
                         </div>
+
+                        {section.id === 'support' && (
+                          <div className="space-y-1 py-1">
+                            <button
+                              onClick={() => { setFeedbackOpen(true); }}
+                              className="text-[13px] text-foreground py-2 hover:text-primary transition-colors text-left w-full"
+                            >
+                              Send Feedback
+                            </button>
+                            <p className="text-[11px] text-muted-foreground">Help us improve Vetted by sharing what's working and what isn't.</p>
+                          </div>
+                        )}
+
                       </motion.div>
                 }
                   </AnimatePresence>
@@ -496,6 +518,7 @@ export default function MenuDrawer({ open, onClose, user, profile }) {
           </motion.div>
         </>
       }
+      <FeedbackSheet open={feedbackOpen} onClose={() => setFeedbackOpen(false)} profile={profile} />
     </AnimatePresence>);
 
 }
