@@ -61,6 +61,12 @@
     "profile2_linkedin": {
       "type": "string"
     },
+    "profile1_resume": {
+      "type": "string"
+    },
+    "profile2_resume": {
+      "type": "string"
+    },
     "other_job_ids": {
       "type": "array",
       "items": {

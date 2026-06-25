@@ -5,6 +5,7 @@ import { Heart, Star, Zap } from 'lucide-react';
 import { base44 } from '@/api/base44Client';
 import LoadingScreen from '@/components/LoadingScreen';
 import MatchOverlay from '@/components/MatchOverlay';
+import ResumeLink from '@/components/ResumeLink';
 
 export default function LikedYouTab({ profile }) {
   const navigate = useNavigate();
@@ -139,6 +140,8 @@ export default function LikedYouTab({ profile }) {
       profile2_role: recruiterProfile?.current_role || '',
       profile1_linkedin: seekerProfile?.linkedin_url || '',
       profile2_linkedin: recruiterProfile?.linkedin_url || '',
+      profile1_resume: seekerProfile?.resume_url || '',
+      profile2_resume: '',
       additional_job_ids: [],
       additional_job_titles: [],
       status: 'active'
@@ -333,6 +336,11 @@ export default function LikedYouTab({ profile }) {
                         {p.skills.length > 4 && (
                           <span className="text-[10px] px-2 py-0.5 rounded-full bg-secondary text-secondary-foreground">+{p.skills.length - 4}</span>
                         )}
+                      </div>
+                    )}
+                    {p.resume_url && (
+                      <div className="mt-1.5">
+                        <ResumeLink url={p.resume_url} compact />
                       </div>
                     )}
                   </div>

@@ -235,9 +235,9 @@ export default function MenuDrawer({ open, onClose, user, profile }) {
                   animate={{ height: 'auto', opacity: 1 }}
                   exit={{ height: 0, opacity: 0 }}
                   transition={{ duration: 0.2 }}
-                  className="overflow-hidden bg-primary/5 border-t border-primary/20">
+                  className="overflow-hidden bg-primary/5 border-t border-primary/20 w-full">
                   
-                        <div className="px-5 py-2">
+                        <div className="px-5 py-2 w-full box-border">
                           {/* Account Settings content */}
                           {section.id === 'settings' &&
                     <div className="space-y-3">
@@ -480,13 +480,13 @@ export default function MenuDrawer({ open, onClose, user, profile }) {
                         </div>
 
                         {section.id === 'support' && (
-                          <div className="py-2 space-y-2">
-                            <p className="text-[11px] text-muted-foreground leading-relaxed">
+                          <div className="w-full space-y-2 py-1">
+                            <p className="text-[11px] text-muted-foreground leading-snug break-words">
                               Help us improve Vetted — share what's working, what's broken, or any ideas.
                             </p>
                             <button
                               onClick={() => setFeedbackOpen(true)}
-                              className="w-full h-[36px] bg-primary text-white text-[12px] font-medium rounded-xl hover:bg-primary/90 transition-colors"
+                              className="w-full h-[36px] bg-primary text-white text-[12px] font-medium rounded-xl hover:bg-primary/90 transition-colors block"
                             >
                               Send Feedback
                             </button>

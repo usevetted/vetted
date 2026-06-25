@@ -204,6 +204,8 @@ export default function Discover() {
         profile2_role: isRecruiter ? (profile.current_role || '') : (card.recruiter_name || ''),
         profile1_linkedin: isRecruiter ? (card.linkedin_url || '') : (profile.linkedin_url || ''),
         profile2_linkedin: isRecruiter ? (profile.linkedin_url || '') : (card.recruiter_linkedin || ''),
+        profile1_resume: isRecruiter ? (card.resume_url || '') : (profile.resume_url || ''),
+        profile2_resume: isRecruiter ? (profile.resume_url || '') : '',
         additional_job_ids: [],
         additional_job_titles: [],
         status: 'active',

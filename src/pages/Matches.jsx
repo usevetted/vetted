@@ -6,6 +6,7 @@ import { base44 } from '@/api/base44Client';
 import LoadingScreen from '@/components/LoadingScreen';
 import LikedYouTab from '@/components/LikedYouTab';
 import ActivityTab from '@/components/ActivityTab';
+import ResumeLink from '@/components/ResumeLink';
 
 export default function Matches() {
   const navigate = useNavigate();
@@ -153,6 +154,15 @@ export default function Matches() {
                             <div className="text-[11px] text-muted-foreground truncate mt-0.5">
                               {allJobTitles[0]}{primaryMatch.company_name ? ` · ${primaryMatch.company_name}` : ''}
                             </div>
+                            {(() => {
+                              const isP1 = group.primaryMatch.profile1_id === profile.id;
+                              const otherResume = isP1 ? group.primaryMatch.profile2_resume : group.primaryMatch.profile1_resume;
+                              return otherResume ? (
+                                <div className="mt-1" onClick={(e) => e.stopPropagation()}>
+                                  <ResumeLink url={otherResume} compact />
+                                </div>
+                              ) : null;
+                            })()}
                             <div className="flex items-center gap-1 mt-2 text-[11px] text-primary font-medium">
                               <MessageCircle size={12} />
                               <span>Message</span>

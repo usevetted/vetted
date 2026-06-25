@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useRef } from 'react';
 import { Plus, Check } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { createPortal } from 'react-dom';
@@ -17,9 +17,25 @@ export default function PostJobButton({ isRecruiter, profile, onJobPosted }) {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
   const [companyPicture, setCompanyPicture] = useState('');
-  const [useCompanyPicture, setUseCompanyPicture] = useState(true);
+  const [useCompanyPicture, setUseCompanyPicture] = useState(false);
+  const [uploadingPic, setUploadingPic] = useState(false);
+  const picInputRef = useRef(null);
 
   if (!isRecruiter) return null;
+
+  const handlePicUpload = async (e) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    setUploadingPic(true);
+    try {
+      const { file_url } = await base44.integrations.Core.UploadFile({ file });
+      setCompanyPicture(file_url);
+    } catch {
+      // ignore upload errors
+    } finally {
+      setUploadingPic(false);
+    }
+  };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -41,7 +57,7 @@ export default function PostJobButton({ isRecruiter, profile, onJobPosted }) {
         recruiter_profile_id: profile.id,
         recruiter_name: profile.full_name,
         recruiter_linkedin: profile.linkedin_url || '',
-        company_picture: useCompanyPicture ? (companyPicture || profile.profile_picture || '') : '',
+        company_picture: useCompanyPicture ? companyPicture : '',
       });
 
       toast.success('Job posted successfully', {
@@ -55,7 +71,8 @@ export default function PostJobButton({ isRecruiter, profile, onJobPosted }) {
       });
       setFormData({ title: '', company: '', location: '', remote: false, description: '' });
       setCompanyPicture('');
-      setUseCompanyPicture(true);
+      setUseCompanyPicture(false);
+      setUploadingPic(false);
       setModalOpen(false);
       onJobPosted();
     } catch (err) {
@@ -81,7 +98,7 @@ export default function PostJobButton({ isRecruiter, profile, onJobPosted }) {
             animate={{ y: 0, opacity: 1 }}
             exit={{ y: '100%', opacity: 0 }}
             transition={{ type: 'spring', damping: 25, stiffness: 300 }}
-            className="fixed bottom-0 left-0 right-0 z-[200] max-h-[90vh] rounded-t-2xl shadow-xl bg-card flex flex-col"
+            className="fixed bottom-0 left-0 right-0 z-[200] h-[90vh] rounded-t-2xl shadow-xl bg-card flex flex-col"
           >
               <form onSubmit={handleSubmit} className="flex flex-col h-full">
                 {/* Header */}
@@ -127,7 +144,7 @@ export default function PostJobButton({ isRecruiter, profile, onJobPosted }) {
                   </div>
 
                   <div>
-                    <label className="text-[12px] font-medium text-foreground/70 mb-1.5 block">Company Picture</label>
+                    <label className="text-[12px] font-medium text-foreground/70 mb-1.5 block">Company / Role Picture</label>
                     <div className="flex items-center gap-3 p-3 bg-muted/30 rounded-lg mb-2">
                       <input
                         type="checkbox"
@@ -136,32 +153,50 @@ export default function PostJobButton({ isRecruiter, profile, onJobPosted }) {
                         onChange={(e) => setUseCompanyPicture(e.target.checked)}
                         className="w-4 h-4 rounded"
                       />
-                      <label htmlFor="useCompanyPicture" className="text-[13px] text-foreground cursor-pointer">
-                        Include a company picture on this posting
+                      <label htmlFor="useCompanyPicture" className="text-[13px] text-foreground cursor-pointer flex-1">
+                        Add a picture to this posting
                       </label>
                     </div>
                     {useCompanyPicture && (
-                      <div className="space-y-2">
+                      <div className="flex items-center gap-3">
+                        <div
+                          onClick={() => picInputRef.current?.click()}
+                          className="w-16 h-16 rounded-xl border-2 border-dashed border-border flex items-center justify-center bg-muted/30 cursor-pointer hover:bg-muted/50 transition-colors flex-shrink-0 overflow-hidden"
+                        >
+                          {companyPicture ? (
+                            <img src={companyPicture} alt="Preview" className="w-full h-full object-cover" />
+                          ) : uploadingPic ? (
+                            <div className="w-5 h-5 border-2 border-primary/30 border-t-primary rounded-full animate-spin" />
+                          ) : (
+                            <span className="text-[10px] text-muted-foreground text-center leading-tight px-1">Tap to upload</span>
+                          )}
+                        </div>
+                        <div className="flex-1">
+                          <button
+                            type="button"
+                            onClick={() => picInputRef.current?.click()}
+                            disabled={uploadingPic}
+                            className="w-full h-[36px] border border-border rounded-lg text-[13px] text-foreground hover:bg-muted/30 transition-colors disabled:opacity-50"
+                          >
+                            {uploadingPic ? 'Uploading...' : companyPicture ? 'Change picture' : 'Choose from device'}
+                          </button>
+                          {companyPicture && (
+                            <button
+                              type="button"
+                              onClick={() => setCompanyPicture('')}
+                              className="text-[11px] text-destructive mt-1"
+                            >
+                              Remove
+                            </button>
+                          )}
+                        </div>
                         <input
-                          type="text"
-                          value={companyPicture}
-                          onChange={(e) => setCompanyPicture(e.target.value)}
-                          className="w-full h-[40px] border border-input rounded-lg px-3 text-[13px] bg-card focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary"
-                          placeholder="Paste image URL (or leave blank to use your profile picture)"
+                          ref={picInputRef}
+                          type="file"
+                          accept="image/*"
+                          onChange={handlePicUpload}
+                          className="hidden"
                         />
-                        {(companyPicture || profile.profile_picture) && (
-                          <div className="flex items-center gap-2">
-                            <img
-                              src={companyPicture || profile.profile_picture}
-                              alt="Preview"
-                              className="w-10 h-10 rounded-lg object-cover border border-border"
-                              onError={(e) => { e.target.style.display = 'none'; }}
-                            />
-                            <span className="text-[11px] text-muted-foreground">
-                              {companyPicture ? 'Custom image' : 'Using your profile picture'}
-                            </span>
-                          </div>
-                        )}
                       </div>
                     )}
                   </div>
