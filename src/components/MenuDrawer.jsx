@@ -202,7 +202,7 @@ export default function MenuDrawer({ open, onClose, user, profile }) {
           
             {/* Header */}
             <div className="flex items-center justify-between px-5 pt-3 pb-3 border-b border-border">
-              <h2 className="text-[16px] font-semibold text-[hsl(var(--brand-green))]">Menu</h2>
+              <h2 className="text-[15px] font-semibold text-foreground">{profile?.full_name || 'Menu'}</h2>
               <button
               onClick={onClose}
               className="w-8 h-8 rounded-full hover:bg-primary/10 flex items-center justify-center transition-colors">
@@ -479,17 +479,21 @@ export default function MenuDrawer({ open, onClose, user, profile }) {
 
                         </div>
 
-                        {section.id === 'support' &&
-                  <div className="space-y-1 py-1">
+                        {section.id === 'support' && (
+                          <div className="py-2 space-y-3">
+                            <div>
+                              <p className="text-[12px] text-muted-foreground leading-relaxed">
+                                Help us improve Vetted by sharing what's working and what isn't.
+                              </p>
+                            </div>
                             <button
-                      onClick={() => {setFeedbackOpen(true);}}
-                      className="text-[13px] py-2 hover:text-primary transition-colors text-left w-full text-[hsl(var(--brand-green))]">
-                      
+                              onClick={() => setFeedbackOpen(true)}
+                              className="w-full h-[38px] bg-primary text-white text-[13px] font-medium rounded-xl hover:bg-primary/90 transition-colors"
+                            >
                               Send Feedback
                             </button>
-                            <p className="text-[11px] text-muted-foreground">Help us improve Vetted by sharing what's working and what isn't.</p>
                           </div>
-                  }
+                        )}
 
                       </motion.div>
                 }

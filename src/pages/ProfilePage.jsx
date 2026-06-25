@@ -224,7 +224,7 @@ export default function ProfilePage() {
                 {isRecruiter ? 'Currently recruiting' : 'Currently employed'}
               </div>
               <div className="text-[11px] text-muted-foreground">
-                {isRecruiter ? 'Active recruiter at a company' : 'I have a current role'}
+                {isRecruiter ? 'I recruit on behalf of a company' : 'I have a current role'}
               </div>
             </div>
             <button
@@ -246,6 +246,12 @@ export default function ProfilePage() {
                 <input value={currentCompany} onChange={(e) => setCurrentCompany(e.target.value)} className={inputClass} />
               </div>
             </>
+          )}
+
+          {!isEmployed && isRecruiter && (
+            <p className="text-[12px] text-muted-foreground mt-1 px-1">
+              You'll appear as an independent recruiter / headhunter.
+            </p>
           )}
 
           <div>

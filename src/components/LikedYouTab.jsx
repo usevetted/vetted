@@ -241,6 +241,35 @@ export default function LikedYouTab({ profile }) {
     } catch {/* ignore */}
   };
 
+  const renderJobRow = (card, entry) => {
+    const key = `${card.seekerId}__${entry.job.id}`;
+    const isActing = acting[key];
+    return (
+      <div key={entry.job.id} className={`rounded-xl p-2.5 flex items-center gap-2 mb-1.5 last:mb-0 ${entry.isSuper ? 'bg-amber-50 border border-amber-200/60' : 'bg-muted/40'}`}>
+        <div className="flex-1 min-w-0">
+          <div className="text-[13px] font-medium text-foreground truncate">{entry.job.title}</div>
+          {entry.job.company && <div className="text-[11px] text-muted-foreground truncate">{entry.job.company}</div>}
+        </div>
+        <div className="flex gap-1.5 flex-shrink-0">
+          <button
+            onClick={() => handleRecruiterPassJob(card, entry)}
+            disabled={!!isActing}
+            className="px-3 py-1.5 rounded-lg border border-border text-[12px] text-muted-foreground font-medium hover:bg-muted/60 transition-colors disabled:opacity-40"
+          >
+            Pass
+          </button>
+          <button
+            onClick={() => handleRecruiterLikeJob(card, entry)}
+            disabled={!!isActing}
+            className="px-3 py-1.5 rounded-lg bg-primary text-white text-[12px] font-medium hover:bg-primary/90 transition-colors disabled:opacity-40"
+          >
+            Like
+          </button>
+        </div>
+      </div>
+    );
+  };
+
   if (loading) return <LoadingScreen fullscreen={false} />;
 
   if (cards.length === 0) {
@@ -259,7 +288,7 @@ export default function LikedYouTab({ profile }) {
 
   return (
     <div className="flex-1 flex flex-col min-h-0">
-      <div className="flex-1 overflow-y-auto no-scrollbar px-4 pb-6 pt-3 min-h-0">
+      <div className="flex-1 overflow-y-auto no-scrollbar px-4 pb-6 pt-4 min-h-0">
         {isRecruiter ?
         <div className="flex flex-col gap-3">
             {cards.map((card, i) => {
@@ -293,37 +322,31 @@ export default function LikedYouTab({ profile }) {
                   </div>
 
                   <div className="px-3 pb-3 flex flex-col gap-2">
-                    {card.jobEntries.map((entry) => {
-                    const key = `${card.seekerId}__${entry.job.id}`;
-                    const isActing = acting[key];
-                    return (
-                      <div key={entry.job.id} className="bg-muted/40 rounded-xl p-2.5 flex items-center gap-2">
-                          <div className="flex-1 min-w-0">
-                            <div className="flex items-center gap-1.5">
-                              {entry.isSuper && <Zap size={12} className="text-amber-500 flex-shrink-0" fill="currentColor" />}
-                              <span className="text-[13px] font-medium text-foreground truncate">{entry.job.title}</span>
+                    {(() => {
+                      const superEntries = card.jobEntries.filter(e => e.isSuper);
+                      const regularEntries = card.jobEntries.filter(e => !e.isSuper);
+                      return (
+                        <>
+                          {superEntries.length > 0 && (
+                            <div>
+                              <div className="flex items-center gap-1.5 mb-1.5">
+                                <Zap size={11} className="text-amber-500" fill="currentColor" />
+                                <span className="text-[10px] font-semibold text-amber-500 uppercase tracking-wider">Super Liked</span>
+                              </div>
+                              {superEntries.map(entry => renderJobRow(card, entry))}
                             </div>
-                            {entry.job.company && <div className="text-[11px] text-muted-foreground truncate">{entry.job.company}</div>}
-                          </div>
-                          <div className="flex gap-1.5 flex-shrink-0">
-                            <button
-                            onClick={() => handleRecruiterPassJob(card, entry)}
-                            disabled={!!isActing}
-                            className="!rounded-button px-3 py-1.5 rounded-lg border border-border text-[12px] text-muted-foreground font-medium hover:bg-muted/60 transition-colors disabled:opacity-40">
-                            
-                              Pass
-                            </button>
-                            <button
-                            onClick={() => handleRecruiterLikeJob(card, entry)}
-                            disabled={!!isActing}
-                            className="!rounded-button px-3 py-1.5 rounded-lg bg-primary text-white text-[12px] font-medium hover:bg-primary/90 transition-colors disabled:opacity-40">
-                            
-                              Like
-                            </button>
-                          </div>
-                        </div>);
-
-                  })}
+                          )}
+                          {regularEntries.length > 0 && (
+                            <div>
+                              {superEntries.length > 0 && (
+                                <div className="text-[10px] font-semibold text-muted-foreground uppercase tracking-wider mb-1.5">Also Liked</div>
+                              )}
+                              {regularEntries.map(entry => renderJobRow(card, entry))}
+                            </div>
+                          )}
+                        </>
+                      );
+                    })()}
                   </div>
                 </motion.div>);
 

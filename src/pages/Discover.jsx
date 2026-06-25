@@ -276,10 +276,10 @@ export default function Discover() {
 
       {/* Action buttons */}
       {!loading && cards.length > 0 && (
-        <div className="flex items-center justify-center gap-6 pb-4 pt-2">
+        <div className="flex items-center justify-center gap-5 pb-5 pt-3 border-t border-border/20">
           <motion.button whileTap={{ scale: 0.82 }} whileHover={{ scale: 1.08 }} onClick={() => handleButtonClick('pass')}
-            className="!rounded-button w-[58px] h-[58px] rounded-full bg-card border border-destructive/20 flex items-center justify-center shadow-[0_8px_24px_rgba(239,68,68,0.12)]">
-            <X size={26} className="text-red-500" strokeWidth={2.5} />
+            className="!rounded-button w-[58px] h-[58px] rounded-full bg-red-500 flex items-center justify-center shadow-[0_8px_24px_rgba(239,68,68,0.25)]">
+            <X size={26} className="text-white" strokeWidth={2.5} />
           </motion.button>
           <motion.button whileTap={{ scale: 0.82, y: -4 }} whileHover={{ scale: 1.12, y: -2 }} onClick={() => handleButtonClick('super')}
             className="!rounded-button w-[50px] h-[50px] rounded-full bg-gold flex items-center justify-center shadow-[0_8px_24px_rgba(245,158,11,0.3)]">

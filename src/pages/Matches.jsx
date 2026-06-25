@@ -72,7 +72,7 @@ export default function Matches() {
         <h1 className="text-[22px] font-semibold text-foreground">Matches</h1>
         <p className="text-[13px] text-muted-foreground mt-0.5">
           {grouped.length > 0
-            ? `${grouped.length} mutual ${grouped.length === 1 ? 'match' : 'matches'}`
+            ? `${grouped.length} ${grouped.length === 1 ? 'person' : 'people'} matched`
             : 'Your matches will appear here'}
         </p>
       </div>
@@ -127,7 +127,7 @@ export default function Matches() {
                           animate={{ opacity: 1, y: 0 }}
                           transition={{ duration: 0.3, delay: i * 0.04 }}
                           onClick={() => navigate(`/messages/${primaryMatch.id}`)}
-                          className="flex flex-col rounded-2xl bg-white border border-border/60 overflow-hidden hover:border-primary/20 hover:shadow-md transition-all text-left group"
+                          className="flex flex-col rounded-2xl bg-card border border-border/60 overflow-hidden hover:border-primary/20 hover:shadow-md transition-all text-left group"
                         >
                           <div className="relative aspect-square w-full bg-gradient-to-br from-brand-green-bg to-secondary/40 flex items-center justify-center overflow-hidden">
                             {otherPicture ? (
@@ -138,7 +138,7 @@ export default function Matches() {
                             {otherLinkedin && (
                               <a href={otherLinkedin} target="_blank" rel="noopener noreferrer"
                                 onClick={(e) => e.stopPropagation()}
-                                className="absolute top-2 right-2 w-8 h-8 rounded-lg bg-white/90 glass flex items-center justify-center hover:bg-white transition-colors shadow-sm">
+                                className="absolute top-2 right-2 w-8 h-8 rounded-lg bg-card/90 flex items-center justify-center hover:bg-card transition-colors shadow-sm">
                                 <Linkedin size={15} className="text-linkedin" />
                               </a>
                             )}
